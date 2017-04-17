@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="11759" systemVersion="16D32" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
+    <entity name="Event" representedClassName="Event" syncable="YES" codeGenerationType="class">
+        <attribute name="asset" optional="YES" attributeType="Binary" allowsExternalBinaryDataStorage="YES" syncable="YES"/>
+        <attribute name="recordData" optional="YES" attributeType="Binary" syncable="YES">
+            <userInfo>
+                <entry key="CloudCoreType" value="recordData"/>
+            </userInfo>
+        </attribute>
+        <attribute name="recordID" optional="YES" attributeType="String" indexed="YES" syncable="YES">
+            <userInfo>
+                <entry key="CloudCoreType" value="recordID"/>
+            </userInfo>
+        </attribute>
+        <attribute name="timestamp" optional="YES" attributeType="Date">
+            <userInfo/>
+        </attribute>
+        <relationship name="subevent" optional="YES" maxCount="1" deletionRule="Cascade" destinationEntity="Subevent" inverseName="event" inverseEntity="Subevent" syncable="YES"/>
+    </entity>
+    <entity name="Subevent" representedClassName="Subevent" syncable="YES" codeGenerationType="class">
+        <attribute name="recordData" optional="YES" attributeType="Binary" syncable="YES">
+            <userInfo>
+                <entry key="CloudCoreType" value="recordData"/>
+            </userInfo>
+        </attribute>
+        <attribute name="recordID" optional="YES" attributeType="String" indexed="YES" syncable="YES">
+            <userInfo>
+                <entry key="CloudCoreType" value="recordID"/>
+            </userInfo>
+        </attribute>
+        <attribute name="timestamp" optional="YES" attributeType="Date" usesScalarValueType="NO" syncable="YES"/>
+        <relationship name="event" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Event" inverseName="subevent" inverseEntity="Event" syncable="YES"/>
+    </entity>
+    <elements>
+        <element name="Event" positionX="261" positionY="189" width="128" height="118"/>
+        <element name="Subevent" positionX="261" positionY="216" width="128" height="103"/>
+    </elements>
+</model>

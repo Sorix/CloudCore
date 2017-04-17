@@ -1,0 +1,36 @@
+osx_image: xcode8.3
+language: objective-c
+
+env:
+  global:
+    - PROJECT="CloudCore.xcodeproj"
+    - EXAMPLE_PORJECT="Example/CloudCoreExample.xcodeproj"
+
+    - IOS_FRAMEWORK_SCHEME="CloudCore-iOS"
+    - MACOS_FRAMEWORK_SCHEME="CloudCore-macOS"
+    - EXAMPLE_SCHEME="CloudCoreExample"
+  matrix:
+    - DESTINATION="OS=10.3,name=iPhone 7 Plus"     SCHEME="$IOS_FRAMEWORK_SCHEME"   BUILD_EXAMPLE="YES" POD_LINT="YES"
+    - DESTINATION="arch=x86_64"                    SCHEME="$MACOS_FRAMEWORK_SCHEME" BUILD_EXAMPLE="NO"  POD_LINT="NO"
+
+before_install:
+ - gem install cocoapods --pre --no-rdoc --no-ri --no-document --quiet
+ - gem install xcpretty-travis-formatter
+
+script:
+ - set -o pipefail
+
+ # Build and test in debug
+ - xcodebuild -project "$PROJECT" -scheme "$SCHEME" -destination "$DESTINATION" -configuration Debug ONLY_ACTIVE_ARCH=NO ENABLE_TESTABILITY=YES test | xcpretty -f `xcpretty-travis-formatter`
+ # Build and test in release
+ - xcodebuild -project "$PROJECT" -scheme "$SCHEME" -destination "$DESTINATION" -configuration Release ONLY_ACTIVE_ARCH=NO ENABLE_TESTABILITY=YES test | xcpretty -f `xcpretty-travis-formatter`
+
+ # Build example project
+ - if [ $BUILD_EXAMPLE == "YES" ]; then
+    xcodebuild -project "$EXAMPLE_PROJECT" -scheme "$EXAMPLE_SCHEME" -destination "$DESTINATION" -configuration Debug ONLY_ACTIVE_ARCH=NO build | xcpretty -f `xcpretty-travis-formatter`;
+   fi
+
+ # Run `pod lib lint` if specified
+ - if [ $POD_LINT == "YES" ]; then
+     pod lib lint;
+   fi
