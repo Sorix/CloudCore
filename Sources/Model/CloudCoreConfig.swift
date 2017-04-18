@@ -10,11 +10,13 @@ import Foundation
 import CloudKit
 
 
-/** Struct containing CloudCore configuration.
+/**
+	Struct containing CloudCore configuration.
 
 	Changes in configuration are optional and they are not required in most cases.
 
 	## Example
+
 	```swift
 	var customConfig = CloudCoreConfig()
 	customConfig.publicSubscriptionIDPrefix = "CustomApp"
@@ -48,7 +50,7 @@ public struct CloudCoreConfig {
 	/// Default value is `recordData`
 	public var defaultAttributeNameRecordData = "recordData"
 	
-	// MARK: User Default
+	// MARK: User Defaults
 	
 	/// UserDefault's key to store `Tokens` object
 	///

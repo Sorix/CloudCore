@@ -9,5 +9,9 @@
 import Foundation
 
 public protocol CloudCoreErrorDelegate {
+
+	/// Save to cloud operation throwed an error
+	///
+	/// - Parameter error: `Error` or `CloudCoreError` object
 	func cloudCore(saveToCloudDidFailed error: Error)
 }

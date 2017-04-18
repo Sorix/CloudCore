@@ -10,20 +10,19 @@ import CoreData
 import CloudKit
 
 /**
-	Main ClouCore class, in most cases you will use only methods from that class, all methods/properties are static.
+	Main framework class, in most cases you will use only methods from that class, all methods/properties are static.
 
 	## Save to cloud
 	On application inialization call `observeCoreDataChanges` method, so framework will automatically monitor changes at Core Data and upload it to iCloud.
 
 	### Example
+
 	```swift
 	func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
 		// Register for push notifications about changes
 		UIApplication.shared.registerForRemoteNotifications()
-
 		// Enable uploading changed local data to CoreData
 		CloudCore.observeCoreDataChanges(persistentContainer: self.persistentContainer, errorDelegate: nil)
-
 		return true
 	}
 	```
@@ -36,6 +35,7 @@ import CloudKit
 	Please use method with notification user info parameter if you're calling it from `didReceiveRemoteNotification`, because CloudCore extracts CloudKit database from notification to make less network requests on fetching.
 
 	### Example
+
 	```swift
 	func application(_ application: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable : Any], fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {
 		if CloudCore.isCloudCoreNotification(withUserInfo: userInfo) {
@@ -62,7 +62,7 @@ open class CloudCore {
 	
 	public typealias NotificationUserInfo = [AnyHashable : Any]
 	
-	/// MARK: Save to cloud
+	// MARK: Save to cloud
 
 	/** Enable observing of changes at local database and saving them to iCloud
 

@@ -15,10 +15,10 @@ import CloudKit
 
 	Framework stores tokens in 2 places:
 
-	* singleton `Token` object (usually stored in `NSUserDefaults`), it is your responsibility to save it
+	* singleton `Tokens` object in `CloudCore.tokens`
 	* tokens per record inside *Record Data* attribute, it is managed automatically you don't need to take any actions about that token
 
-	Tokens is stored inside `CloudCore.tokens` as singleton:
+	You need to save `Tokens` object before application terminates otherwise you will loose smart-sync ability.
 
 	### Example
 	```swift
