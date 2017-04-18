@@ -8,10 +8,28 @@
 
 import CloudKit
 
-/// CloudKit tokens, recommended to store it locally, class is conforming to `NSCoding` protocol
+/**
+	CloudCore's class for storing global `CKToken` objects. Framework uses one to upload or download only changed data (smart-sync).
+
+	To detect what data is new and old, framework uses CloudKit's `CKToken` objects and it is needed to be loaded every time application launches and saved on exit.
+
+	Framework stores tokens in 2 places:
+
+	* singleton `Token` object (usually stored in `NSUserDefaults`), it is your responsibility to save it
+	* tokens per record inside *Record Data* attribute, it is managed automatically you don't need to take any actions about that token
+
+	Tokens is stored inside `CloudCore.tokens` as singleton:
+
+	### Example
+	```swift
+	func applicationWillTerminate(_ application: UIApplication) {
+		CloudCore.tokens.saveToUserDefaults()
+	}
+	```
+*/
 open class Tokens: NSObject, NSCoding {
-	open var serverChangeToken: CKServerChangeToken?
-	open var tokensByRecordZoneID = [CKRecordZoneID: CKServerChangeToken]()
+	var serverChangeToken: CKServerChangeToken?
+	var tokensByRecordZoneID = [CKRecordZoneID: CKServerChangeToken]()
 	
 	private struct ArchiverKey {
 		static let serverToken = "serverChangeToken"
@@ -22,22 +40,26 @@ open class Tokens: NSObject, NSCoding {
 		super.init()
 	}
 	
+	// MARK: NSCoding
+	
+	///	Returns an object initialized from data in a given unarchiver.
 	public required init?(coder aDecoder: NSCoder) {
 		self.serverChangeToken = aDecoder.decodeObject(forKey: ArchiverKey.serverToken) as? CKServerChangeToken
 		self.tokensByRecordZoneID = aDecoder.decodeObject(forKey: ArchiverKey.tokensByRecordZoneID) as? [CKRecordZoneID: CKServerChangeToken] ?? [CKRecordZoneID: CKServerChangeToken]()
 	}
 	
+	/// Encodes the receiver using a given archiver.
 	open func encode(with aCoder: NSCoder) {
 		aCoder.encode(serverChangeToken, forKey: ArchiverKey.serverToken)
 		aCoder.encode(tokensByRecordZoneID, forKey: ArchiverKey.tokensByRecordZoneID)
 	}
 	
-	// MARK: - User Defaults
+	// MARK: User Defaults
 	
 	/// Load saved Tokens from UserDefaults
 	///
 	/// - Parameter fromKey: UserDefaults key, default is `CloudCore.config.userDefaultsKeyTokens`
-	/// - Returns: if tokens is not saved before initialize with no tokens
+	/// - Returns: previously saved `Token` object, if tokens weren't saved before newly initialized `Tokens` object will be returned
 	open static func loadFromUserDefaults(fromKey: String = CloudCore.config.userDefaultsKeyTokens) -> Tokens {
 		guard let tokensData = UserDefaults.standard.data(forKey: fromKey),
 			let tokens = NSKeyedUnarchiver.unarchiveObject(with: tokensData) as? Tokens else {

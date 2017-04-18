@@ -10,7 +10,7 @@ import Foundation
 import CoreData
 
 /// Class responsible for taking action on Core Data save notifications
-open class CoreDataListener {
+class CoreDataListener {
 	var container: NSPersistentContainer
 	
 	let converter = ObjectToRecordConverter()
@@ -25,13 +25,13 @@ open class CoreDataListener {
 	}
 	
 	/// Observe Core Data willSave and didSave notifications
-	open func observe() {
+	func observe() {
 		NotificationCenter.default.addObserver(self, selector: #selector(self.willSave(notification:)), name: .NSManagedObjectContextWillSave, object: nil)
 		NotificationCenter.default.addObserver(self, selector: #selector(self.didSave(notification:)), name: .NSManagedObjectContextDidSave, object: nil)
 	}
 	
 	/// Remove Core Data observers
-	public func stopObserving() {
+	func stopObserving() {
 		NotificationCenter.default.removeObserver(self)
 	}
 	

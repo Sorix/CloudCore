@@ -9,7 +9,8 @@
 import Foundation
 import CloudKit
 
-public class SetupOperation: Operation {
+/// An operation that performs initial setup task, have to be run one-time per application installation
+class SetupOperation: Operation {
 	// MARK: - Is setup performed
 	public static var isFinishedBefore: Bool {
 		get {
@@ -31,7 +32,7 @@ public class SetupOperation: Operation {
 	// MARK: - Operation
 	private let queue = OperationQueue()
 	
-	override public var qualityOfService: QualityOfService {
+	override var qualityOfService: QualityOfService {
 		didSet {
 			queue.qualityOfService = qualityOfService
 		}
@@ -39,7 +40,7 @@ public class SetupOperation: Operation {
 	
 	public var errorBlock: ErrorBlock?
 	
-	override public func main() {
+	override func main() {
 		if self.isCancelled { return }
 		
 		// Create zone
@@ -102,7 +103,7 @@ public class SetupOperation: Operation {
 		return operation
 	}
 	
-	public override func cancel() {
+	override func cancel() {
 		self.queue.cancelAllOperations()
 		super.cancel()
 	}

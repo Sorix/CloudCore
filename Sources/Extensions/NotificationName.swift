@@ -9,7 +9,7 @@
 import Foundation
 import CoreData
 
-// CloudCore custom notifications
+/// Framework custom notifications that posted during execution
 public extension Notification.Name {
 	
 	/// Posted when CloudCore begins fetching data from iCloud

@@ -9,6 +9,7 @@
 import CloudKit
 import CoreData
 
+/// An operation that fetches data from CloudKit and saves it to Core Data, you can use it without calling `CloudCore.fetchAndSave` methods if you application relies on `Operation`
 public class FetchAndSaveOperation: Operation {
 	
 	private static let allDatabases = [
@@ -29,6 +30,12 @@ public class FetchAndSaveOperation: Operation {
 	private let fetchOperationQueue = OperationQueue()
 	private let coreDataOperationQueue = OperationQueue()
 	
+	/// Initialize operation, it's recommended to set `errorBlock`
+	///
+	/// - Parameters:
+	///   - databases: list of databases to fetch data from (now supported: private and shared)
+	///   - persistentContainer: `NSPersistentContainer` that will be used to save data
+	///   - tokens: previously saved `Tokens`, you can generate new ones if you want to fetch all data
 	public init(from databases: [CKDatabase] = FetchAndSaveOperation.allDatabases, persistentContainer: NSPersistentContainer, tokens: Tokens = CloudCore.tokens) {
 		self.tokens = tokens
 		self.databases = databases
@@ -38,7 +45,8 @@ public class FetchAndSaveOperation: Operation {
 		coreDataOperationQueue.name = "CloudCoreFetchFromCloud CoreData"
 		coreDataOperationQueue.maxConcurrentOperationCount = 1
 	}
-		
+	
+	/// Performs the receiver’s non-concurrent task.
 	override public func main() {
 		if self.isCancelled { return }
 		
@@ -72,6 +80,7 @@ public class FetchAndSaveOperation: Operation {
 		NotificationCenter.default.post(name: .CloudCoreDidSyncFromCloud, object: nil)
 	}
 	
+	/// Advises the operation object that it should stop executing its task.
 	public override func cancel() {
 		self.fetchOperationQueue.cancelAllOperations()
 		self.coreDataOperationQueue.cancelAllOperations()
