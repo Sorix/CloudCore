@@ -39,9 +39,10 @@ dependencies: [
 ## How to help?
 Current version of framework hasn't been deeply tested and may contain errors. If you can test framework, I will be very glad. If you found an error, please post [an issue](https://github.com/Sorix/CloudCore/issues).
 
-## Quick start
-*Detailed documentation is [available at CocoaDocs](http://cocoadocs.org/docsets/CloudCore/).*
+## Documentation
+Detailed documentation is [available at CocoaDocs](http://cocoadocs.org/docsets/CloudCore/).
 
+## Quick start
 1. Enable CloudKit capability for you application:
 ![CloudKit capability](https://cloud.githubusercontent.com/assets/5610904/25092841/28305bc0-2398-11e7-9fbf-f94c619c264f.png)
 
