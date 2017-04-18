@@ -1,6 +1,10 @@
 osx_image: xcode8.3
 language: objective-c
 
+branches:
+  only:
+    - master
+
 env:
   global:
     - PROJECT="CloudCore.xcodeproj"

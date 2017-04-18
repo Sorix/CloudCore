@@ -8,9 +8,16 @@
 
 import Foundation
 
+
+/// Enumeration with results of `FetchAndSaveOperation`.
 public enum FetchResult: UInt {
+	/// Fetching has successfully completed without any errors
 	case newData = 0
+
+	/// No fetching was done, maybe fired with `FetchAndSaveOperation` was called with incorrect UserInfo without CloudCore's data
 	case noData = 1
+	
+	/// There were some errors during operation
 	case failed = 2
 }
 
@@ -18,8 +25,13 @@ public enum FetchResult: UInt {
 	import UIKit
 	
 	public extension FetchResult {
+		
+		/// Convert `self` to `UIBackgroundFetchResult`
+		///
+		/// Very usefull at `application(_:didReceiveRemoteNotification:fetchCompletionHandler)` as `completionHandler`
 		public var uiBackgroundFetchResult: UIBackgroundFetchResult {
 			return UIBackgroundFetchResult(rawValue: self.rawValue)!
 		}
+		
 	}
 #endif

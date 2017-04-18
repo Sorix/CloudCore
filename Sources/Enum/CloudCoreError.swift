@@ -9,12 +9,19 @@
 import Foundation
 import CoreData
 
+/// A enumeration representing an error value that can be thrown by framework
 public enum CloudCoreError: Error, CustomStringConvertible {
+	/// Entity doesn't have some required attributes
 	case missingServiceAttributes(entityName: String?)
+	
+	/// Some CloudKit error
 	case cloudKit(String)
+	
+	/// Some CoreData error
 	case coreData(String)
 	case custom(String)
 
+	/// A textual representation of error
 	public var localizedDescription: String {
 		switch self {
 		case .missingServiceAttributes(let entity):
@@ -26,6 +33,7 @@ public enum CloudCoreError: Error, CustomStringConvertible {
 		}
 	}
 	
+	/// A textual representation of error
 	public var description: String { return self.localizedDescription }
 }
 

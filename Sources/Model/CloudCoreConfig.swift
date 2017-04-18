@@ -9,10 +9,27 @@
 import Foundation
 import CloudKit
 
+
+/**
+	Struct containing CloudCore configuration.
+
+	Changes in configuration are optional and they are not required in most cases.
+
+	## Example
+
+	```swift
+	var customConfig = CloudCoreConfig()
+	customConfig.publicSubscriptionIDPrefix = "CustomApp"
+	CloudCore.config = customConfig
+	```
+*/
 public struct CloudCoreConfig {
-	// CloudKit
 	
-	/// RecordZone inside private database to store CoreData
+	// MARK: CloudKit
+	
+	/// RecordZone inside private database to store CoreData.
+	///
+	/// Default value is `CloudCore`
 	public var zoneID = CKRecordZoneID(zoneName: "CloudCore", ownerName: CKCurrentUserDefaultName)
 	let subscriptionIDForPrivateDB = "CloudCorePrivate"
 	let subscriptionIDForSharedDB = "CloudCoreShared"
@@ -20,13 +37,28 @@ public struct CloudCoreConfig {
 	/// subscriptionID's prefix for custom CKSubscription in public databases
 	var publicSubscriptionIDPrefix = "CloudCore-"
 	
-	
-	// Core Data
+	// MARK: Core Data
 	let contextName = "CloudCoreFetchAndSave"
+	
+	/// Default entity's attribute name for *Record ID* if User Info is not specified.
+	///
+	/// Default value is `recordID`
 	public var defaultAttributeNameRecordID = "recordID"
+	
+	/// Default entity's attribute name for *Record Data* if User Info is not specified
+	///
+	/// Default value is `recordData`
 	public var defaultAttributeNameRecordData = "recordData"
 	
-	// User Default
+	// MARK: User Defaults
+	
+	/// UserDefault's key to store `Tokens` object
+	///
+	/// Default value is `CloudCoreTokens`
 	public var userDefaultsKeyTokens = "CloudCoreTokens"
+	
+	/// UserDefault's key to store boolean value of CloudCore performed one-time initialization per application installation
+	///
+	/// Default value is `CloudCoreIsSetuped`
 	public var userDefaultsKeyIsSetuped = "CloudCoreIsSetuped"
 }
