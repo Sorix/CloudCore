@@ -18,7 +18,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UISplitViewControllerDele
 	// MARK: - CloudCore
 	
 	func cloudCore(saveToCloudDidFailed error: Error) {
-		print("\(error)")
+		print("SaveToCloudDidFailed: \(error)")
 	}
 	
 	func application(_ application: UIApplication, willFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey : Any]? = nil) -> Bool {

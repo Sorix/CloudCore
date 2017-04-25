@@ -26,10 +26,6 @@
 		E247EF9A1E678EAC00EBD75E /* CustomFunctions.swift in Sources */ = {isa = PBXBuildFile; fileRef = E247EF981E678EA200EBD75E /* CustomFunctions.swift */; };
 		E24F44A61E4595B900F78819 /* CoreDataRelationship.swift in Sources */ = {isa = PBXBuildFile; fileRef = E24F44A51E4595B900F78819 /* CoreDataRelationship.swift */; };
 		E2564BFF1E5061BC002E518B /* ErrorBlockProxy.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2564BFE1E5061BC002E518B /* ErrorBlockProxy.swift */; };
-		E277DB071E7726FB00DC334A /* PublicDatabaseSubscriptions.swift in Sources */ = {isa = PBXBuildFile; fileRef = E277DB061E7726FB00DC334A /* PublicDatabaseSubscriptions.swift */; };
-		E277DB081E7726FB00DC334A /* PublicDatabaseSubscriptions.swift in Sources */ = {isa = PBXBuildFile; fileRef = E277DB061E7726FB00DC334A /* PublicDatabaseSubscriptions.swift */; };
-		E277DB0D1E77F96400DC334A /* FetchPublicSubscriptionsOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = E277DB0C1E77F96400DC334A /* FetchPublicSubscriptionsOperation.swift */; };
-		E277DB0E1E77F96400DC334A /* FetchPublicSubscriptionsOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = E277DB0C1E77F96400DC334A /* FetchPublicSubscriptionsOperation.swift */; };
 		E28F0B8E1E671DFA00BF532A /* CoreDataTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = E29BB2411E439E040020F5B6 /* CoreDataTestCase.swift */; };
 		E28F0B8F1E671DFA00BF532A /* CorrectObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = E29BB2431E43AEAF0020F5B6 /* CorrectObject.swift */; };
 		E28F0B931E671E7400BF532A /* CKRecordTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E28F0B911E671E6500BF532A /* CKRecordTests.swift */; };
@@ -641,7 +637,6 @@
 				E21FA03E1E4A7E7200B1DAA2 /* RecordToCoreDataOperation.swift in Sources */,
 				E2E4D8411E76D5A600550CBE /* FetchAndSaveOperation.swift in Sources */,
 				E2C02A141E4CC2A5001B2871 /* FetchRecordZoneChangesOperation.swift in Sources */,
-				E277DB071E7726FB00DC334A /* PublicDatabaseSubscriptions.swift in Sources */,
 				E2C02A101E4CBEBB001B2871 /* FetchDatabaseChangesOperation.swift in Sources */,
 				E2C02A191E4CDEF1001B2871 /* DeleteFromCoreDataOperation.swift in Sources */,
 				E29BB21A1E4334590020F5B6 /* CloudCoreConfig.swift in Sources */,
@@ -659,7 +654,6 @@
 				E29BB2371E4377F80020F5B6 /* CoreDataAttribute.swift in Sources */,
 				E2E296CA1E49DA0800E7D6ED /* Tokens.swift in Sources */,
 				E2075FFF1E4BCD7E00E31F1F /* ObjectToRecordOperation.swift in Sources */,
-				E277DB0D1E77F96400DC334A /* FetchPublicSubscriptionsOperation.swift in Sources */,
 				E2564BFF1E5061BC002E518B /* ErrorBlockProxy.swift in Sources */,
 				E2C02A0E1E4C99AD001B2871 /* ObjectToRecordConverter.swift in Sources */,
 				E2FA74481E769D9400C3489D /* RecordIDWithDatabase.swift in Sources */,
@@ -679,7 +673,6 @@
 				E2E4D8401E76D5A500550CBE /* FetchAndSaveOperation.swift in Sources */,
 				E29D11911E69B31E00E3DCBF /* RecordToCoreDataOperation.swift in Sources */,
 				E28FBCE41E43DE6F0081FF3B /* CloudCoreConfig.swift in Sources */,
-				E277DB081E7726FB00DC334A /* PublicDatabaseSubscriptions.swift in Sources */,
 				E29D11971E69B32900E3DCBF /* ErrorBlockProxy.swift in Sources */,
 				E29D118E1E69B31E00E3DCBF /* DeleteFromCoreDataOperation.swift in Sources */,
 				E23C47981E48CE9C004310F9 /* CloudSaveOperationQueue.swift in Sources */,
@@ -696,7 +689,6 @@
 				E29D11951E69B32900E3DCBF /* CloudCore.swift in Sources */,
 				E28FBCE31E43DE6F0081FF3B /* CloudCoreError.swift in Sources */,
 				E29D119C1E69B33400E3DCBF /* Tokens.swift in Sources */,
-				E277DB0E1E77F96400DC334A /* FetchPublicSubscriptionsOperation.swift in Sources */,
 				E28FBCE21E43DE6F0081FF3B /* NSManagedObject.swift in Sources */,
 				E29D11941E69B32400E3DCBF /* ObjectToRecordOperation.swift in Sources */,
 				E2FA74491E769D9400C3489D /* RecordIDWithDatabase.swift in Sources */,
