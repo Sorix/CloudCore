@@ -7,8 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		E23BE70C1EA4FD78008F4F23 /* ReferenceProxy in Frameworks */ = {isa = PBXBuildFile; fileRef = E23BE6FB1EA4CC1C008F4F23 /* CloudCore.framework */; };
-		E23BE70D1EA4FD78008F4F23 /* ReferenceProxy in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = E23BE6FB1EA4CC1C008F4F23 /* CloudCore.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		E23BE70C1EA4FD78008F4F23 /* CloudCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E23BE6FB1EA4CC1C008F4F23 /* CloudCore.framework */; };
+		E23BE70D1EA4FD78008F4F23 /* CloudCore.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = E23BE6FB1EA4CC1C008F4F23 /* CloudCore.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		E261E0581EAFEA8A00F1CA61 /* CloudKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E261E0571EAFEA8A00F1CA61 /* CloudKit.framework */; };
 		E26BDD991E75A0AC00994CE7 /* MasterViewController+FRC.swift in Sources */ = {isa = PBXBuildFile; fileRef = E26BDD981E75A0AC00994CE7 /* MasterViewController+FRC.swift */; };
 		E2C3E3541E53299800A733BF /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2C3E3531E53299800A733BF /* AppDelegate.swift */; };
 		E2C3E3571E53299800A733BF /* Model.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = E2C3E3551E53299800A733BF /* Model.xcdatamodeld */; };
@@ -17,7 +18,6 @@
 		E2C3E35E1E53299800A733BF /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = E2C3E35C1E53299800A733BF /* Main.storyboard */; };
 		E2C3E3601E53299800A733BF /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = E2C3E35F1E53299800A733BF /* Assets.xcassets */; };
 		E2C3E3631E53299800A733BF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = E2C3E3611E53299800A733BF /* LaunchScreen.storyboard */; };
-		E2C3E3701E532AA600A733BF /* CloudKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E2C3E36F1E532AA600A733BF /* CloudKit.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -65,7 +65,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				E23BE70D1EA4FD78008F4F23 /* ReferenceProxy in Embed Frameworks */,
+				E23BE70D1EA4FD78008F4F23 /* CloudCore.framework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -74,6 +74,7 @@
 
 /* Begin PBXFileReference section */
 		E23BE6F31EA4CC1C008F4F23 /* CloudCore.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = CloudCore.xcodeproj; path = ../CloudCore.xcodeproj; sourceTree = "<group>"; };
+		E261E0571EAFEA8A00F1CA61 /* CloudKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CloudKit.framework; path = System/Library/Frameworks/CloudKit.framework; sourceTree = SDKROOT; };
 		E26BDD981E75A0AC00994CE7 /* MasterViewController+FRC.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "MasterViewController+FRC.swift"; sourceTree = "<group>"; };
 		E2C3E3501E53299800A733BF /* CloudCoreExample.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CloudCoreExample.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		E2C3E3531E53299800A733BF /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -85,7 +86,6 @@
 		E2C3E3621E53299800A733BF /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		E2C3E3641E53299800A733BF /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		E2C3E36A1E532A6E00A733BF /* CloudCoreExample.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = CloudCoreExample.entitlements; sourceTree = "<group>"; };
-		E2C3E36F1E532AA600A733BF /* CloudKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CloudKit.framework; path = System/Library/Frameworks/CloudKit.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -93,8 +93,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				E2C3E3701E532AA600A733BF /* CloudKit.framework in Frameworks */,
-				E23BE70C1EA4FD78008F4F23 /* ReferenceProxy in Frameworks */,
+				E23BE70C1EA4FD78008F4F23 /* CloudCore.framework in Frameworks */,
+				E261E0581EAFEA8A00F1CA61 /* CloudKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -158,7 +158,7 @@
 		EC26894FD30A1DA2AD22664A /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				E2C3E36F1E532AA600A733BF /* CloudKit.framework */,
+				E261E0571EAFEA8A00F1CA61 /* CloudKit.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -427,7 +427,7 @@
 				INFOPLIST_FILE = Resources/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = uvasily.CloudCoreExample;
+				PRODUCT_BUNDLE_IDENTIFIER = changeMe.change;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 3.0;
 			};
@@ -443,7 +443,7 @@
 				INFOPLIST_FILE = Resources/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = uvasily.CloudCoreExample;
+				PRODUCT_BUNDLE_IDENTIFIER = changeMe.change;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 3.0;
 			};

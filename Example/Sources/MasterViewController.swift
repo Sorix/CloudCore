@@ -21,10 +21,11 @@ class MasterViewController: UITableViewController {
 	
 	// Force refresh data from iCloud
 	@IBAction func refreshButton(_ sender: UIBarButtonItem) {
+		NSLog(">> (CloudCore.fetchAndSave) Started updating from iCloud")
 		CloudCore.fetchAndSave(container: persistentContainer, error: { (error) in
 			print(error)
 		}) {
-			NSLog("Fetch from CloudKit completed")
+			NSLog("<< (CloudCore.fetchAndSave) Fetch from iCloud completed")
 		}
 	}
 	
