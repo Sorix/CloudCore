@@ -66,18 +66,12 @@ open class CloudCore {
 
 	/** Enable observing of changes at local database and saving them to iCloud
 
-	**Note**: If that method was never called before it automaticly invokes `fetchAndSave` method to load initial data from CloudKit
-
 	- Parameters:
 		- persistentContainer: contextes without parents will be observed in that container, because saving of that context results writing information to disk or memory
 		- errorDelegate: all errors that were occurred during upload processes will be reported to `errorDelegat`e and will contain `Error` or `CloudCoreError` objects.
 	*/
 	public static func observeCoreDataChanges(persistentContainer: NSPersistentContainer, errorDelegate: CloudCoreErrorDelegate?) {
 		let errorBlock: ErrorBlock = { errorDelegate?.cloudCore(saveToCloudDidFailed: $0) }
-		
-		if !SetupOperation.isFinishedBefore {
-			fetchAndSave(container: persistentContainer, error: errorBlock, completion: nil)
-		}
 		
 		let listener = CoreDataListener(container: persistentContainer, errorBlock: errorBlock)
 		listener.observe()
