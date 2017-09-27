@@ -5,7 +5,7 @@
 [![Version](https://img.shields.io/cocoapods/v/CloudCore.svg?style=flat)](https://cocoapods.org/pods/CloudCore)
 ![Platform](https://img.shields.io/cocoapods/p/CloudCore.svg?style=flat)
 ![Status](https://img.shields.io/badge/status-alpha-red.svg)
-![Swift](https://img.shields.io/badge/swift-3.0-orange.svg)
+![Swift](https://img.shields.io/badge/swift-4-orange.svg)
 
 **CloudCore** is a framework that manages syncing between iCloud (CloudKit) and Core Data written at native Swift 3.0.
 
@@ -23,7 +23,7 @@
 it, simply add the following line to your Podfile:
 
 ```ruby
-pod 'CloudCore'
+pod 'CloudCore', '~> 1.0'
 ```
 
 ### Swift Package Manager
@@ -33,7 +33,7 @@ Once you have set up Swift package for your application, just add CloudCore as d
 
 ```swift
 dependencies: [
-    .Package(url: "https://github.com/Sorix/CloudCore", majorVersion: 0)
+    .Package(url: "https://github.com/Sorix/CloudCore", majorVersion: 1)
 ]
 ```
 
@@ -59,7 +59,11 @@ func application(_ application: UIApplication, didFinishLaunchingWithOptions lau
 	UIApplication.shared.registerForRemoteNotifications()
 
 	// Enable uploading changed local data to CoreData
-	CloudCore.observeCoreDataChanges(persistentContainer: self.persistentContainer, errorDelegate: nil)
+	CloudCore.observeCoreDataChanges(persistentContainer: persistentContainer, errorDelegate: nil)
+
+  // Sync on startup if push notifications is missed, disabled etc
+  // Also it acts as initial sync if no sync was done before
+  CloudCore.fetchAndSave(container: persistentContainer, error: nil, completion: nil)
 
 	return true
 }
@@ -113,7 +117,7 @@ Remember that User Info always have a priority, so if User Info is founded for t
 You can find example application at [Example](/Example/) directory.
 
 **How to run it:**
-1. Change Bundle Identifier to anything else.
+1. Set Bundle Identifier.
 2. Check that embedded binaries has a correct path (you can remove and add again CloudCore.framework).
 3. If you're using simulator, login at iCloud on it.
 

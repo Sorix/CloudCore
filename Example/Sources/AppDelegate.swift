@@ -28,6 +28,14 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UISplitViewControllerDele
 		// Enable uploading changed local data to CoreData
 		CloudCore.observeCoreDataChanges(persistentContainer: self.persistentContainer, errorDelegate: self)
 		
+		// Sync on startup if push notifications is missed, disabled etc
+		// Also it acts as initial sync if no sync was done before
+		CloudCore.fetchAndSave(container: persistentContainer, error: { (error) in
+			print("\(error)")
+		}) { 
+			NSLog("On-startup sync completed")
+		}
+		
 		return true
 	}
 	

@@ -44,7 +44,9 @@ class FetchRecordZoneChangesOperation: AsynchronousOperation {
 		let fetchOperation = CKFetchRecordZoneChangesOperation(recordZoneIDs: recordZoneIDs, optionsByRecordZoneID: optionsByRecordZoneID)
 		
 		fetchOperation.recordChangedBlock = { self.recordChangedBlock?($0) }
-		fetchOperation.recordWithIDWasDeletedBlock = { self.recordWithIDWasDeletedBlock?($0.0) }
+        fetchOperation.recordWithIDWasDeletedBlock = { recordID, _ in
+            self.recordWithIDWasDeletedBlock?(recordID)
+        }
 		fetchOperation.recordZoneChangeTokensUpdatedBlock = { recordZoneID, serverChangeToken, _ in
 			self.tokens.tokensByRecordZoneID[recordZoneID] = serverChangeToken
 		}
