@@ -29,16 +29,16 @@ class MasterViewController: UITableViewController {
 		}
 	}
 	
-	func insertNewObject(_ sender: Any) {
+	@objc func insertNewObject(_ sender: Any) {
 		let context = self.fetchedResultsController.managedObjectContext
 		let newEvent = Event(context: context)
 		
 		// If appropriate, configure the new managed object.
-		newEvent.timestamp = NSDate()
-		newEvent.asset = UIImageJPEGRepresentation(#imageLiteral(resourceName: "TestImage"), 0.8) as NSData?
+		newEvent.timestamp = Date()
+		newEvent.asset = UIImageJPEGRepresentation(#imageLiteral(resourceName: "TestImage"), 0.8) as Data?
 
 		let subevent = Subevent(context: context)
-		subevent.timestamp = NSDate()
+		subevent.timestamp = Date()
 		subevent.event = newEvent
 		
 		try! context.save()

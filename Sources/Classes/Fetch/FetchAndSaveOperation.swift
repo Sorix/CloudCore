@@ -12,7 +12,7 @@ import CoreData
 /// An operation that fetches data from CloudKit and saves it to Core Data, you can use it without calling `CloudCore.fetchAndSave` methods if you application relies on `Operation`
 public class FetchAndSaveOperation: Operation {
 	
-	private static let allDatabases = [
+    public static let allDatabases = [
 //		CKContainer.default().publicCloudDatabase,
 		CKContainer.default().privateCloudDatabase,
 		CKContainer.default().sharedCloudDatabase
