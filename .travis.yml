@@ -34,7 +34,12 @@ script:
     xcodebuild -project "$EXAMPLE_PROJECT" -scheme "$EXAMPLE_SCHEME" -destination "$DESTINATION" -configuration Debug ONLY_ACTIVE_ARCH=NO build | xcpretty -f `xcpretty-travis-formatter`;
    fi
 
- # Run `pod lib lint` if specified
- - if [ $POD_LINT == "YES" ]; then
-     pod lib lint;
+ # Run on Pull Request
+ - if [ $POD_LINT == "YES" && $TRAVIS_PULL_REQUEST != "false" ]; then
+     pod lib lint --allow-warnings;
+   fi
+
+# Run release to master branch
+ - if [ $POD_LINT == "YES" && $TRAVIS_BRANCH = "master" ]; then
+     pod spec lint --allow-warnings;
    fi
