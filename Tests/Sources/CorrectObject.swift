@@ -26,18 +26,18 @@ struct CorrectObject {
 	let double = Double.greatestFiniteMagnitude
 	let float = Float.greatestFiniteMagnitude
 	
-	let date = NSDate()
+	let date = Date()
 	let bool = true
 	
 	func insert(in context: NSManagedObjectContext) -> TestEntity {
 		let managedObject = TestEntity(context: context)
 		
 		// Header
-		managedObject.recordData = self.recordData as NSData
+		managedObject.recordData = self.recordData as Data
 		
 		// Binary
-		managedObject.binary = binary as NSData
-		managedObject.externalBinary = externalBinary as NSData
+		managedObject.binary = binary as Data
+		managedObject.externalBinary = externalBinary as Data
 		managedObject.transformable = NSData()
 		
 		// Plain-text
@@ -130,9 +130,9 @@ func assertEqualPlainTextAttributes(_ managedObject: TestEntity, _ record: CKRec
 
 func assertEqualBinaryAttributes(_ managedObject: TestEntity, _ record: CKRecord) {
 	if let recordAsset = record.value(forKey: "externalBinary") as! CKAsset? {
-		let downloadedData = NSData(contentsOf: recordAsset.fileURL)
+		let downloadedData = try! Data(contentsOf: recordAsset.fileURL)
 		XCTAssertEqual(managedObject.externalBinary, downloadedData)
 	}
 	
-	XCTAssertEqual(managedObject.binary, record.value(forKey: "binary") as! NSData?)
+	XCTAssertEqual(managedObject.binary, record.value(forKey: "binary") as? Data)
 }

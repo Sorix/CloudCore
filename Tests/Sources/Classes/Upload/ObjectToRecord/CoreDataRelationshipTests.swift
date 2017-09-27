@@ -30,7 +30,7 @@ class CoreDataRelationshipTests: CoreDataTestCase {
 			let user = UserEntity(context: context)
 			try! user.setRecordInformation()
 			let userRecord = try! user.restoreRecordWithSystemFields()!
-			user.recordData = userRecord.encdodedSystemFields as NSData?
+			user.recordData = userRecord.encdodedSystemFields
 			
 			manyUsers.append(user)
 			manyUsersRecordsIDs.append(userRecord.recordID)
