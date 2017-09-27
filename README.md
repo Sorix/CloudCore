@@ -59,7 +59,11 @@ func application(_ application: UIApplication, didFinishLaunchingWithOptions lau
 	UIApplication.shared.registerForRemoteNotifications()
 
 	// Enable uploading changed local data to CoreData
-	CloudCore.observeCoreDataChanges(persistentContainer: self.persistentContainer, errorDelegate: nil)
+	CloudCore.observeCoreDataChanges(persistentContainer: persistentContainer, errorDelegate: nil)
+
+  // Sync on startup if push notifications is missed, disabled etc
+  // Also it acts as initial sync if no sync was done before
+  CloudCore.fetchAndSave(container: persistentContainer, error: nil, completion: nil)
 
 	return true
 }
