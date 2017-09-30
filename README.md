@@ -7,7 +7,7 @@
 ![Status](https://img.shields.io/badge/status-alpha-red.svg)
 ![Swift](https://img.shields.io/badge/swift-4-orange.svg)
 
-**CloudCore** is a framework that manages syncing between iCloud (CloudKit) and Core Data written at native Swift 3.0.
+**CloudCore** is a framework that manages syncing between iCloud (CloudKit) and Core Data written at native Swift.
 
 #### Features
 * Differential sync, only changed values in object are uploaded and downloaded
@@ -61,9 +61,9 @@ func application(_ application: UIApplication, didFinishLaunchingWithOptions lau
 	// Enable uploading changed local data to CoreData
 	CloudCore.observeCoreDataChanges(persistentContainer: persistentContainer, errorDelegate: nil)
 
-  // Sync on startup if push notifications is missed, disabled etc
-  // Also it acts as initial sync if no sync was done before
-  CloudCore.fetchAndSave(container: persistentContainer, error: nil, completion: nil)
+	// Sync on startup if push notifications is missed, disabled etc
+	// Also it acts as initial sync if no sync was done before
+	CloudCore.fetchAndSave(container: persistentContainer, error: nil, completion: nil)
 
 	return true
 }
@@ -84,7 +84,7 @@ func applicationDidEnterBackground(_ application: UIApplication) {
 }
 ```
 
-4. Make first run of your application in development environment, fill example data in Core Data and wait for syncing. CloudCore will create needed CloudKit schemes automatically.
+4. Make first run of your application in a development environment, fill an example data in Core Data and wait until sync completes. CloudCore create needed CloudKit schemes automatically.
 
 ## Service attributes
 CloudCore stores service CloudKit information in managed objects, you need to add that attributes to your Core Data model. If required attributes are not found in entity that entity won't be synced.
@@ -103,9 +103,7 @@ First off CloudCore try to search attributes by analyzing User Info at your mode
 ![Model editor User Info](https://cloud.githubusercontent.com/assets/5610904/24004400/52e0ff94-0a77-11e7-9dd9-e1e24a86add5.png)
 
 ### Default names
-The most simple way is to name attributes with default names because you don't need to specify User Info. Default names are configured at [[configuration struct|Configuration]], if you haven't changed them it will be `recordID` and `recordData`.
-
-Remember that User Info always have a priority, so if User Info is founded for that attribute type it will be used instead of default naming.
+The most simple way is to name attributes with default names because you don't need to specify any User Info: `recordID` and `recordData`.
 
 ### 💡 Tips
 * You can name attribute as you want, value of User Info is not changed (you can create attribute `myid` with User Info: `CloudCoreType: recordID`)
@@ -130,7 +128,6 @@ You can find example application at [Example](/Example/) directory.
 
 - [ ] Sync with public CloudKit database (in development)
 - [ ] Add tvOS support
-- [ ] Increase number of tests
 - [ ] Update documentation with macOS samples
 
 ## Author
