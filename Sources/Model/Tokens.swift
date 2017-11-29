@@ -36,7 +36,7 @@ open class Tokens: NSObject, NSCoding {
 		static let tokensByRecordZoneID = "tokensByRecordZoneID"
 	}
 	
-	override init() {
+	public override init() {
 		super.init()
 	}
 	
