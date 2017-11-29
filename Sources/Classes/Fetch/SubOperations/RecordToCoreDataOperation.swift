@@ -75,7 +75,7 @@ class RecordToCoreDataOperation: Operation {
 			
 			let recordValue = record.value(forKey: key)
 			
-			let attribute = CloudKitAttribute(value: recordValue, entityName: entityName, serviceAttributes: serviceAttributeNames, context: context)
+			let attribute = CloudKitAttribute(value: recordValue, fieldName: key, entityName: entityName, serviceAttributes: serviceAttributeNames, context: context)
 			let coreDataValue = try attribute.makeCoreDataValue()
 			object.setValue(coreDataValue, forKey: key)
 		}
