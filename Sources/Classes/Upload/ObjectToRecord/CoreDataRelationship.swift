@@ -41,7 +41,7 @@ class CoreDataRelationship {
 	func makeRecordValue() throws -> Any? {
 		if self.description.isToMany {
 			guard let objectsSet = value as? NSSet else { return nil }
-			
+	
 			var referenceList = [CKReference]()
 			for (_, managedObject) in objectsSet.enumerated() {
 				guard let managedObject = managedObject as? NSManagedObject,
@@ -49,6 +49,8 @@ class CoreDataRelationship {
 
 				referenceList.append(reference)
 			}
+			
+			if referenceList.isEmpty { return nil }
 			
 			return referenceList
 		} else {
