@@ -14,7 +14,7 @@ class CoreDataTestCase: XCTestCase {
 	
 	private(set) var persistentContainer: NSPersistentContainer!
 	
-	private func loadPersistenContainer() -> NSPersistentContainer {
+	func loadPersistenContainer() -> NSPersistentContainer {
 		let bundle = Bundle(for: CoreDataTestCase.self)
 		let url = bundle.url(forResource: "model", withExtension: "momd")
 		let model = NSManagedObjectModel(contentsOf: url!)!
@@ -66,3 +66,4 @@ class CoreDataTestCase: XCTestCase {
 		}
 	}
 }
+

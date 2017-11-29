@@ -7,13 +7,13 @@
 ![Status](https://img.shields.io/badge/status-alpha-red.svg)
 ![Swift](https://img.shields.io/badge/swift-4-orange.svg)
 
-**CloudCore** is a framework that manages syncing between iCloud (CloudKit) and Core Data written at native Swift.
+**CloudCore** is a framework that manages syncing between iCloud (CloudKit) and Core Data written on native Swift.
 
 #### Features
-* Differential sync, only changed values in object are uploaded and downloaded
+* Differential sync, only changed values in objects are uploaded and downloaded
 * Support of all relationship types
 * Respect of Core Data options (cascade deletions, external storage options)
-* Unit and performance tests for the most offline methods
+* Unit and performance tests
 * Private and shared CloudKit databases (to be tested) are supported
 
 ## Installation
@@ -93,17 +93,17 @@ Required attributes for each synced entity:
 1. *Record Data* attribute with `Binary` type
 2. *Record ID* attribute with `String` type
 
-You may specify attribute's names in 2 ways (you may combine that ways in different entities).
+You may specify attributes' names in 2 ways (you may combine that ways in different entities).
 
 ### User Info
-First off CloudCore try to search attributes by analyzing User Info at your model, you may specify attribute's key as `CloudCoreType` to mark that attribute as service one. Values are:
+First off CloudCore try to search attributes by looking up User Info at your model, you may specify User Info key `CloudCoreType` fro attribute to mark one as service one. Values are:
 * *Record Data* value is `recordData`.
 * *Record ID* value is `recordID`.
 
 ![Model editor User Info](https://cloud.githubusercontent.com/assets/5610904/24004400/52e0ff94-0a77-11e7-9dd9-e1e24a86add5.png)
 
 ### Default names
-The most simple way is to name attributes with default names because you don't need to specify any User Info: `recordID` and `recordData`.
+The most simple way is to name attributes with default names because you don't need to specify any User Info.
 
 ### 💡 Tips
 * You can name attribute as you want, value of User Info is not changed (you can create attribute `myid` with User Info: `CloudCoreType: recordID`)
@@ -124,11 +124,26 @@ You can find example application at [Example](/Example/) directory.
 * **refresh** button calls `fetchAndSave` to fetch data from Cloud. That is useful button for simulators because Simulator unable to receive push notifications
 * Use [CloudKit dashboard](https://icloud.developer.apple.com/dashboard/) to make changes and see it at application, and make change in application and see ones in dashboard. Don't forget to refresh dashboard's page because it doesn't update data on-the-fly.
 
+## Tests
+CloudKit objects can't be mocked up, that's why I create 2 different types of tests:
+
+* `Tests/Unit` here I placed tests that can be performed without CloudKit connection. That tests are executed when you submit a Pull Request.
+* `Tests/CloudKit` here are located "manually" tests, they are most important tests that can be run only in configured environment because they work with CloudKit and your Apple ID.
+
+  Nothing will be wrong with your account, tests use only private `CKDatabase` for application.
+
+  **Please run these tests before opening pull requests.**
+ To run them you need to:
+  1. Change `TestableApp` bundle id.
+  2. Run in simulator or real device `TestableApp` target.
+  3. Configure iCloud on that device: Settings.app → iCloud → Login.
+  4. Run `CloudKitTests`, they are attached to `TestableApp`, so CloudKit connection will work.
+
+
 ## Roadmap
 
-- [ ] Sync with public CloudKit database (in development)
-- [ ] Add tvOS support
-- [ ] Update documentation with macOS samples
+- [ ] Add more tests, it's crucial for such type of project
+- [ ] Add support of migration of existing databases
 
 ## Author
 

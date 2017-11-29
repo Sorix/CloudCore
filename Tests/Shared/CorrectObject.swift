@@ -29,6 +29,11 @@ struct CorrectObject {
 	let date = Date()
 	let bool = true
 	
+	let toOneUsername = "toOneUsername"
+	let toManyUsername = "toManyUsername"
+	let manyRelationshipsCount = 2
+	
+	@discardableResult
 	func insert(in context: NSManagedObjectContext) -> TestEntity {
 		let managedObject = TestEntity(context: context)
 		
@@ -53,13 +58,21 @@ struct CorrectObject {
 		managedObject.date = self.date
 		managedObject.bool = self.bool
 		
-//		// Relationships
-//		let user1 = UserEntity(context: context)
-//		let user2 = UserEntity(context: context)
-//		managedObject.singleRelationship = user1
-//		managedObject.manyRelationship = NSSet(array: [user1, user2])
-		
 		return managedObject
+	}
+	
+	func insertRelationships(in context: NSManagedObjectContext, testObject: TestEntity) {
+		let userSingle = UserEntity(context: context)
+		userSingle.name = toOneUsername
+		
+		let userMany1 = UserEntity(context: context)
+		userMany1.name = toManyUsername
+		
+		let userMany2 = UserEntity(context: context)
+		userMany2.name = toManyUsername
+		
+		testObject.singleRelationship = userSingle
+		testObject.manyRelationship = NSSet(array: [userMany1, userMany2])
 	}
 	
 	func makeRecord() -> CKRecord {

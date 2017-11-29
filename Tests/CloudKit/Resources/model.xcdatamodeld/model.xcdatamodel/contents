@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="13533" systemVersion="17B48" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
+    <entity name="IncorrectEntity" representedClassName="IncorrectEntity" syncable="YES" codeGenerationType="class"/>
+    <entity name="TestEntity" representedClassName="TestEntity" syncable="YES" codeGenerationType="class">
+        <attribute name="binary" optional="YES" attributeType="Binary" syncable="YES"/>
+        <attribute name="bool" optional="YES" attributeType="Boolean" usesScalarValueType="YES" syncable="YES"/>
+        <attribute name="date" optional="YES" attributeType="Date" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="decimal" optional="YES" attributeType="Decimal" defaultValueString="0.0" syncable="YES"/>
+        <attribute name="double" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES" syncable="YES"/>
+        <attribute name="empty" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="externalBinary" optional="YES" attributeType="Binary" allowsExternalBinaryDataStorage="YES" syncable="YES"/>
+        <attribute name="float" optional="YES" attributeType="Float" defaultValueString="0.0" usesScalarValueType="YES" syncable="YES"/>
+        <attribute name="int16" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES" syncable="YES"/>
+        <attribute name="int32" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES" syncable="YES"/>
+        <attribute name="int64" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES" syncable="YES"/>
+        <attribute name="recordData" optional="YES" attributeType="Binary" syncable="YES">
+            <userInfo>
+                <entry key="CloudCoreType" value="recordData"/>
+            </userInfo>
+        </attribute>
+        <attribute name="recordID" optional="YES" attributeType="String" syncable="YES">
+            <userInfo>
+                <entry key="CloudCoreType" value="recordID"/>
+            </userInfo>
+        </attribute>
+        <attribute name="string" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="transformable" optional="YES" attributeType="Transformable" syncable="YES"/>
+        <relationship name="manyRelationship" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="UserEntity" inverseName="tests" inverseEntity="UserEntity" syncable="YES"/>
+        <relationship name="singleRelationship" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="UserEntity" inverseName="test" inverseEntity="UserEntity" syncable="YES"/>
+    </entity>
+    <entity name="UserEntity" representedClassName="UserEntity" syncable="YES" codeGenerationType="class">
+        <attribute name="name" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="recordData" optional="YES" attributeType="Binary" syncable="YES">
+            <userInfo>
+                <entry key="CloudCoreType" value="recordData"/>
+            </userInfo>
+        </attribute>
+        <attribute name="recordID" optional="YES" attributeType="String" syncable="YES">
+            <userInfo>
+                <entry key="CloudCoreType" value="recordID"/>
+            </userInfo>
+        </attribute>
+        <relationship name="test" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="TestEntity" inverseName="singleRelationship" inverseEntity="TestEntity" syncable="YES"/>
+        <relationship name="tests" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="TestEntity" inverseName="manyRelationship" inverseEntity="TestEntity" syncable="YES"/>
+    </entity>
+    <elements>
+        <element name="IncorrectEntity" positionX="-36" positionY="36" width="128" height="45"/>
+        <element name="TestEntity" positionX="-63" positionY="-18" width="128" height="300"/>
+        <element name="UserEntity" positionX="-54" positionY="0" width="128" height="120"/>
+    </elements>
+</model>
