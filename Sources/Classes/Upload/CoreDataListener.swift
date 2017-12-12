@@ -8,6 +8,7 @@
 
 import Foundation
 import CoreData
+import CloudKit
 
 /// Class responsible for taking action on Core Data save notifications
 class CoreDataListener {
@@ -18,10 +19,13 @@ class CoreDataListener {
 
 	let cloudContextName = "CloudCoreSync"
 	
+	let errorBlock: ErrorBlock?
+	
 	public init(container: NSPersistentContainer, errorBlock: ErrorBlock?) {
+		self.errorBlock = errorBlock
 		self.container = container
+		
 		converter.errorBlock = errorBlock
-		cloudSaveOperationQueue.errorBlock = errorBlock
 	}
 	
 	/// Observe Core Data willSave and didSave notifications
@@ -68,10 +72,39 @@ class CoreDataListener {
 			backgroundContext.name = listener.cloudContextName
 			
 			let records = listener.converter.confirmConvertOperationsAndWait(in: backgroundContext)
+			listener.cloudSaveOperationQueue.errorBlock = { listener.handle(error: $0, parentContext: backgroundContext) }
 			listener.cloudSaveOperationQueue.addOperations(recordsToSave: records.recordsToSave, recordIDsToDelete: records.recordIDsToDelete)
 			listener.cloudSaveOperationQueue.waitUntilAllOperationsAreFinished()
+			
+			do {
+				if backgroundContext.hasChanges {
+					try backgroundContext.save()
+				}
+			} catch {
+				listener.errorBlock?(error)
+			}
 			
 			NotificationCenter.default.post(name: .CloudCoreDidSyncToCloud, object: nil)
 		}
 	}
+	
+	private func handle(error: Error, parentContext: NSManagedObjectContext) {
+		guard let resolveOperation = ResolveErrorOperation(error: error, parentContext: parentContext, managedObjectModel: container.managedObjectModel) else {
+			errorBlock?(error)
+			return
+		}
+		resolveOperation.errorBlock = errorBlock
+			
+		// Try to resolve an error
+		self.cloudSaveOperationQueue.cancelAllOperations()
+		
+		resolveOperation.completionBlock = {
+			if !resolveOperation.isResolved {
+				self.errorBlock?(error)
+				return
+			}
+		}
+		cloudSaveOperationQueue.addOperation(resolveOperation)
+	}
+
 }

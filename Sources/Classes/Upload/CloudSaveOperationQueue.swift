@@ -37,24 +37,13 @@ class CloudSaveOperationQueue: OperationQueue {
 			}
 		}
 		
-		let initialSetupOperation = makeSetupOperationIfNeeded()
-		
 		// Perform
 		for databaseModifier in datasource {
-			addOperation(recordsToSave: databaseModifier.save, recordIDsToDelete: databaseModifier.delete, database: databaseModifier.database, dependency: initialSetupOperation)
+			addOperation(recordsToSave: databaseModifier.save, recordIDsToDelete: databaseModifier.delete, database: databaseModifier.database)
 		}
 	}
 	
-	/// - Returns: `SetupOperation` if setup wasn't performed before otherwise `nil` will be returned
-	func makeSetupOperationIfNeeded() -> SetupOperation? {
-		if SetupOperation.isFinishedBefore { return nil }
-		
-		let setupOperation = SetupOperation()
-		setupOperation.errorBlock = errorBlock
-		return setupOperation
-	}
-	
-	private func addOperation(recordsToSave: [CKRecord], recordIDsToDelete: [CKRecordID], database: CKDatabase, dependency: Operation?) {
+	private func addOperation(recordsToSave: [CKRecord], recordIDsToDelete: [CKRecordID], database: CKDatabase) {
 		// Modify CKRecord Operation
 		let modifyOperation = CKModifyRecordsOperation(recordsToSave: recordsToSave, recordIDsToDelete: recordIDsToDelete)
 		
@@ -66,18 +55,14 @@ class CloudSaveOperationQueue: OperationQueue {
 			}
 		}
 		
-		modifyOperation.modifyRecordsCompletionBlock = { [weak self] savedRecords, _, error in
+		modifyOperation.modifyRecordsCompletionBlock = { _, _, error in
 			if let error = error {
-				self?.errorBlock?(error)
+				self.errorBlock?(error)
 			}
 		}
 		
 		modifyOperation.database = database
-		
-		if let dependency = dependency {
-			modifyOperation.addDependency(dependency)
-		}
-		
+
 		self.addOperation(modifyOperation)
 	}
 	

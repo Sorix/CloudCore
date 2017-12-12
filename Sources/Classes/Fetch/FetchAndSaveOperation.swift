@@ -12,11 +12,11 @@ import CoreData
 /// An operation that fetches data from CloudKit and saves it to Core Data, you can use it without calling `CloudCore.fetchAndSave` methods if you application relies on `Operation`
 public class FetchAndSaveOperation: Operation {
 	
-    /// Private and Shared cloud databases
-    public static let allDatabases = [
-//		CKContainer.default().publicCloudDatabase,
+	/// Private cloud database
+	public static let allDatabases = [
+		//		CKContainer.default().publicCloudDatabase,
 		CKContainer.default().privateCloudDatabase,
-		CKContainer.default().sharedCloudDatabase
+//		CKContainer.default().sharedCloudDatabase
 	]
 	
 	public typealias NotificationUserInfo = [AnyHashable : Any]
@@ -44,19 +44,11 @@ public class FetchAndSaveOperation: Operation {
 		
 		fetchOperationQueue.name = "CloudCoreFetchFromCloud"
 		coreDataOperationQueue.name = "CloudCoreFetchFromCloud CoreData"
-		coreDataOperationQueue.maxConcurrentOperationCount = 1
 	}
 	
 	/// Performs the receiver’s non-concurrent task.
 	override public func main() {
 		if self.isCancelled { return }
-		
-		// Check if CloudCore is initially setupped
-		if !SetupOperation.isFinishedBefore {
-			let setupOperation = SetupOperation()
-			setupOperation.errorBlock = errorBlock
-			setupOperation.start()
-		}
 
 		NotificationCenter.default.post(name: .CloudCoreWillSyncFromCloud, object: nil)
 		
@@ -64,8 +56,7 @@ public class FetchAndSaveOperation: Operation {
 		backgroundContext.name = CloudCore.config.contextName
 		
 		for database in self.databases {
-			// It will subadd fetch and save operations to queue
-			self.addFetchDatabaseChangesOperation(from: database, using: backgroundContext)
+			self.addRecordZoneChangesOperation(recordZoneIDs: [CloudCore.config.zoneID], database: database, parentContext: backgroundContext)
 		}
 		
 		self.fetchOperationQueue.waitUntilAllOperationsAreFinished()
@@ -89,20 +80,6 @@ public class FetchAndSaveOperation: Operation {
 		super.cancel()
 	}
 	
-	private func addFetchDatabaseChangesOperation(from database: CKDatabase, using context: NSManagedObjectContext) {
-		let databaseChangesOperation = FetchDatabaseChangesOperation(from: database, zoneName: CloudCore.config.zoneID.zoneName, tokens: tokens)
-		
-		databaseChangesOperation.fetchDatabaseChangesCompletionBlock = { recordZoneIDs, error in
-			if let error = error {
-				self.errorBlock?(error)
-			} else {
-				self.addRecordZoneChangesOperation(recordZoneIDs: recordZoneIDs, database: database, parentContext: context)
-			}
-		}
-		
-		fetchOperationQueue.addOperation(databaseChangesOperation)
-	}
-	
 	private func addRecordZoneChangesOperation(recordZoneIDs: [CKRecordZoneID], database: CKDatabase, parentContext: NSManagedObjectContext) {
 		if recordZoneIDs.isEmpty { return }
 		
@@ -122,9 +99,25 @@ public class FetchAndSaveOperation: Operation {
 			self.coreDataOperationQueue.addOperation(deleteOperation)
 		}
 		
-		recordZoneChangesOperation.errorBlock = { self.errorBlock?($0) }
+		recordZoneChangesOperation.errorBlock = { self.handle(recordZoneChangesError: $0, parentContext: parentContext) }
 		
 		fetchOperationQueue.addOperation(recordZoneChangesOperation)
 	}
 
+	private func handle(recordZoneChangesError: Error, parentContext: NSManagedObjectContext) {
+		guard let cloudError = recordZoneChangesError as? CKError,
+			case .userDeletedZone = cloudError.code else {
+			errorBlock?(recordZoneChangesError)
+			return
+		}
+		
+		// If user purged cloud database, we need to delete local cache (according Apple Guidelines)
+		fetchOperationQueue.cancelAllOperations()
+		coreDataOperationQueue.cancelAllOperations()
+
+		let purgeOperation = PurgeLocalDatabaseOperation(parentContext: parentContext, managedObjectModel: persistentContainer.managedObjectModel)
+		purgeOperation.errorBlock = { self.errorBlock?($0) }
+		coreDataOperationQueue.addOperation(purgeOperation)
+	}
+	
 }

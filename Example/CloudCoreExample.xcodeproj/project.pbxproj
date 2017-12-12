@@ -21,6 +21,20 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		D9DC6DC01FDFEFF100017652 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = E23BE6F31EA4CC1C008F4F23 /* CloudCore.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = D9B3C6F31FCEF38D00CDB7FF;
+			remoteInfo = TestableApp;
+		};
+		D9DC6DC21FDFEFF100017652 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = E23BE6F31EA4CC1C008F4F23 /* CloudCore.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = D9B3C71C1FCEF96D00CDB7FF;
+			remoteInfo = CloudKitTests;
+		};
 		E23BE6FA1EA4CC1C008F4F23 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = E23BE6F31EA4CC1C008F4F23 /* CloudCore.xcodeproj */;
@@ -108,6 +122,8 @@
 				E23BE6FD1EA4CC1C008F4F23 /* CloudCore.framework */,
 				E23BE6FF1EA4CC1C008F4F23 /* CloudCoreTests-iOS.xctest */,
 				E23BE7011EA4CC1C008F4F23 /* CloudCoreTests-macOS.xctest */,
+				D9DC6DC11FDFEFF100017652 /* TestableApp.app */,
+				D9DC6DC31FDFEFF100017652 /* CloudKitTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -197,6 +213,7 @@
 				TargetAttributes = {
 					E2C3E34F1E53299800A733BF = {
 						CreatedOnToolsVersion = 8.2.1;
+						DevelopmentTeam = 7X2PJ6H6YM;
 						LastSwiftMigration = 0900;
 						ProvisioningStyle = Automatic;
 						SystemCapabilities = {
@@ -238,6 +255,20 @@
 /* End PBXProject section */
 
 /* Begin PBXReferenceProxy section */
+		D9DC6DC11FDFEFF100017652 /* TestableApp.app */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.application;
+			path = TestableApp.app;
+			remoteRef = D9DC6DC01FDFEFF100017652 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		D9DC6DC31FDFEFF100017652 /* CloudKitTests.xctest */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.cfbundle;
+			path = CloudKitTests.xctest;
+			remoteRef = D9DC6DC21FDFEFF100017652 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
 		E23BE6FB1EA4CC1C008F4F23 /* CloudCore.framework */ = {
 			isa = PBXReferenceProxy;
 			fileType = wrapper.framework;
@@ -435,10 +466,11 @@
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = Resources/CloudCoreExample.entitlements;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = 7X2PJ6H6YM;
 				INFOPLIST_FILE = Resources/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = changeMe.change2;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_SWIFT3_OBJC_INFERENCE = Off;
 				SWIFT_VERSION = 4.0;
@@ -451,10 +483,11 @@
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = Resources/CloudCoreExample.entitlements;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = 7X2PJ6H6YM;
 				INFOPLIST_FILE = Resources/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = changeMe.change2;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_SWIFT3_OBJC_INFERENCE = Off;
 				SWIFT_VERSION = 4.0;

@@ -37,7 +37,21 @@ class ObjectToRecordConverter {
 			guard let serviceAttributeNames = object.entity.serviceAttributeNames else { continue }
 			
 			do {
-				let recordWithSystemFields = try object.setRecordInformation()
+				let recordWithSystemFields: CKRecord
+	
+				if let restoredRecord = try object.restoreRecordWithSystemFields() {
+					switch changeType {
+					case .inserted:
+						// Create record with same ID but wihout token data (that record was accidently deleted from CloudKit perhaps, recordID exists in CoreData, but record doesn't exist in CloudKit
+						let recordID = restoredRecord.recordID
+						recordWithSystemFields = CKRecord(recordType: restoredRecord.recordType, recordID: recordID)
+					case .updated:
+						recordWithSystemFields = restoredRecord
+					}
+				} else {
+					recordWithSystemFields = try object.setRecordInformation()
+				}
+				
 				var changedAttributes: [String]?
 				
 				// Save changes keys only for updated object, for inserted objects full sync will be used

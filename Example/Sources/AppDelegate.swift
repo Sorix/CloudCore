@@ -27,11 +27,14 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UISplitViewControllerDele
 		
 		// Enable uploading changed local data to CoreData
 		CloudCore.observeCoreDataChanges(persistentContainer: self.persistentContainer, errorDelegate: self)
+		CloudCore.observeCloudKitChanges { (error) in
+			print("Error while tried to subscribe for observing CloudKit changes: \(error)")
+		}
 		
 		// Sync on startup if push notifications is missed, disabled etc
 		// Also it acts as initial sync if no sync was done before
-		CloudCore.fetchAndSave(container: persistentContainer, error: { (error) in
-			print("\(error)")
+		CloudCore.fetchAndSave(to: persistentContainer, error: { (error) in
+			print("On-startup sync error: \(error)")
 		}) { 
 			NSLog("On-startup sync completed")
 		}
@@ -44,7 +47,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UISplitViewControllerDele
 		// Check if it CloudKit's and CloudCore notification
 		if CloudCore.isCloudCoreNotification(withUserInfo: userInfo) {
 			// Fetch changed data from iCloud
-			CloudCore.fetchAndSave(using: userInfo, container: self.persistentContainer, error: nil, completion: { (fetchResult) in
+			CloudCore.fetchAndSave(using: userInfo, to: persistentContainer, error: {
+				print("fetchAndSave from didReceiveRemoteNotification error: \($0)")
+			}, completion: { (fetchResult) in
 				completionHandler(fetchResult.uiBackgroundFetchResult)
 			})
 		}
@@ -114,6 +119,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UISplitViewControllerDele
 	            fatalError("Unresolved error \(error), \(error.userInfo)")
 	        }
 	    })
+		container.viewContext.automaticallyMergesChangesFromParent = true
 	    return container
 	}()
 

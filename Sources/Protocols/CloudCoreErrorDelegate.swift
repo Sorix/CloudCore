@@ -8,7 +8,7 @@
 
 import Foundation
 
-public protocol CloudCoreErrorDelegate {
+public protocol CloudCoreErrorDelegate: class {
 
 	/// Save to cloud operation throwed an error
 	///

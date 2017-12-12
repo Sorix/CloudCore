@@ -71,7 +71,9 @@ open class CloudCore {
 		- errorDelegate: all errors that were occurred during upload processes will be reported to `errorDelegat`e and will contain `Error` or `CloudCoreError` objects.
 	*/
 	public static func observeCoreDataChanges(persistentContainer: NSPersistentContainer, errorDelegate: CloudCoreErrorDelegate?) {
-		let errorBlock: ErrorBlock = { errorDelegate?.cloudCore(saveToCloudDidFailed: $0) }
+		let errorBlock: ErrorBlock = { [weak errorDelegate] in
+			errorDelegate?.cloudCore(saveToCloudDidFailed: $0)
+		}
 		
 		let listener = CoreDataListener(container: persistentContainer, errorBlock: errorBlock)
 		listener.observe()
@@ -79,12 +81,18 @@ open class CloudCore {
 	}
 	
 	/// Remove oberserver that was created by `observeCoreDataChanges` method
-	public static func removeCoreDataObserver() {
+	public static func stopObservingCoreDataChanges() {
 		coreDataListener?.stopObserving()
 		coreDataListener = nil
 	}
 	
 	// MARK: Fetch from cloud
+	
+	public static func observeCloudKitChanges(onError: ErrorBlock?) {
+		let subscribeOperation = SubscribeOperation()
+		subscribeOperation.errorBlock = { onError?($0) }
+		subscribeOperation.start()
+	}
 
 	/** Fetch changes from one CloudKit database and save it to CoreData
 
@@ -96,7 +104,7 @@ open class CloudCore {
 		- error: block will be called every time when error occurs during process
 		- completion: `FetchResult` enumeration with results of operation
 	*/
-	public static func fetchAndSave(using userInfo: NotificationUserInfo, container: NSPersistentContainer, error: ErrorBlock?, completion: @escaping (_ fetchResult: FetchResult) -> Void) {
+	public static func fetchAndSave(using userInfo: NotificationUserInfo, to container: NSPersistentContainer, error: ErrorBlock?, completion: @escaping (_ fetchResult: FetchResult) -> Void) {
 		guard let cloudDatabase = self.database(for: userInfo) else {
 			completion(.noData)
 			return
@@ -123,7 +131,7 @@ open class CloudCore {
 		- error: block will be called every time when error occurs during process
 		- completion: `FetchResult` enumeration with results of operation
 	*/
-	public static func fetchAndSave(container: NSPersistentContainer, error: ErrorBlock?, completion: (() -> Void)?) {
+	public static func fetchAndSave(to container: NSPersistentContainer, error: ErrorBlock?, completion: (() -> Void)?) {
 		DispatchQueue.global(qos: .utility).async {
 			let operation = FetchAndSaveOperation(persistentContainer: container)
 			operation.errorBlock = error
