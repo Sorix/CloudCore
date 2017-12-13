@@ -12,32 +12,23 @@ import CloudCore
 
 let persistentContainer = (UIApplication.shared.delegate as! AppDelegate).persistentContainer
 
-@UIApplicationMain
-class AppDelegate: UIResponder, UIApplicationDelegate, UISplitViewControllerDelegate, CloudCoreErrorDelegate {
-
-	// MARK: - CloudCore
+extension AppDelegate: CloudCoreErrorDelegate {
 	
-	func cloudCore(saveToCloudDidFailed error: Error) {
-		print("SaveToCloudDidFailed: \(error)")
+	func cloudCore(error: Error, module: Module?) {
+		print("CloudCore error detected in module \(String(describing: module)): \(error)")
 	}
 	
+}
+
+@UIApplicationMain
+class AppDelegate: UIResponder, UIApplicationDelegate, UISplitViewControllerDelegate {
+
 	func application(_ application: UIApplication, willFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey : Any]? = nil) -> Bool {
 		// Register for push notifications about changes
 		UIApplication.shared.registerForRemoteNotifications()
 		
 		// Enable uploading changed local data to CoreData
-		CloudCore.observeCoreDataChanges(persistentContainer: self.persistentContainer, errorDelegate: self)
-		CloudCore.observeCloudKitChanges { (error) in
-			print("Error while tried to subscribe for observing CloudKit changes: \(error)")
-		}
-		
-		// Sync on startup if push notifications is missed, disabled etc
-		// Also it acts as initial sync if no sync was done before
-		CloudCore.fetchAndSave(to: persistentContainer, error: { (error) in
-			print("On-startup sync error: \(error)")
-		}) { 
-			NSLog("On-startup sync completed")
-		}
+		CloudCore.enable(persistentContainer: persistentContainer, errorDelegate: self)
 		
 		return true
 	}

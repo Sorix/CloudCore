@@ -77,6 +77,7 @@ class CoreDataListener {
 			listener.cloudSaveOperationQueue.waitUntilAllOperationsAreFinished()
 			
 			do {
+				print("Context saved")
 				if backgroundContext.hasChanges {
 					try backgroundContext.save()
 				}
@@ -89,22 +90,37 @@ class CoreDataListener {
 	}
 	
 	private func handle(error: Error, parentContext: NSManagedObjectContext) {
-		guard let resolveOperation = ResolveErrorOperation(error: error, parentContext: parentContext, managedObjectModel: container.managedObjectModel) else {
+		guard let cloudError = error as? CKError else {
 			errorBlock?(error)
 			return
 		}
-		resolveOperation.errorBlock = errorBlock
+
+		switch cloudError.code {
+		// Zone was accidentally deleted (NOT PURGED), we need to reupload all data accroding Apple Guidelines
+		case .zoneNotFound:
+			cloudSaveOperationQueue.cancelAllOperations()
 			
-		// Try to resolve an error
-		self.cloudSaveOperationQueue.cancelAllOperations()
-		
-		resolveOperation.completionBlock = {
-			if !resolveOperation.isResolved {
-				self.errorBlock?(error)
-				return
+			// Create CloudCore Zone
+			let createZoneOperation = CreateCloudCoreZoneOperation()
+			createZoneOperation.errorBlock = {
+				self.errorBlock?($0)
+				self.cloudSaveOperationQueue.cancelAllOperations()
 			}
+			
+			// Subscribe operation
+			let subscribeOperation = SubscribeOperation()
+			subscribeOperation.errorBlock = errorBlock
+			subscribeOperation.addDependency(createZoneOperation)
+			
+			// Upload all local data
+			let uploadOperation = UploadAllLocalDataOperation(parentContext: parentContext, managedObjectModel: container.managedObjectModel)
+			uploadOperation.errorBlock = errorBlock
+			uploadOperation.addDependency(subscribeOperation)
+			
+			cloudSaveOperationQueue.addOperations([createZoneOperation, subscribeOperation, uploadOperation], waitUntilFinished: true)
+		case .operationCancelled: return
+		default: errorBlock?(cloudError)
 		}
-		cloudSaveOperationQueue.addOperation(resolveOperation)
 	}
 
 }

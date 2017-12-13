@@ -7,16 +7,12 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		D9089D4A1FE14E57000FC60C /* SetupOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9089D491FE14E57000FC60C /* SetupOperation.swift */; };
 		D985DE9D1FDFF9D400236870 /* PurgeLocalDatabaseOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = D985DE9C1FDFF9D400236870 /* PurgeLocalDatabaseOperation.swift */; };
 		D985DE9E1FDFF9D400236870 /* PurgeLocalDatabaseOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = D985DE9C1FDFF9D400236870 /* PurgeLocalDatabaseOperation.swift */; };
-		D985DEA01FDFFF4A00236870 /* ResolveErrorOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = D985DE9F1FDFFF4A00236870 /* ResolveErrorOperation.swift */; };
-		D985DEA11FDFFF4A00236870 /* ResolveErrorOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = D985DE9F1FDFFF4A00236870 /* ResolveErrorOperation.swift */; };
 		D985DEA41FE026D400236870 /* CreateCloudCoreZoneOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = D985DEA31FE026D400236870 /* CreateCloudCoreZoneOperation.swift */; };
-		D985DEA51FE026D400236870 /* CreateCloudCoreZoneOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = D985DEA31FE026D400236870 /* CreateCloudCoreZoneOperation.swift */; };
 		D985DEA81FE0292000236870 /* SubscribeOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = D985DEA71FE0292000236870 /* SubscribeOperation.swift */; };
-		D985DEA91FE0292000236870 /* SubscribeOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = D985DEA71FE0292000236870 /* SubscribeOperation.swift */; };
 		D985DEAB1FE0335800236870 /* UploadAllLocalDataOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = D985DEAA1FE0335800236870 /* UploadAllLocalDataOperation.swift */; };
-		D985DEAC1FE0335800236870 /* UploadAllLocalDataOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = D985DEAA1FE0335800236870 /* UploadAllLocalDataOperation.swift */; };
 		D985DEAE1FE034A900236870 /* NSManagedObjectModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D985DEAD1FE034A900236870 /* NSManagedObjectModel.swift */; };
 		D985DEAF1FE034A900236870 /* NSManagedObjectModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D985DEAD1FE034A900236870 /* NSManagedObjectModel.swift */; };
 		D9B3C6F61FCEF38D00CDB7FF /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9B3C6F51FCEF38D00CDB7FF /* AppDelegate.swift */; };
@@ -148,8 +144,8 @@
 		D5C629401C3A7FAA007F7B7C /* CloudCore.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = CloudCore.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		D5C6298B1C3A8BBD007F7B7C /* Info-iOS.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "Info-iOS.plist"; sourceTree = "<group>"; };
 		D5C6298C1C3A8BBD007F7B7C /* Info-Mac.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "Info-Mac.plist"; sourceTree = "<group>"; };
+		D9089D491FE14E57000FC60C /* SetupOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetupOperation.swift; sourceTree = "<group>"; };
 		D985DE9C1FDFF9D400236870 /* PurgeLocalDatabaseOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurgeLocalDatabaseOperation.swift; sourceTree = "<group>"; };
-		D985DE9F1FDFFF4A00236870 /* ResolveErrorOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResolveErrorOperation.swift; sourceTree = "<group>"; };
 		D985DEA31FE026D400236870 /* CreateCloudCoreZoneOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateCloudCoreZoneOperation.swift; sourceTree = "<group>"; };
 		D985DEA71FE0292000236870 /* SubscribeOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscribeOperation.swift; sourceTree = "<group>"; };
 		D985DEAA1FE0335800236870 /* UploadAllLocalDataOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UploadAllLocalDataOperation.swift; sourceTree = "<group>"; };
@@ -310,23 +306,15 @@
 			path = Sources;
 			sourceTree = "<group>";
 		};
-		D985DEA61FE0278500236870 /* Helper Operations */ = {
+		D9089D481FE14E4A000FC60C /* Setup Operation */ = {
 			isa = PBXGroup;
 			children = (
-				D985DE9C1FDFF9D400236870 /* PurgeLocalDatabaseOperation.swift */,
-				D985DEA71FE0292000236870 /* SubscribeOperation.swift */,
-			);
-			path = "Helper Operations";
-			sourceTree = "<group>";
-		};
-		D985DEB61FE0471600236870 /* Resolve Error */ = {
-			isa = PBXGroup;
-			children = (
-				D985DE9F1FDFFF4A00236870 /* ResolveErrorOperation.swift */,
+				D9089D491FE14E57000FC60C /* SetupOperation.swift */,
 				D985DEA31FE026D400236870 /* CreateCloudCoreZoneOperation.swift */,
 				D985DEAA1FE0335800236870 /* UploadAllLocalDataOperation.swift */,
+				D985DEA71FE0292000236870 /* SubscribeOperation.swift */,
 			);
-			path = "Resolve Error";
+			path = "Setup Operation";
 			sourceTree = "<group>";
 		};
 		D9B3C6EE1FCEF30600CDB7FF /* Unit */ = {
@@ -401,9 +389,8 @@
 		E2075FF11E4BB6EF00E31F1F /* Classes */ = {
 			isa = PBXGroup;
 			children = (
+				D9089D481FE14E4A000FC60C /* Setup Operation */,
 				E2075FF81E4BBEAC00E31F1F /* AsynchronousOperation.swift */,
-				D985DEB61FE0471600236870 /* Resolve Error */,
-				D985DEA61FE0278500236870 /* Helper Operations */,
 				E2075FF31E4BB70D00E31F1F /* Fetch */,
 				E2075FF21E4BB6F700E31F1F /* Save */,
 				E200D44C1E48E13200B707D4 /* CloudCore.swift */,
@@ -564,6 +551,7 @@
 				E2C02A181E4CDEF1001B2871 /* DeleteFromCoreDataOperation.swift */,
 				E2C02A131E4CC2A5001B2871 /* FetchRecordZoneChangesOperation.swift */,
 				E21FA03D1E4A7E7200B1DAA2 /* RecordToCoreDataOperation.swift */,
+				D985DE9C1FDFF9D400236870 /* PurgeLocalDatabaseOperation.swift */,
 			);
 			path = SubOperations;
 			sourceTree = "<group>";
@@ -872,7 +860,6 @@
 				E2E4D8411E76D5A600550CBE /* FetchAndSaveOperation.swift in Sources */,
 				E2C02A141E4CC2A5001B2871 /* FetchRecordZoneChangesOperation.swift in Sources */,
 				E2C02A191E4CDEF1001B2871 /* DeleteFromCoreDataOperation.swift in Sources */,
-				D985DEA01FDFFF4A00236870 /* ResolveErrorOperation.swift in Sources */,
 				E29BB21A1E4334590020F5B6 /* CloudCoreConfig.swift in Sources */,
 				E2EE20071E4E6DCE0060F769 /* ServiceAttributeName.swift in Sources */,
 				E29BB21E1E433E050020F5B6 /* CKRecordID.swift in Sources */,
@@ -885,6 +872,7 @@
 				E22C40461E42956C009469A1 /* CoreDataListener.swift in Sources */,
 				E2075FF91E4BBEAC00E31F1F /* AsynchronousOperation.swift in Sources */,
 				E24F44A61E4595B900F78819 /* CoreDataRelationship.swift in Sources */,
+				D9089D4A1FE14E57000FC60C /* SetupOperation.swift in Sources */,
 				E29BB2371E4377F80020F5B6 /* CoreDataAttribute.swift in Sources */,
 				E2E296CA1E49DA0800E7D6ED /* Tokens.swift in Sources */,
 				E2075FFF1E4BCD7E00E31F1F /* ObjectToRecordOperation.swift in Sources */,
@@ -913,7 +901,6 @@
 				E28FBCE41E43DE6F0081FF3B /* CloudCoreConfig.swift in Sources */,
 				E29D11971E69B32900E3DCBF /* ErrorBlockProxy.swift in Sources */,
 				E29D118E1E69B31E00E3DCBF /* DeleteFromCoreDataOperation.swift in Sources */,
-				D985DEA11FDFFF4A00236870 /* ResolveErrorOperation.swift in Sources */,
 				E23C47981E48CE9C004310F9 /* CloudSaveOperationQueue.swift in Sources */,
 				E29D11991E69B33100E3DCBF /* NSEntityDescription.swift in Sources */,
 				E29D11931E69B32400E3DCBF /* ObjectToRecordConverter.swift in Sources */,
@@ -930,15 +917,12 @@
 				E29D119C1E69B33400E3DCBF /* Tokens.swift in Sources */,
 				E28FBCE21E43DE6F0081FF3B /* NSManagedObject.swift in Sources */,
 				E29D11941E69B32400E3DCBF /* ObjectToRecordOperation.swift in Sources */,
-				D985DEA51FE026D400236870 /* CreateCloudCoreZoneOperation.swift in Sources */,
-				D985DEAC1FE0335800236870 /* UploadAllLocalDataOperation.swift in Sources */,
 				E2FA74491E769D9400C3489D /* RecordIDWithDatabase.swift in Sources */,
 				D985DE9E1FDFF9D400236870 /* PurgeLocalDatabaseOperation.swift in Sources */,
 				E23C47941E48CE9C004310F9 /* CloudCoreErrorDelegate.swift in Sources */,
 				E28FBCE01E43DE6F0081FF3B /* CKRecordID.swift in Sources */,
 				E28FBCE11E43DE6F0081FF3B /* CKRecord.swift in Sources */,
 				E29D118D1E69B31E00E3DCBF /* AsynchronousOperation.swift in Sources */,
-				D985DEA91FE0292000236870 /* SubscribeOperation.swift in Sources */,
 				E29D11901E69B31E00E3DCBF /* FetchRecordZoneChangesOperation.swift in Sources */,
 				E29D119B1E69B33400E3DCBF /* ServiceAttributeName.swift in Sources */,
 			);

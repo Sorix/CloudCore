@@ -8,10 +8,24 @@
 
 import Foundation
 
+public enum Module {
+	
+	/// Save to CloudKit module
+	case saveToCloud
+	
+	
+	/// Fetch from CloudKit module
+	case fetchFromCloud
+	
+}
+
 public protocol CloudCoreErrorDelegate: class {
 
-	/// Save to cloud operation throwed an error
+	/// CloudCore throwed an error
 	///
-	/// - Parameter error: `Error` or `CloudCoreError` object
-	func cloudCore(saveToCloudDidFailed error: Error)
+	/// - Parameters:
+	///   - error: error, may be `CKError`, `CloudCoreError` or `Error`
+	///   - module: CloudCore's module that throwed an error
+	func cloudCore(error: Error, module: Module?)
+	
 }

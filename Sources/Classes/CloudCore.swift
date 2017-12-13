@@ -50,7 +50,7 @@ import CloudKit
 */
 open class CloudCore {
 	
-	// MARK: Properties
+	// MARK: - Properties
 	
 	private(set) static var coreDataListener: CoreDataListener?
 	
@@ -62,38 +62,52 @@ open class CloudCore {
 	
 	public typealias NotificationUserInfo = [AnyHashable : Any]
 	
-	// MARK: Save to cloud
-
-	/** Enable observing of changes at local database and saving them to iCloud
-
-	- Parameters:
-		- persistentContainer: contextes without parents will be observed in that container, because saving of that context results writing information to disk or memory
-		- errorDelegate: all errors that were occurred during upload processes will be reported to `errorDelegat`e and will contain `Error` or `CloudCoreError` objects.
-	*/
-	public static func observeCoreDataChanges(persistentContainer: NSPersistentContainer, errorDelegate: CloudCoreErrorDelegate?) {
-		let errorBlock: ErrorBlock = { [weak errorDelegate] in
-			errorDelegate?.cloudCore(saveToCloudDidFailed: $0)
-		}
+	static private let queue = OperationQueue()
+	
+	// MARK: - Methods
+	
+	/// Enable CloudKit and Core Data synchronization
+	///
+	/// - Parameters:
+	///   - container: `NSPersistentContainer` that will be used to save data
+	///   - errorDelegate: errors will be occured to that delegate (that delegate is a `weak`)
+	public static func enable(persistentContainer container: NSPersistentContainer, errorDelegate: CloudCoreErrorDelegate?) {
 		
-		let listener = CoreDataListener(container: persistentContainer, errorBlock: errorBlock)
+		// Listen for local changes
+		let listener = CoreDataListener(container: container, errorBlock: { [weak errorDelegate] in
+			errorDelegate?.cloudCore(error: $0, module: .some(.saveToCloud))
+		})
 		listener.observe()
 		self.coreDataListener = listener
+		
+		// Subscribe (subscription may be outdated/removed)
+		let subscribeOperation = SubscribeOperation()
+		subscribeOperation.errorBlock = { [weak errorDelegate] in
+			handle(subscriptionError: $0, container: container, errorDelegate: errorDelegate)
+		}
+		
+		// Fetch updated data (e.g. push notifications weren't received)
+		let updateFromCloudOperation = FetchAndSaveOperation(persistentContainer: container)
+		updateFromCloudOperation.errorBlock = { [weak errorDelegate] in
+			errorDelegate?.cloudCore(error: $0, module: .some(.fetchFromCloud))
+		}
+		updateFromCloudOperation.addDependency(subscribeOperation)
+		
+		queue.addOperations([subscribeOperation, updateFromCloudOperation], waitUntilFinished: false)
 	}
 	
-	/// Remove oberserver that was created by `observeCoreDataChanges` method
-	public static func stopObservingCoreDataChanges() {
+	/// Disables synchronization (push notifications won't be sent also)
+	public static func disable() {
+		queue.cancelAllOperations()
+
 		coreDataListener?.stopObserving()
 		coreDataListener = nil
+		
+		// FIXME: unsubscribe
 	}
 	
-	// MARK: Fetch from cloud
+	// MARK: Fetchers
 	
-	public static func observeCloudKitChanges(onError: ErrorBlock?) {
-		let subscribeOperation = SubscribeOperation()
-		subscribeOperation.errorBlock = { onError?($0) }
-		subscribeOperation.start()
-	}
-
 	/** Fetch changes from one CloudKit database and save it to CoreData
 
 	Don't forget to check notification's userinfo by calling `isCloudCoreNotification(withUserInfo:)` before calling that method. If incorrect user info is provided `FetchResult.noData` will be returned at completion block.
@@ -132,12 +146,11 @@ open class CloudCore {
 		- completion: `FetchResult` enumeration with results of operation
 	*/
 	public static func fetchAndSave(to container: NSPersistentContainer, error: ErrorBlock?, completion: (() -> Void)?) {
-		DispatchQueue.global(qos: .utility).async {
-			let operation = FetchAndSaveOperation(persistentContainer: container)
-			operation.errorBlock = error
-			operation.completionBlock = completion
-			operation.start()
-		}
+		let operation = FetchAndSaveOperation(persistentContainer: container)
+		operation.errorBlock = error
+		operation.completionBlock = completion
+
+		queue.addOperation(operation)
 	}
 	
 	/** Check if notification is CloudKit notification containing CloudCore data
@@ -162,4 +175,28 @@ open class CloudCore {
 		default: return nil
 		}
 	}
+
+	static private func handle(subscriptionError: Error, container: NSPersistentContainer, errorDelegate: CloudCoreErrorDelegate?) {
+		guard let cloudError = subscriptionError as? CKError, let partialErrorValues = cloudError.partialErrorsByItemID?.values else {
+			errorDelegate?.cloudCore(error: subscriptionError, module: nil)
+			return
+		}
+		
+		// Try to find "Zone Not Found" in partial errors
+		for subError in partialErrorValues {
+			guard let subError = subError as? CKError else { continue }
+			
+			if case .zoneNotFound = subError.code {
+				// Zone wasn't found, we need to create it
+				self.queue.cancelAllOperations()
+				let setupOperation = SetupOperation(container: container, parentContext: nil)
+				self.queue.addOperation(setupOperation)
+				
+				return
+			}
+		}
+		
+		errorDelegate?.cloudCore(error: subscriptionError, module: nil)
+	}
+
 }

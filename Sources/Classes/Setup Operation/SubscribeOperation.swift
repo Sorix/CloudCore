@@ -12,11 +12,10 @@ import CloudKit
 class SubscribeOperation: AsynchronousOperation {
 	
 	var errorBlock: ErrorBlock?
-	var dontResolveErrors: Bool = false
 	
 	private let queue = OperationQueue()
 
-	override public func main() {
+	override func main() {
 		super.main()
 
 		let container = CKContainer.default()
@@ -39,6 +38,12 @@ class SubscribeOperation: AsynchronousOperation {
 		finishOperation.addDependency(fetchPrivateSubscriptions)
 		
 		queue.addOperations([subcribeToPrivate, fetchPrivateSubscriptions, finishOperation], waitUntilFinished: false)
+	}
+
+	override func cancel() {
+		queue.cancelAllOperations()
+		
+		super.cancel()
 	}
 	
 	private func makeRecordZoneSubscriptionOperation(for database: CKDatabase, id: String) -> CKModifySubscriptionsOperation {
@@ -76,10 +81,6 @@ class SubscribeOperation: AsynchronousOperation {
 		return fetchSubscriptions
 	}
 	
-	override func cancel() {
-		queue.cancelAllOperations()
-		
-		super.cancel()
-	}
+
 	
 }
