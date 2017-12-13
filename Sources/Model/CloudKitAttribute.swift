@@ -49,6 +49,8 @@ class CloudKitAttribute {
 		let targetEntityName = try findTargetEntityName()
 		let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: targetEntityName)
 		
+		// FIXME: user serviceAttributes.recordID from target entity (not from me)
+		
 		fetchRequest.predicate = NSPredicate(format: serviceAttributes.recordID + " == %@" , recordID.encodedString)
 		fetchRequest.fetchLimit = 1
 

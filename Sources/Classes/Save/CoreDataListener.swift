@@ -77,7 +77,6 @@ class CoreDataListener {
 			listener.cloudSaveOperationQueue.waitUntilAllOperationsAreFinished()
 			
 			do {
-				print("Context saved")
 				if backgroundContext.hasChanges {
 					try backgroundContext.save()
 				}

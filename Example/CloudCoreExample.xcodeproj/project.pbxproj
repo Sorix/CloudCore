@@ -7,10 +7,14 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		B4532A37427BB629A3A47821 /* Pods_CloudCoreExample.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5710AB9C0BE90A85D15BCD9F /* Pods_CloudCoreExample.framework */; };
+		D97438161FE168D800650541 /* FRCTableViewDataSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = D97438151FE168D800650541 /* FRCTableViewDataSource.swift */; };
+		D974381D1FE16E6E00650541 /* ModelFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = D974381C1FE16E6E00650541 /* ModelFactory.swift */; };
+		D974381F1FE18ED100650541 /* NotificationsObserver.swift in Sources */ = {isa = PBXBuildFile; fileRef = D974381E1FE18ED100650541 /* NotificationsObserver.swift */; };
+		D97438231FE199F500650541 /* EmployeeTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = D97438221FE199F500650541 /* EmployeeTableViewCell.swift */; };
 		E23BE70C1EA4FD78008F4F23 /* CloudCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E23BE6FB1EA4CC1C008F4F23 /* CloudCore.framework */; };
 		E23BE70D1EA4FD78008F4F23 /* CloudCore.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = E23BE6FB1EA4CC1C008F4F23 /* CloudCore.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		E261E0581EAFEA8A00F1CA61 /* CloudKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E261E0571EAFEA8A00F1CA61 /* CloudKit.framework */; };
-		E26BDD991E75A0AC00994CE7 /* MasterViewController+FRC.swift in Sources */ = {isa = PBXBuildFile; fileRef = E26BDD981E75A0AC00994CE7 /* MasterViewController+FRC.swift */; };
 		E2C3E3541E53299800A733BF /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2C3E3531E53299800A733BF /* AppDelegate.swift */; };
 		E2C3E3571E53299800A733BF /* Model.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = E2C3E3551E53299800A733BF /* Model.xcdatamodeld */; };
 		E2C3E3591E53299800A733BF /* MasterViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2C3E3581E53299800A733BF /* MasterViewController.swift */; };
@@ -87,9 +91,14 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		2AD0596598E464554C061BBB /* Pods-CloudCoreExample.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-CloudCoreExample.release.xcconfig"; path = "Pods/Target Support Files/Pods-CloudCoreExample/Pods-CloudCoreExample.release.xcconfig"; sourceTree = "<group>"; };
+		5710AB9C0BE90A85D15BCD9F /* Pods_CloudCoreExample.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_CloudCoreExample.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		D97438151FE168D800650541 /* FRCTableViewDataSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FRCTableViewDataSource.swift; sourceTree = "<group>"; };
+		D974381C1FE16E6E00650541 /* ModelFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelFactory.swift; sourceTree = "<group>"; };
+		D974381E1FE18ED100650541 /* NotificationsObserver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationsObserver.swift; sourceTree = "<group>"; };
+		D97438221FE199F500650541 /* EmployeeTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmployeeTableViewCell.swift; sourceTree = "<group>"; };
 		E23BE6F31EA4CC1C008F4F23 /* CloudCore.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = CloudCore.xcodeproj; path = ../CloudCore.xcodeproj; sourceTree = "<group>"; };
 		E261E0571EAFEA8A00F1CA61 /* CloudKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CloudKit.framework; path = System/Library/Frameworks/CloudKit.framework; sourceTree = SDKROOT; };
-		E26BDD981E75A0AC00994CE7 /* MasterViewController+FRC.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "MasterViewController+FRC.swift"; sourceTree = "<group>"; };
 		E2C3E3501E53299800A733BF /* CloudCoreExample.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CloudCoreExample.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		E2C3E3531E53299800A733BF /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		E2C3E3561E53299800A733BF /* Model.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = Model.xcdatamodel; sourceTree = "<group>"; };
@@ -100,6 +109,7 @@
 		E2C3E3621E53299800A733BF /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		E2C3E3641E53299800A733BF /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		E2C3E36A1E532A6E00A733BF /* CloudCoreExample.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = CloudCoreExample.entitlements; sourceTree = "<group>"; };
+		E9E8795228293D77FA3CBD0F /* Pods-CloudCoreExample.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-CloudCoreExample.debug.xcconfig"; path = "Pods/Target Support Files/Pods-CloudCoreExample/Pods-CloudCoreExample.debug.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -109,12 +119,49 @@
 			files = (
 				E23BE70C1EA4FD78008F4F23 /* CloudCore.framework in Frameworks */,
 				E261E0581EAFEA8A00F1CA61 /* CloudKit.framework in Frameworks */,
+				B4532A37427BB629A3A47821 /* Pods_CloudCoreExample.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		BFBADA7DFB65C4DA1FA75BBE /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				E9E8795228293D77FA3CBD0F /* Pods-CloudCoreExample.debug.xcconfig */,
+				2AD0596598E464554C061BBB /* Pods-CloudCoreExample.release.xcconfig */,
+			);
+			name = Pods;
+			sourceTree = "<group>";
+		};
+		D97438201FE1919300650541 /* View Controller */ = {
+			isa = PBXGroup;
+			children = (
+				E2C3E3581E53299800A733BF /* MasterViewController.swift */,
+				E2C3E35A1E53299800A733BF /* DetailViewController.swift */,
+			);
+			path = "View Controller";
+			sourceTree = "<group>";
+		};
+		D97438211FE191A500650541 /* Class */ = {
+			isa = PBXGroup;
+			children = (
+				D974381E1FE18ED100650541 /* NotificationsObserver.swift */,
+				D974381C1FE16E6E00650541 /* ModelFactory.swift */,
+				D97438151FE168D800650541 /* FRCTableViewDataSource.swift */,
+			);
+			path = Class;
+			sourceTree = "<group>";
+		};
+		D97438241FE19A0E00650541 /* View */ = {
+			isa = PBXGroup;
+			children = (
+				D97438221FE199F500650541 /* EmployeeTableViewCell.swift */,
+			);
+			path = View;
+			sourceTree = "<group>";
+		};
 		E23BE6F41EA4CC1C008F4F23 /* Products */ = {
 			isa = PBXGroup;
 			children = (
@@ -149,6 +196,7 @@
 				E26BDD971E759D5E00994CE7 /* Resources */,
 				E2C3E3521E53299800A733BF /* Sources */,
 				E23BE6F31EA4CC1C008F4F23 /* CloudCore.xcodeproj */,
+				BFBADA7DFB65C4DA1FA75BBE /* Pods */,
 			);
 			sourceTree = "<group>";
 		};
@@ -164,9 +212,9 @@
 			isa = PBXGroup;
 			children = (
 				E2C3E3531E53299800A733BF /* AppDelegate.swift */,
-				E2C3E35A1E53299800A733BF /* DetailViewController.swift */,
-				E26BDD981E75A0AC00994CE7 /* MasterViewController+FRC.swift */,
-				E2C3E3581E53299800A733BF /* MasterViewController.swift */,
+				D97438201FE1919300650541 /* View Controller */,
+				D97438211FE191A500650541 /* Class */,
+				D97438241FE19A0E00650541 /* View */,
 			);
 			path = Sources;
 			sourceTree = "<group>";
@@ -175,6 +223,7 @@
 			isa = PBXGroup;
 			children = (
 				E261E0571EAFEA8A00F1CA61 /* CloudKit.framework */,
+				5710AB9C0BE90A85D15BCD9F /* Pods_CloudCoreExample.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -186,10 +235,13 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = E2C3E3671E53299800A733BF /* Build configuration list for PBXNativeTarget "CloudCoreExample" */;
 			buildPhases = (
+				74EEB05A875696C8E3F6398D /* [CP] Check Pods Manifest.lock */,
 				E2C3E34C1E53299800A733BF /* Sources */,
 				E2C3E34D1E53299800A733BF /* Frameworks */,
 				E2C3E34E1E53299800A733BF /* Resources */,
 				E23BE7101EA4FD78008F4F23 /* Embed Frameworks */,
+				D0F793BBB16236A031D0746F /* [CP] Embed Pods Frameworks */,
+				141EBAF67A939CF3C08FF52E /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -312,14 +364,71 @@
 		};
 /* End PBXResourcesBuildPhase section */
 
+/* Begin PBXShellScriptBuildPhase section */
+		141EBAF67A939CF3C08FF52E /* [CP] Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "[CP] Copy Pods Resources";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-CloudCoreExample/Pods-CloudCoreExample-resources.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		74EEB05A875696C8E3F6398D /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-CloudCoreExample-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+		D0F793BBB16236A031D0746F /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"${SRCROOT}/Pods/Target Support Files/Pods-CloudCoreExample/Pods-CloudCoreExample-frameworks.sh",
+				"${BUILT_PRODUCTS_DIR}/Fakery/Fakery.framework",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputPaths = (
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Fakery.framework",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-CloudCoreExample/Pods-CloudCoreExample-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
+
 /* Begin PBXSourcesBuildPhase section */
 		E2C3E34C1E53299800A733BF /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D974381F1FE18ED100650541 /* NotificationsObserver.swift in Sources */,
+				D97438231FE199F500650541 /* EmployeeTableViewCell.swift in Sources */,
 				E2C3E3571E53299800A733BF /* Model.xcdatamodeld in Sources */,
 				E2C3E3541E53299800A733BF /* AppDelegate.swift in Sources */,
-				E26BDD991E75A0AC00994CE7 /* MasterViewController+FRC.swift in Sources */,
+				D974381D1FE16E6E00650541 /* ModelFactory.swift in Sources */,
+				D97438161FE168D800650541 /* FRCTableViewDataSource.swift in Sources */,
 				E2C3E3591E53299800A733BF /* MasterViewController.swift in Sources */,
 				E2C3E35B1E53299800A733BF /* DetailViewController.swift in Sources */,
 			);
@@ -462,6 +571,7 @@
 		};
 		E2C3E3681E53299800A733BF /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = E9E8795228293D77FA3CBD0F /* Pods-CloudCoreExample.debug.xcconfig */;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
@@ -479,6 +589,7 @@
 		};
 		E2C3E3691E53299800A733BF /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 2AD0596598E464554C061BBB /* Pods-CloudCoreExample.release.xcconfig */;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
