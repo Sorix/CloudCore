@@ -10,11 +10,12 @@
 **CloudCore** is a framework that manages syncing between iCloud (CloudKit) and Core Data written on native Swift. It maybe used are CloudKit caching.
 
 #### Features
-* Differential sync, only changed values in objects are uploaded and downloaded.
-* Supports of all relationship types.
-* Respects of Core Data options (cascade deletions, external storage options.)
-* Works with CloudKit features like Cloud Zone deletion, purging, tokens expirations, large databases downloading.
-* Covered with Unit and CloudKit online tests.
+* Sync manually or on **push notifications**.
+* **Differential sync**, only changed object and values are uploaded and downloaded. CloudCore even differs changed and not changed values inside objects.
+* Supports of **all relationship types**.
+* Respects of Core Data options (cascade deletions, external storage).
+* Knows and manages with CloudKit errors like `userDeletedZone`, `zoneNotFound`, `changeTokenExpired`, `isMore`.
+* Covered with Unit and CloudKit online **tests**.
 * Currently only **private database** is supported.
 
 ## Installation
@@ -140,8 +141,10 @@ CloudKit objects can't be mocked up, that's why I create 2 different types of te
 
 ## Roadmap
 
-- [ ] Add more tests, it's crucial for such type of project
-- [ ] Add support of migration of existing databases
+- [x] Move from alpha to beta status.
+- [ ] Add more tests, it's crucial for such type of project.
+- [ ] Add support of migration of existing databases.
+- [ ] Add error resolving for `limitExceeded` error (split saves by relationships).
 
 ## Author
 
