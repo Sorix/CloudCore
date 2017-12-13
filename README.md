@@ -69,7 +69,6 @@ func application(_ application: UIApplication, didFinishLaunchingWithOptions lau
   UIApplication.shared.registerForRemoteNotifications()
 
   // Enable uploading changed local data to CoreData
-  NotificationsObserver().observe()
   CloudCore.enable(persistentContainer: persistentContainer, errorDelegate: self)
 
   return true
