@@ -18,6 +18,14 @@
 * Covered with Unit and CloudKit online **tests**.
 * Currently only **private database** is supported.
 
+## How it works?
+CloudCore is built using "black box" architecture, so it works invisibly for your application, you just need to add several lines to `AppDelegate` to enable it. Synchronization and error resolving is managed automatically.
+
+1. CloudCore stores *change tokens* from CloudKit, so only changed data is downloaded.
+2. When CloudCore is enabled (`CloudCore.enable`) it fetches changed data from CloudKit and subscribes to CloudKit push notifications about new changes.
+3. When `CloudCore.fetchAndSave` is called manually or by push notification, CloudCore fetches and saves changed data to Core Data.
+4. When data is written to persistent container (parent context is saved) CloudCore founds locally changed data and uploads it to CloudKit.
+
 ## Installation
 
 ### CocoaPods
