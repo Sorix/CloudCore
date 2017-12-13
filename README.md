@@ -4,17 +4,18 @@
 [![Documentation](https://img.shields.io/cocoapods/metrics/doc-percent/CloudCore.svg)](http://cocoadocs.org/docsets/CloudCore/)
 [![Version](https://img.shields.io/cocoapods/v/CloudCore.svg?style=flat)](https://cocoapods.org/pods/CloudCore)
 ![Platform](https://img.shields.io/cocoapods/p/CloudCore.svg?style=flat)
-![Status](https://img.shields.io/badge/status-alpha-red.svg)
+![Status](https://img.shields.io/badge/status-beta-orange.svg)
 ![Swift](https://img.shields.io/badge/swift-4-orange.svg)
 
-**CloudCore** is a framework that manages syncing between iCloud (CloudKit) and Core Data written on native Swift.
+**CloudCore** is a framework that manages syncing between iCloud (CloudKit) and Core Data written on native Swift. It maybe used are CloudKit caching.
 
 #### Features
-* Differential sync, only changed values in objects are uploaded and downloaded
-* Support of all relationship types
-* Respect of Core Data options (cascade deletions, external storage options)
-* Unit and performance tests
-* Private and shared CloudKit databases (to be tested) are supported
+* Differential sync, only changed values in objects are uploaded and downloaded.
+* Supports of all relationship types.
+* Respects of Core Data options (cascade deletions, external storage options.)
+* Works with CloudKit features like Cloud Zone deletion, purging, tokens expirations, large databases downloading.
+* Covered with Unit and CloudKit online tests.
+* Currently only **private database** is supported.
 
 ## Installation
 
@@ -23,7 +24,7 @@
 it, simply add the following line to your Podfile:
 
 ```ruby
-pod 'CloudCore', '~> 1.0'
+pod 'CloudCore', '~> 2.0'
 ```
 
 ### Swift Package Manager
@@ -33,7 +34,7 @@ Once you have set up Swift package for your application, just add CloudCore as d
 
 ```swift
 dependencies: [
-    .Package(url: "https://github.com/Sorix/CloudCore", majorVersion: 1)
+    .Package(url: "https://github.com/Sorix/CloudCore", majorVersion: 2)
 ]
 ```
 
@@ -55,30 +56,28 @@ Detailed documentation is [available at CocoaDocs](http://cocoadocs.org/docsets/
 
 ```swift
 func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
-	// Register for push notifications about changes
-	UIApplication.shared.registerForRemoteNotifications()
+  // Register for push notifications about changes
+  UIApplication.shared.registerForRemoteNotifications()
 
-	// Enable uploading changed local data to CoreData
-	CloudCore.observeCoreDataChanges(persistentContainer: persistentContainer, errorDelegate: nil)
+  // Enable uploading changed local data to CoreData
+  NotificationsObserver().observe()
+  CloudCore.enable(persistentContainer: persistentContainer, errorDelegate: self)
 
-	// Sync on startup if push notifications is missed, disabled etc
-	// Also it acts as initial sync if no sync was done before
-	CloudCore.fetchAndSave(container: persistentContainer, error: nil, completion: nil)
-
-	return true
+  return true
 }
 
+// Notification from CloudKit about changes in remote database
 func application(_ application: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable : Any], fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {
-	// Check if it CloudKit's and CloudCore notification
-	if CloudCore.isCloudCoreNotification(withUserInfo: userInfo) {
-		// Fetch changed data from iCloud
-		CloudCore.fetchAndSave(using: userInfo, container: self.persistentContainer, error: nil, completion: { (fetchResult) in
-			completionHandler(fetchResult.uiBackgroundFetchResult)
-		})
-	}
+  // Check if it CloudKit's and CloudCore notification
+  if CloudCore.isCloudCoreNotification(withUserInfo: userInfo) {
+    // Fetch changed data from iCloud
+    CloudCore.fetchAndSave(using: userInfo, to: persistentContainer, error: nil, completion: { (fetchResult) in
+      completionHandler(fetchResult.uiBackgroundFetchResult)
+    })
+  }
 }
 
-func applicationDidEnterBackground(_ application: UIApplication) {
+func applicationWillTerminate(_ application: UIApplication) {
 	// Save tokens on exit used to differential sync
 	CloudCore.tokens.saveToUserDefaults()
 }
@@ -138,7 +137,6 @@ CloudKit objects can't be mocked up, that's why I create 2 different types of te
   2. Run in simulator or real device `TestableApp` target.
   3. Configure iCloud on that device: Settings.app → iCloud → Login.
   4. Run `CloudKitTests`, they are attached to `TestableApp`, so CloudKit connection will work.
-
 
 ## Roadmap
 
