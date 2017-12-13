@@ -59,7 +59,6 @@ class ObjectToRecordOperation: Operation {
 		let changedValues = managedObject.committedValues(forKeys: changedAttributes)
 		
 		for (attributeName, value) in changedValues {
-			if self.isCancelled { return }
 			if attributeName == serviceAttributeNames.recordData || attributeName == serviceAttributeNames.recordID { continue }
 			
 			if let attribute = CoreDataAttribute(value: value, attributeName: attributeName, entity: managedObject.entity) {

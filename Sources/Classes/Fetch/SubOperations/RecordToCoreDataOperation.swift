@@ -71,8 +71,6 @@ class RecordToCoreDataOperation: Operation {
 	///   - recordDataAttributeName: attribute name containing recordData
 	private func fill(object: NSManagedObject, entityName: String, serviceAttributeNames: ServiceAttributeNames, context: NSManagedObjectContext) throws {
 		for key in record.allKeys() {
-			if self.isCancelled { return }
-			
 			let recordValue = record.value(forKey: key)
 			
 			let attribute = CloudKitAttribute(value: recordValue, fieldName: key, entityName: entityName, serviceAttributes: serviceAttributeNames, context: context)

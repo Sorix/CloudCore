@@ -39,12 +39,6 @@ class SubscribeOperation: AsynchronousOperation {
 		
 		queue.addOperations([subcribeToPrivate, fetchPrivateSubscriptions, finishOperation], waitUntilFinished: false)
 	}
-
-	override func cancel() {
-		queue.cancelAllOperations()
-		
-		super.cancel()
-	}
 	
 	private func makeRecordZoneSubscriptionOperation(for database: CKDatabase, id: String) -> CKModifySubscriptionsOperation {
 		let notificationInfo = CKNotificationInfo()

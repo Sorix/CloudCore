@@ -60,20 +60,12 @@ public class FetchAndSaveOperation: Operation {
 		self.queue.waitUntilAllOperationsAreFinished()
 		
 		do {
-			if self.isCancelled { return }
 			try backgroundContext.save()
 		} catch {
 			errorBlock?(error)
 		}
 		
 		NotificationCenter.default.post(name: .CloudCoreDidSyncFromCloud, object: nil)
-	}
-	
-	/// Advises the operation object that it should stop executing its task.
-	public override func cancel() {
-		self.queue.cancelAllOperations()
-		
-		super.cancel()
 	}
 	
 	private func addRecordZoneChangesOperation(recordZoneIDs: [CKRecordZoneID], database: CKDatabase, context: NSManagedObjectContext) {

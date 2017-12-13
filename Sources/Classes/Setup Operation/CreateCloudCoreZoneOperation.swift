@@ -31,10 +31,4 @@ class CreateCloudCoreZoneOperation: AsynchronousOperation {
 		self.createZoneOperation = recordZoneOperation
 	}
 	
-	override func cancel() {
-		createZoneOperation?.cancel()
-		
-		super.cancel()
-	}
-	
 }

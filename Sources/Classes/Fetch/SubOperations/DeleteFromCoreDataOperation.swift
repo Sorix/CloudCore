@@ -32,8 +32,6 @@ class DeleteFromCoreDataOperation: Operation {
 		// Iterate through each entity to fetch and delete object with our recordData
 		guard let entities = childContext.persistentStoreCoordinator?.managedObjectModel.entities else { return }
 		for entity in entities {
-			if self.isCancelled { return }
-
 			guard let serviceAttributeNames = entity.serviceAttributeNames else { continue }			
 
 			do {

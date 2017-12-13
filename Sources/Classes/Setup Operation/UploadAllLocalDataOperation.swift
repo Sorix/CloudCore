@@ -56,8 +56,6 @@ class UploadAllLocalDataOperation: Operation {
 			}
 		}
 		
-		if self.isCancelled { return }
-		
 		converter.setUnconfirmedOperations(inserted: allManagedObjects, updated: Set<NSManagedObject>(), deleted: Set<NSManagedObject>())
 		let recordsToSave = converter.confirmConvertOperationsAndWait(in: childContext).recordsToSave
 		cloudSaveOperationQueue.addOperations(recordsToSave: recordsToSave, recordIDsToDelete: [RecordIDWithDatabase]())
@@ -72,6 +70,8 @@ class UploadAllLocalDataOperation: Operation {
 	
 	override func cancel() {
 		cloudSaveOperationQueue.cancelAllOperations()
+		
 		super.cancel()
 	}
+
 }
