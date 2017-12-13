@@ -7,6 +7,7 @@
 //
 
 import CloudKit
+import CoreData
 
 class CloudSaveOperationQueue: OperationQueue {
 	var errorBlock: ErrorBlock?
@@ -46,6 +47,7 @@ class CloudSaveOperationQueue: OperationQueue {
 	private func addOperation(recordsToSave: [CKRecord], recordIDsToDelete: [CKRecordID], database: CKDatabase) {
 		// Modify CKRecord Operation
 		let modifyOperation = CKModifyRecordsOperation(recordsToSave: recordsToSave, recordIDsToDelete: recordIDsToDelete)
+		modifyOperation.savePolicy = .changedKeys
 		
 		modifyOperation.perRecordCompletionBlock = { record, error in
 			if let error = error {
@@ -73,9 +75,10 @@ class CloudSaveOperationQueue: OperationQueue {
 			try? FileManager.default.removeItem(at: asset.fileURL)
 		}
 	}
+
 }
 
-private class DatabaseModifyDataSource {
+fileprivate class DatabaseModifyDataSource {
 	let database: CKDatabase
 	var save = [CKRecord]()
 	var delete = [CKRecordID]()

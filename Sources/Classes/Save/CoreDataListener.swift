@@ -83,7 +83,7 @@ class CoreDataListener {
 			} catch {
 				listener.errorBlock?(error)
 			}
-			
+
 			NotificationCenter.default.post(name: .CloudCoreDidSyncToCloud, object: nil)
 		}
 	}
