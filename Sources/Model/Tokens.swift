@@ -35,13 +35,14 @@ open class Tokens: NSObject, NSCoding {
 		static let tokensByRecordZoneID = "tokensByRecordZoneID"
 	}
 	
+	/// Create fresh object without any Tokens inside. Can be used to fetch full data.
 	public override init() {
 		super.init()
 	}
 	
 	// MARK: User Defaults
 	
-	/// Load saved Tokens from UserDefaults. Key is used: `CloudCore.config.userDefaultsKeyTokens`
+	/// Load saved Tokens from UserDefaults. Key is used from `CloudCoreConfig.userDefaultsKeyTokens`
 	///
 	/// - Returns: previously saved `Token` object, if tokens weren't saved before newly initialized `Tokens` object will be returned
 	open static func loadFromUserDefaults() -> Tokens {
@@ -53,9 +54,7 @@ open class Tokens: NSObject, NSCoding {
 		return tokens
 	}
 	
-	/// Save tokens to UserDefaults and synchronize. Key is used: `CloudCore.config.userDefaultsKeyTokens`
-	///
-	/// - Parameter toKey: UserDefaults key, default is `CloudCore.config.userDefaultsKeyTokens`
+	/// Save tokens to UserDefaults and synchronize. Key is used from `CloudCoreConfig.userDefaultsKeyTokens`
 	open func saveToUserDefaults() {
 		let tokensData = NSKeyedArchiver.archivedData(withRootObject: self)
 		UserDefaults.standard.set(tokensData, forKey: CloudCore.config.userDefaultsKeyTokens)

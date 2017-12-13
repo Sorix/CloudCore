@@ -19,6 +19,8 @@ public enum CloudCoreError: Error, CustomStringConvertible {
 	
 	/// Some CoreData error
 	case coreData(String)
+	
+	/// Custom error, description is placed inside associated value
 	case custom(String)
 
 	/// A textual representation of error

@@ -10,43 +10,41 @@ import CoreData
 import CloudKit
 
 /**
-	Main framework class, in most cases you will use only methods from that class, all methods/properties are static.
+	Main framework class, in most cases you will use only methods from this class, all methods and properties are `static`.
 
 	## Save to cloud
-	On application inialization call `observeCoreDataChanges` method, so framework will automatically monitor changes at Core Data and upload it to iCloud.
+	On application inialization call `CloudCore.enable(persistentContainer:errorDelegate:)` method, so framework will automatically monitor changes at Core Data and upload it to iCloud.
 
 	### Example
-
 	```swift
 	func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
 		// Register for push notifications about changes
-		UIApplication.shared.registerForRemoteNotifications()
-		// Enable uploading changed local data to CoreData
-		CloudCore.observeCoreDataChanges(persistentContainer: self.persistentContainer, errorDelegate: nil)
+		application.registerForRemoteNotifications()
+
+		// Enable CloudCore syncing
+		CloudCore.enable(persistentContainer: persistentContainer, errorDelegate: self)
+
 		return true
 	}
 	```
 
 	## Fetch from cloud
-	Updated objects from Core Data can be fetched with `CloudCore.fetchAndSave` methods. If you have called any of CloudCore methods before, CloudCore has automatically subscribed to hidden push notifications about data changes in CloudKit, so after you receive remoteNotifications about that changes, please call appropriate method to redirect that notification to CloudCore and framework will sync data for you.
-
-	If you want you can sync use force sync method.
-
-	Please use method with notification user info parameter if you're calling it from `didReceiveRemoteNotification`, because CloudCore extracts CloudKit database from notification to make less network requests on fetching.
+	When CloudKit data is changed **push notification** is posted to an application. You need to handle it and fetch changed data from CloudKit with `CloudCore.fetchAndSave(using:to:error:completion:)` method.
 
 	### Example
-
 	```swift
 	func application(_ application: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable : Any], fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {
+		// Check if it CloudKit's and CloudCore notification
 		if CloudCore.isCloudCoreNotification(withUserInfo: userInfo) {
-			CloudCore.fetchAndSave(using: userInfo, container: self.persistentContainer, error: { error in
-				NSLog("CloudKit fetch error: %@", error.localizedDescription)
-			}, completion: { (fetchResult) in
+			// Fetch changed data from iCloud
+			CloudCore.fetchAndSave(using: userInfo, to: persistentContainer, error: nil, completion: { (fetchResult) in
 				completionHandler(fetchResult.uiBackgroundFetchResult)
 			})
 		}
 	}
 	```
+
+	You can also check for updated data at CloudKit **manually** (e.g. push notifications are not working). Use for that `CloudCore.fetchAndSave(to:error:completion:)`
 */
 open class CloudCore {
 	
@@ -108,9 +106,9 @@ open class CloudCore {
 	
 	// MARK: Fetchers
 	
-	/** Fetch changes from one CloudKit database and save it to CoreData
+	/** Fetch changes from one CloudKit database and save it to CoreData from `didReceiveRemoteNotification` method.
 
-	Don't forget to check notification's userinfo by calling `isCloudCoreNotification(withUserInfo:)` before calling that method. If incorrect user info is provided `FetchResult.noData` will be returned at completion block.
+	Don't forget to check notification's UserInfo by calling `isCloudCoreNotification(withUserInfo:)`. If incorrect user info is provided `FetchResult.noData` will be returned at completion block.
 
 	- Parameters:
 		- userInfo: notification's user info, CloudKit database will be extraced from that notification

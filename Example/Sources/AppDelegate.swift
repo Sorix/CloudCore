@@ -25,7 +25,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UISplitViewControllerDele
 
 	func application(_ application: UIApplication, willFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey : Any]? = nil) -> Bool {
 		// Register for push notifications about changes
-		UIApplication.shared.registerForRemoteNotifications()
+		application.registerForRemoteNotifications()
 		
 		// Enable uploading changed local data to CoreData
 		NotificationsObserver().observe()

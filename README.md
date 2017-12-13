@@ -16,6 +16,7 @@
 * Respects of Core Data options (cascade deletions, external storage).
 * Knows and manages with CloudKit errors like `userDeletedZone`, `zoneNotFound`, `changeTokenExpired`, `isMore`.
 * Covered with Unit and CloudKit online **tests**.
+* All public methods are **[100% documentated](http://cocoadocs.org/docsets/CloudCore/)**.
 * Currently only **private database** is supported.
 
 ## How it works?
@@ -51,7 +52,8 @@ dependencies: [
 Current version of framework hasn't been deeply tested and may contain errors. If you can test framework, I will be very glad. If you found an error, please post [an issue](https://github.com/Sorix/CloudCore/issues).
 
 ## Documentation
-Detailed documentation is [available at CocoaDocs](http://cocoadocs.org/docsets/CloudCore/).
+All public methods are documented using [XCode Markup](https://developer.apple.com/library/content/documentation/Xcode/Reference/xcode_markup_formatting_ref/) and available inside XCode.
+HTML-generated version of that documentation is [available here at CocoaDocs](http://cocoadocs.org/docsets/CloudCore/).
 
 ## Quick start
 1. Enable CloudKit capability for you application:
@@ -66,9 +68,9 @@ Detailed documentation is [available at CocoaDocs](http://cocoadocs.org/docsets/
 ```swift
 func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
   // Register for push notifications about changes
-  UIApplication.shared.registerForRemoteNotifications()
+  application.registerForRemoteNotifications()
 
-  // Enable uploading changed local data to CoreData
+  // Enable CloudCore syncing
   CloudCore.enable(persistentContainer: persistentContainer, errorDelegate: self)
 
   return true
