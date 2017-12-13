@@ -12,6 +12,7 @@ import CloudKit
 class SubscribeOperation: AsynchronousOperation {
 	
 	var errorBlock: ErrorBlock?
+	var dontResolveErrors: Bool = false
 	
 	private let queue = OperationQueue()
 
@@ -21,7 +22,7 @@ class SubscribeOperation: AsynchronousOperation {
 		let container = CKContainer.default()
 		
 		// Subscribe operation
-		let subcribeToPrivate = self.makeDatabaseSubscriptionOperation(for: container.privateCloudDatabase, id: CloudCore.config.subscriptionIDForPrivateDB)
+		let subcribeToPrivate = self.makeRecordZoneSubscriptionOperation(for: container.privateCloudDatabase, id: CloudCore.config.subscriptionIDForPrivateDB)
 		
 		// Fetch subscriptions and cancel subscription operation if subscription is already exists
 		let fetchPrivateSubscriptions = makeFetchSubscriptionOperation(for: container.privateCloudDatabase,
@@ -40,11 +41,11 @@ class SubscribeOperation: AsynchronousOperation {
 		queue.addOperations([subcribeToPrivate, fetchPrivateSubscriptions, finishOperation], waitUntilFinished: false)
 	}
 	
-	private func makeDatabaseSubscriptionOperation(for database: CKDatabase, id: String) -> CKModifySubscriptionsOperation {
+	private func makeRecordZoneSubscriptionOperation(for database: CKDatabase, id: String) -> CKModifySubscriptionsOperation {
 		let notificationInfo = CKNotificationInfo()
 		notificationInfo.shouldSendContentAvailable = true
 		
-		let subscription = CKDatabaseSubscription(subscriptionID: id)
+		let subscription = CKRecordZoneSubscription(zoneID: CloudCore.config.zoneID, subscriptionID: id)
 		subscription.notificationInfo = notificationInfo
 		
 		let operation = CKModifySubscriptionsOperation(subscriptionsToSave: [subscription], subscriptionIDsToDelete: [])

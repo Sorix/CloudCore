@@ -15,7 +15,7 @@ class FetchRecordZoneChangesOperation: AsynchronousOperation {
 	let database: CKDatabase
 	//
 	
-	var errorBlock: ErrorBlock?
+	var errorBlock: ((CKRecordZoneID, Error) -> Void)?
 	var recordChangedBlock: ((CKRecord) -> Void)?
 	var recordWithIDWasDeletedBlock: ((CKRecordID) -> Void)?
 	
@@ -51,9 +51,11 @@ class FetchRecordZoneChangesOperation: AsynchronousOperation {
 			self.tokens.tokensByRecordZoneID[recordZoneID] = serverChangeToken
 		}
 		
-		fetchOperation.fetchRecordZoneChangesCompletionBlock = { error in
+		fetchOperation.recordZoneFetchCompletionBlock = { zoneId, serverChangeToken, clientChangeTokenData, isMore, error in
+			self.tokens.tokensByRecordZoneID[zoneId] = serverChangeToken
+			
 			if let error = error {
-				self.errorBlock?(error)
+				self.errorBlock?(zoneId, error)
 			}
 			
 			self.state = .finished

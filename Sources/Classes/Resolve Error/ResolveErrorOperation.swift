@@ -113,12 +113,18 @@ class ResolveErrorOperation: Operation {
 			self.queue.cancelAllOperations()
 		}
 		
+		// Subscribe operation
+		let subscribeOperation = SubscribeOperation()
+		subscribeOperation.dontResolveErrors = true
+		subscribeOperation.errorBlock = { self.errorProxy.send(error: $0) }
+		subscribeOperation.addDependency(createZoneOperation)
+		
 		// Upload all local data
 		let uploadOperation = UploadAllLocalDataOperation(parentContext: parentContext, managedObjectModel: managedObjectModel)
 		uploadOperation.errorBlock = { self.errorProxy.send(error: $0) }
-		uploadOperation.addDependency(createZoneOperation)
+		uploadOperation.addDependency(subscribeOperation)
 		
-		queue.addOperations([createZoneOperation, uploadOperation], waitUntilFinished: true)
+		queue.addOperations([createZoneOperation, subscribeOperation, uploadOperation], waitUntilFinished: true)
 	}
 	
 	private func updateResolvedStatus() {

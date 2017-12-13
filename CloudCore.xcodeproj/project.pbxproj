@@ -80,7 +80,6 @@
 		E29D11871E69B30C00E3DCBF /* CloudCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D5C629401C3A7FAA007F7B7C /* CloudCore.framework */; };
 		E29D118D1E69B31E00E3DCBF /* AsynchronousOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2075FF81E4BBEAC00E31F1F /* AsynchronousOperation.swift */; };
 		E29D118E1E69B31E00E3DCBF /* DeleteFromCoreDataOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2C02A181E4CDEF1001B2871 /* DeleteFromCoreDataOperation.swift */; };
-		E29D118F1E69B31E00E3DCBF /* FetchDatabaseChangesOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2C02A0F1E4CBEBB001B2871 /* FetchDatabaseChangesOperation.swift */; };
 		E29D11901E69B31E00E3DCBF /* FetchRecordZoneChangesOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2C02A131E4CC2A5001B2871 /* FetchRecordZoneChangesOperation.swift */; };
 		E29D11911E69B31E00E3DCBF /* RecordToCoreDataOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = E21FA03D1E4A7E7200B1DAA2 /* RecordToCoreDataOperation.swift */; };
 		E29D11931E69B32400E3DCBF /* ObjectToRecordConverter.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2C02A0D1E4C99AD001B2871 /* ObjectToRecordConverter.swift */; };
@@ -106,7 +105,6 @@
 		E2A3F9451E69B6EC007A65EB /* ObjectToRecordOperationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2A3F9441E69B6EC007A65EB /* ObjectToRecordOperationTests.swift */; };
 		E2A3F9461E69B6EC007A65EB /* ObjectToRecordOperationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2A3F9441E69B6EC007A65EB /* ObjectToRecordOperationTests.swift */; };
 		E2C02A0E1E4C99AD001B2871 /* ObjectToRecordConverter.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2C02A0D1E4C99AD001B2871 /* ObjectToRecordConverter.swift */; };
-		E2C02A101E4CBEBB001B2871 /* FetchDatabaseChangesOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2C02A0F1E4CBEBB001B2871 /* FetchDatabaseChangesOperation.swift */; };
 		E2C02A141E4CC2A5001B2871 /* FetchRecordZoneChangesOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2C02A131E4CC2A5001B2871 /* FetchRecordZoneChangesOperation.swift */; };
 		E2C02A191E4CDEF1001B2871 /* DeleteFromCoreDataOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2C02A181E4CDEF1001B2871 /* DeleteFromCoreDataOperation.swift */; };
 		E2C3A6D11E4A8EAF009151F3 /* FetchResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2C3A6D01E4A8EAF009151F3 /* FetchResult.swift */; };
@@ -212,7 +210,6 @@
 		E2A3F9441E69B6EC007A65EB /* ObjectToRecordOperationTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ObjectToRecordOperationTests.swift; sourceTree = "<group>"; };
 		E2BB748D1E7EA8690048C129 /* SetupOperation.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SetupOperation.swift; sourceTree = "<group>"; };
 		E2C02A0D1E4C99AD001B2871 /* ObjectToRecordConverter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ObjectToRecordConverter.swift; sourceTree = "<group>"; };
-		E2C02A0F1E4CBEBB001B2871 /* FetchDatabaseChangesOperation.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FetchDatabaseChangesOperation.swift; sourceTree = "<group>"; };
 		E2C02A131E4CC2A5001B2871 /* FetchRecordZoneChangesOperation.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FetchRecordZoneChangesOperation.swift; sourceTree = "<group>"; };
 		E2C02A181E4CDEF1001B2871 /* DeleteFromCoreDataOperation.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DeleteFromCoreDataOperation.swift; sourceTree = "<group>"; };
 		E2C3A6D01E4A8EAF009151F3 /* FetchResult.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FetchResult.swift; sourceTree = "<group>"; };
@@ -565,7 +562,6 @@
 			children = (
 				E2075FF81E4BBEAC00E31F1F /* AsynchronousOperation.swift */,
 				E2C02A181E4CDEF1001B2871 /* DeleteFromCoreDataOperation.swift */,
-				E2C02A0F1E4CBEBB001B2871 /* FetchDatabaseChangesOperation.swift */,
 				E2C02A131E4CC2A5001B2871 /* FetchRecordZoneChangesOperation.swift */,
 				E21FA03D1E4A7E7200B1DAA2 /* RecordToCoreDataOperation.swift */,
 			);
@@ -875,7 +871,6 @@
 				E21FA03E1E4A7E7200B1DAA2 /* RecordToCoreDataOperation.swift in Sources */,
 				E2E4D8411E76D5A600550CBE /* FetchAndSaveOperation.swift in Sources */,
 				E2C02A141E4CC2A5001B2871 /* FetchRecordZoneChangesOperation.swift in Sources */,
-				E2C02A101E4CBEBB001B2871 /* FetchDatabaseChangesOperation.swift in Sources */,
 				E2C02A191E4CDEF1001B2871 /* DeleteFromCoreDataOperation.swift in Sources */,
 				D985DEA01FDFFF4A00236870 /* ResolveErrorOperation.swift in Sources */,
 				E29BB21A1E4334590020F5B6 /* CloudCoreConfig.swift in Sources */,
@@ -941,7 +936,6 @@
 				D985DE9E1FDFF9D400236870 /* PurgeLocalDatabaseOperation.swift in Sources */,
 				E23C47941E48CE9C004310F9 /* CloudCoreErrorDelegate.swift in Sources */,
 				E28FBCE01E43DE6F0081FF3B /* CKRecordID.swift in Sources */,
-				E29D118F1E69B31E00E3DCBF /* FetchDatabaseChangesOperation.swift in Sources */,
 				E28FBCE11E43DE6F0081FF3B /* CKRecord.swift in Sources */,
 				E29D118D1E69B31E00E3DCBF /* AsynchronousOperation.swift in Sources */,
 				D985DEA91FE0292000236870 /* SubscribeOperation.swift in Sources */,

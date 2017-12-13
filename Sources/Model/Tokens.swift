@@ -77,4 +77,5 @@ open class Tokens: NSObject, NSCoding {
 		UserDefaults.standard.set(tokensData, forKey: forKey)
 		UserDefaults.standard.synchronize()
 	}
+	
 }

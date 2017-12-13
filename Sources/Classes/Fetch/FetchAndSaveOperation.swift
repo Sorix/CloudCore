@@ -28,13 +28,12 @@ public class FetchAndSaveOperation: Operation {
 	/// Called every time if error occurs
 	public var errorBlock: ErrorBlock?
 	
-	private let fetchOperationQueue = OperationQueue()
-	private let coreDataOperationQueue = OperationQueue()
+	private let queue = OperationQueue()
 	
 	/// Initialize operation, it's recommended to set `errorBlock`
 	///
 	/// - Parameters:
-	///   - databases: list of databases to fetch data from (now supported: private and shared)
+	///   - databases: list of databases to fetch data from (only private is supported now)
 	///   - persistentContainer: `NSPersistentContainer` that will be used to save data
 	///   - tokens: previously saved `Tokens`, you can generate new ones if you want to fetch all data
 	public init(from databases: [CKDatabase] = FetchAndSaveOperation.allDatabases, persistentContainer: NSPersistentContainer, tokens: Tokens = CloudCore.tokens) {
@@ -42,8 +41,7 @@ public class FetchAndSaveOperation: Operation {
 		self.databases = databases
 		self.persistentContainer = persistentContainer
 		
-		fetchOperationQueue.name = "CloudCoreFetchFromCloud"
-		coreDataOperationQueue.name = "CloudCoreFetchFromCloud CoreData"
+		queue.name = "FetchAndSaveQueue"
 	}
 	
 	/// Performs the receiver’s non-concurrent task.
@@ -56,11 +54,10 @@ public class FetchAndSaveOperation: Operation {
 		backgroundContext.name = CloudCore.config.contextName
 		
 		for database in self.databases {
-			self.addRecordZoneChangesOperation(recordZoneIDs: [CloudCore.config.zoneID], database: database, parentContext: backgroundContext)
+			self.addRecordZoneChangesOperation(recordZoneIDs: [CloudCore.config.zoneID], database: database, context: backgroundContext)
 		}
 		
-		self.fetchOperationQueue.waitUntilAllOperationsAreFinished()
-		self.coreDataOperationQueue.waitUntilAllOperationsAreFinished()
+		self.queue.waitUntilAllOperationsAreFinished()
 		
 		do {
 			if self.isCancelled { return }
@@ -74,50 +71,59 @@ public class FetchAndSaveOperation: Operation {
 	
 	/// Advises the operation object that it should stop executing its task.
 	public override func cancel() {
-		self.fetchOperationQueue.cancelAllOperations()
-		self.coreDataOperationQueue.cancelAllOperations()
+		self.queue.cancelAllOperations()
 		
 		super.cancel()
 	}
 	
-	private func addRecordZoneChangesOperation(recordZoneIDs: [CKRecordZoneID], database: CKDatabase, parentContext: NSManagedObjectContext) {
+	private func addRecordZoneChangesOperation(recordZoneIDs: [CKRecordZoneID], database: CKDatabase, context: NSManagedObjectContext) {
 		if recordZoneIDs.isEmpty { return }
 		
 		let recordZoneChangesOperation = FetchRecordZoneChangesOperation(from: database, recordZoneIDs: recordZoneIDs, tokens: tokens)
 		
 		recordZoneChangesOperation.recordChangedBlock = {
 			// Convert and write CKRecord To NSManagedObject Operation
-			let convertOperation = RecordToCoreDataOperation(parentContext: parentContext, record: $0)
+			let convertOperation = RecordToCoreDataOperation(parentContext: context, record: $0)
 			convertOperation.errorBlock = { self.errorBlock?($0) }
-			self.coreDataOperationQueue.addOperation(convertOperation)
+			self.queue.addOperation(convertOperation)
 		}
 		
 		recordZoneChangesOperation.recordWithIDWasDeletedBlock = {
 			// Delete NSManagedObject with specified recordID Operation
-			let deleteOperation = DeleteFromCoreDataOperation(parentContext: parentContext, recordID: $0)
+			let deleteOperation = DeleteFromCoreDataOperation(parentContext: context, recordID: $0)
 			deleteOperation.errorBlock = { self.errorBlock?($0) }
-			self.coreDataOperationQueue.addOperation(deleteOperation)
+			self.queue.addOperation(deleteOperation)
 		}
 		
-		recordZoneChangesOperation.errorBlock = { self.handle(recordZoneChangesError: $0, parentContext: parentContext) }
+		recordZoneChangesOperation.errorBlock = { zoneID, error in
+			self.handle(recordZoneChangesError: error, in: zoneID, database: database, context: context)
+		}
 		
-		fetchOperationQueue.addOperation(recordZoneChangesOperation)
+		queue.addOperation(recordZoneChangesOperation)
 	}
 
-	private func handle(recordZoneChangesError: Error, parentContext: NSManagedObjectContext) {
-		guard let cloudError = recordZoneChangesError as? CKError,
-			case .userDeletedZone = cloudError.code else {
+	private func handle(recordZoneChangesError: Error, in zoneId: CKRecordZoneID, database: CKDatabase, context: NSManagedObjectContext) {
+		guard let cloudError = recordZoneChangesError as? CKError else {
 			errorBlock?(recordZoneChangesError)
 			return
 		}
 		
-		// If user purged cloud database, we need to delete local cache (according Apple Guidelines)
-		fetchOperationQueue.cancelAllOperations()
-		coreDataOperationQueue.cancelAllOperations()
-
-		let purgeOperation = PurgeLocalDatabaseOperation(parentContext: parentContext, managedObjectModel: persistentContainer.managedObjectModel)
-		purgeOperation.errorBlock = { self.errorBlock?($0) }
-		coreDataOperationQueue.addOperation(purgeOperation)
+		switch cloudError.code {
+		// User purged cloud database, we need to delete local cache (according Apple Guidelines)
+		case .userDeletedZone:
+			queue.cancelAllOperations()
+			
+			let purgeOperation = PurgeLocalDatabaseOperation(parentContext: context, managedObjectModel: persistentContainer.managedObjectModel)
+			purgeOperation.errorBlock = errorBlock
+			queue.addOperation(purgeOperation)
+			
+		// Our token is expired, we need to refetch everything again
+		case .changeTokenExpired:
+			tokens.serverChangeToken = nil
+			tokens.tokensByRecordZoneID[zoneId] = nil
+			self.addRecordZoneChangesOperation(recordZoneIDs: [CloudCore.config.zoneID], database: database, context: context)
+		default: errorBlock?(cloudError)
+		}
 	}
 	
 }
