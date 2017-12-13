@@ -8,7 +8,7 @@
 
 import CloudKit
 
-class FetchRecordZoneChangesOperation: AsynchronousOperation {
+class FetchRecordZoneChangesOperation: Operation {
 	// Set on init
 	let tokens: Tokens
 	let recordZoneIDs: [CKRecordZoneID]
@@ -19,10 +19,21 @@ class FetchRecordZoneChangesOperation: AsynchronousOperation {
 	var recordChangedBlock: ((CKRecord) -> Void)?
 	var recordWithIDWasDeletedBlock: ((CKRecordID) -> Void)?
 	
+	private let optionsByRecordZoneID: [CKRecordZoneID: CKFetchRecordZoneChangesOptions]
+	private let fetchQueue = OperationQueue()
+	
 	init(from database: CKDatabase, recordZoneIDs: [CKRecordZoneID], tokens: Tokens) {
 		self.tokens = tokens
 		self.database = database
 		self.recordZoneIDs = recordZoneIDs
+		
+		var optionsByRecordZoneID = [CKRecordZoneID: CKFetchRecordZoneChangesOptions]()
+		for zoneID in recordZoneIDs {
+			let options = CKFetchRecordZoneChangesOptions()
+			options.previousServerChangeToken = self.tokens.tokensByRecordZoneID[zoneID]
+			optionsByRecordZoneID[zoneID] = options
+		}
+		self.optionsByRecordZoneID = optionsByRecordZoneID
 		
 		super.init()
 		
@@ -32,25 +43,22 @@ class FetchRecordZoneChangesOperation: AsynchronousOperation {
 	override func main() {
 		super.main()
 
-		// Set tokens for zones
-		var optionsByRecordZoneID = [CKRecordZoneID: CKFetchRecordZoneChangesOptions]()
-		for zoneID in recordZoneIDs {
-			let options = CKFetchRecordZoneChangesOptions()
-			options.previousServerChangeToken = self.tokens.tokensByRecordZoneID[zoneID]
-			optionsByRecordZoneID[zoneID] = options
-		}
+		let fetchOperation = self.makeFetchOperation(optionsByRecordZoneID: optionsByRecordZoneID)
+		self.fetchQueue.addOperation(fetchOperation)
 		
+		fetchQueue.waitUntilAllOperationsAreFinished()
+	}
+	
+	private func makeFetchOperation(optionsByRecordZoneID: [CKRecordZoneID: CKFetchRecordZoneChangesOptions]) -> CKFetchRecordZoneChangesOperation {
 		// Init Fetch Operation
 		let fetchOperation = CKFetchRecordZoneChangesOperation(recordZoneIDs: recordZoneIDs, optionsByRecordZoneID: optionsByRecordZoneID)
 		
-		fetchOperation.recordChangedBlock = { self.recordChangedBlock?($0) }
-        fetchOperation.recordWithIDWasDeletedBlock = { recordID, _ in
-            self.recordWithIDWasDeletedBlock?(recordID)
-        }
-		fetchOperation.recordZoneChangeTokensUpdatedBlock = { recordZoneID, serverChangeToken, _ in
-			self.tokens.tokensByRecordZoneID[recordZoneID] = serverChangeToken
+		fetchOperation.recordChangedBlock = {
+			self.recordChangedBlock?($0)
 		}
-		
+		fetchOperation.recordWithIDWasDeletedBlock = { recordID, _ in
+			self.recordWithIDWasDeletedBlock?(recordID)
+		}
 		fetchOperation.recordZoneFetchCompletionBlock = { zoneId, serverChangeToken, clientChangeTokenData, isMore, error in
 			self.tokens.tokensByRecordZoneID[zoneId] = serverChangeToken
 			
@@ -58,11 +66,15 @@ class FetchRecordZoneChangesOperation: AsynchronousOperation {
 				self.errorBlock?(zoneId, error)
 			}
 			
-			self.state = .finished
+			if isMore {
+				let moreOperation = self.makeFetchOperation(optionsByRecordZoneID: optionsByRecordZoneID)
+				self.fetchQueue.addOperation(moreOperation)
+			}
 		}
 		
 		fetchOperation.qualityOfService = self.qualityOfService
 		fetchOperation.database = self.database
-		fetchOperation.start()
+		
+		return fetchOperation
 	}
 }
