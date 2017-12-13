@@ -28,11 +28,10 @@ import CloudKit
 	```
 */
 open class Tokens: NSObject, NSCoding {
-	var serverChangeToken: CKServerChangeToken?
+	
 	var tokensByRecordZoneID = [CKRecordZoneID: CKServerChangeToken]()
 	
 	private struct ArchiverKey {
-		static let serverToken = "serverChangeToken"
 		static let tokensByRecordZoneID = "tokensByRecordZoneID"
 	}
 	
@@ -40,42 +39,43 @@ open class Tokens: NSObject, NSCoding {
 		super.init()
 	}
 	
+	// MARK: User Defaults
+	
+	/// Load saved Tokens from UserDefaults. Key is used: `CloudCore.config.userDefaultsKeyTokens`
+	///
+	/// - Returns: previously saved `Token` object, if tokens weren't saved before newly initialized `Tokens` object will be returned
+	open static func loadFromUserDefaults() -> Tokens {
+		guard let tokensData = UserDefaults.standard.data(forKey: CloudCore.config.userDefaultsKeyTokens),
+			let tokens = NSKeyedUnarchiver.unarchiveObject(with: tokensData) as? Tokens else {
+				return Tokens()
+		}
+		
+		return tokens
+	}
+	
+	/// Save tokens to UserDefaults and synchronize. Key is used: `CloudCore.config.userDefaultsKeyTokens`
+	///
+	/// - Parameter toKey: UserDefaults key, default is `CloudCore.config.userDefaultsKeyTokens`
+	open func saveToUserDefaults() {
+		let tokensData = NSKeyedArchiver.archivedData(withRootObject: self)
+		UserDefaults.standard.set(tokensData, forKey: CloudCore.config.userDefaultsKeyTokens)
+		UserDefaults.standard.synchronize()
+	}
+	
 	// MARK: NSCoding
 	
 	///	Returns an object initialized from data in a given unarchiver.
 	public required init?(coder aDecoder: NSCoder) {
-		self.serverChangeToken = aDecoder.decodeObject(forKey: ArchiverKey.serverToken) as? CKServerChangeToken
-		self.tokensByRecordZoneID = aDecoder.decodeObject(forKey: ArchiverKey.tokensByRecordZoneID) as? [CKRecordZoneID: CKServerChangeToken] ?? [CKRecordZoneID: CKServerChangeToken]()
+		if let decodedTokens = aDecoder.decodeObject(forKey: ArchiverKey.tokensByRecordZoneID) as? [CKRecordZoneID: CKServerChangeToken] {
+			self.tokensByRecordZoneID = decodedTokens
+		} else {
+			return nil
+		}
 	}
 	
 	/// Encodes the receiver using a given archiver.
 	open func encode(with aCoder: NSCoder) {
-		aCoder.encode(serverChangeToken, forKey: ArchiverKey.serverToken)
 		aCoder.encode(tokensByRecordZoneID, forKey: ArchiverKey.tokensByRecordZoneID)
-	}
-	
-	// MARK: User Defaults
-	
-	/// Load saved Tokens from UserDefaults
-	///
-	/// - Parameter fromKey: UserDefaults key, default is `CloudCore.config.userDefaultsKeyTokens`
-	/// - Returns: previously saved `Token` object, if tokens weren't saved before newly initialized `Tokens` object will be returned
-	open static func loadFromUserDefaults(fromKey: String = CloudCore.config.userDefaultsKeyTokens) -> Tokens {
-		guard let tokensData = UserDefaults.standard.data(forKey: fromKey),
-			let tokens = NSKeyedUnarchiver.unarchiveObject(with: tokensData) as? Tokens else {
-				return Tokens()
-		}
-
-		return tokens
-	}
-	
-	/// Save tokens to UserDefaults and synchronize
-	///
-	/// - Parameter forKey: UserDefaults key, default is `CloudCore.config.userDefaultsKeyTokens`
-	open func saveToUserDefaults(forKey: String = CloudCore.config.userDefaultsKeyTokens) {
-		let tokensData = NSKeyedArchiver.archivedData(withRootObject: self)
-		UserDefaults.standard.set(tokensData, forKey: forKey)
-		UserDefaults.standard.synchronize()
 	}
 	
 }

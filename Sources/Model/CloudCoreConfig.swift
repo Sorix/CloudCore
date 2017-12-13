@@ -57,8 +57,4 @@ public struct CloudCoreConfig {
 	/// Default value is `CloudCoreTokens`
 	public var userDefaultsKeyTokens = "CloudCoreTokens"
 	
-	/// UserDefault's key to store boolean value of CloudCore performed one-time initialization per application installation
-	///
-	/// Default value is `CloudCoreIsSetuped`
-	public var userDefaultsKeyIsSetuped = "CloudCoreIsSetuped"
 }

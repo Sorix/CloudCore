@@ -119,7 +119,6 @@ public class FetchAndSaveOperation: Operation {
 			
 		// Our token is expired, we need to refetch everything again
 		case .changeTokenExpired:
-			tokens.serverChangeToken = nil
 			tokens.tokensByRecordZoneID[zoneId] = nil
 			self.addRecordZoneChangesOperation(recordZoneIDs: [CloudCore.config.zoneID], database: database, context: context)
 		default: errorBlock?(cloudError)
