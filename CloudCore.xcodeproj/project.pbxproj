@@ -401,10 +401,11 @@
 		E2075FF11E4BB6EF00E31F1F /* Classes */ = {
 			isa = PBXGroup;
 			children = (
+				E2075FF81E4BBEAC00E31F1F /* AsynchronousOperation.swift */,
 				D985DEB61FE0471600236870 /* Resolve Error */,
 				D985DEA61FE0278500236870 /* Helper Operations */,
 				E2075FF31E4BB70D00E31F1F /* Fetch */,
-				E2075FF21E4BB6F700E31F1F /* Upload */,
+				E2075FF21E4BB6F700E31F1F /* Save */,
 				E200D44C1E48E13200B707D4 /* CloudCore.swift */,
 				E2564BFE1E5061BC002E518B /* ErrorBlockProxy.swift */,
 				E2BB748D1E7EA8690048C129 /* SetupOperation.swift */,
@@ -412,7 +413,7 @@
 			path = Classes;
 			sourceTree = "<group>";
 		};
-		E2075FF21E4BB6F700E31F1F /* Upload */ = {
+		E2075FF21E4BB6F700E31F1F /* Save */ = {
 			isa = PBXGroup;
 			children = (
 				E2FA74461E769D8700C3489D /* Model */,
@@ -420,7 +421,7 @@
 				E23C478B1E48A404004310F9 /* CloudSaveOperationQueue.swift */,
 				E22C40451E42956C009469A1 /* CoreDataListener.swift */,
 			);
-			path = Upload;
+			path = Save;
 			sourceTree = "<group>";
 		};
 		E2075FF31E4BB70D00E31F1F /* Fetch */ = {
@@ -560,7 +561,6 @@
 		E2C02A171E4CDEDA001B2871 /* SubOperations */ = {
 			isa = PBXGroup;
 			children = (
-				E2075FF81E4BBEAC00E31F1F /* AsynchronousOperation.swift */,
 				E2C02A181E4CDEF1001B2871 /* DeleteFromCoreDataOperation.swift */,
 				E2C02A131E4CC2A5001B2871 /* FetchRecordZoneChangesOperation.swift */,
 				E21FA03D1E4A7E7200B1DAA2 /* RecordToCoreDataOperation.swift */,
