@@ -37,17 +37,6 @@ it, simply add the following line to your Podfile:
 pod 'CloudCore', '~> 2.0'
 ```
 
-### Swift Package Manager
-The [Swift Package Manager](https://swift.org/package-manager/) is a tool for automating the distribution of Swift code and is integrated into the swift compiler. You can read more about package manager in [An Introduction to the Swift Package Manager](https://www.raywenderlich.com/148832/introduction-swift-package-manager) article.
-
-Once you have set up Swift package for your application, just add CloudCore as dependency at your `Package.swift`:
-
-```swift
-dependencies: [
-    .Package(url: "https://github.com/Sorix/CloudCore", majorVersion: 2)
-]
-```
-
 ## How to help?
 Current version of framework hasn't been deeply tested and may contain errors. If you can test framework, I will be very glad. If you found an error, please post [an issue](https://github.com/Sorix/CloudCore/issues).
 
