@@ -44,13 +44,4 @@ public enum CloudCoreError: Error, CustomStringConvertible {
 	public var description: String { return self.localizedDescription }
 }
 
-public struct UnexpectedError: Error, CustomDebugStringConvertible {
-	public let debugDescription: String
-	
-	init(file: String = #file, line: Int = #line, function: String = #function) {
-		debugDescription = "Unexpected error at file: " + file + ", method: " + function + ", line: " + String(line)
-		assertionFailure(debugDescription)
-	}
-}
-
 public typealias ErrorBlock = (Error) -> Void

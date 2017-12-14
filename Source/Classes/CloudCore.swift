@@ -13,7 +13,7 @@ import CloudKit
 	Main framework class, in most cases you will use only methods from this class, all methods and properties are `static`.
 
 	## Save to cloud
-	On application inialization call `CloudCore.enable(persistentContainer:errorDelegate:)` method, so framework will automatically monitor changes at Core Data and upload it to iCloud.
+	On application inialization call `CloudCore.enable(persistentContainer:)` method, so framework will automatically monitor changes at Core Data and upload it to iCloud.
 
 	### Example
 	```swift
@@ -22,7 +22,8 @@ import CloudKit
 		application.registerForRemoteNotifications()
 
 		// Enable CloudCore syncing
-		CloudCore.enable(persistentContainer: persistentContainer, errorDelegate: self)
+		CloudCore.delegate = someDelegate // it is recommended to set delegate to track errors
+		CloudCore.enable(persistentContainer: persistentContainer)
 
 		return true
 	}
@@ -58,6 +59,7 @@ open class CloudCore {
 	/// `Tokens` object, read more at class description. By default variable is loaded from User Defaults.
 	public static var tokens = Tokens.loadFromUserDefaults()
 	
+	/// Error and sync actions are reported to that delegate
 	public static weak var delegate: CloudCoreDelegate? {
 		didSet {
 			coreDataListener?.delegate = delegate
@@ -74,7 +76,6 @@ open class CloudCore {
 	///
 	/// - Parameters:
 	///   - container: `NSPersistentContainer` that will be used to save data
-	///   - errorDelegate: errors will be occured to that delegate (that delegate is a `weak`)
 	public static func enable(persistentContainer container: NSPersistentContainer) {
 		// Listen for local changes
 		let listener = CoreDataListener(container: container)
