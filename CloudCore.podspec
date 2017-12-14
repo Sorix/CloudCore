@@ -12,10 +12,10 @@ Pod::Spec.new do |s|
 
   s.ios.deployment_target = '10.0'
   s.osx.deployment_target = '10.12'
+  s.tvos.deployment_target = '10.0'
+  s.watchos.deployment_target = '3.0'
 
-  s.ios.source_files = 'Sources/**/*.swift'
-  # s.tvos.source_files = 'Sources/**/*.swift'
-  s.osx.source_files = 'Sources/**/*.swift'
+  s.source_files = 'Sources/**/*.swift'
 
   s.ios.frameworks = 'Foundation', 'CloudKit', 'CoreData'
   s.osx.frameworks = 'Foundation', 'CloudKit', 'CoreData'
