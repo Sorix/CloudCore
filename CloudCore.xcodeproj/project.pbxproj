@@ -200,7 +200,7 @@
 			isa = PBXGroup;
 			children = (
 				D5B2E8A01C3A780C00C0327D /* Products */,
-				D5C629691C3A809D007F7B7C /* Sources */,
+				D5C629691C3A809D007F7B7C /* Source */,
 				E29BB2291E436F310020F5B6 /* Tests */,
 				E22C40441E4291FB009469A1 /* CloudCore.podspec */,
 				D9B3C7301FCEFC9C00CDB7FF /* Frameworks */,
@@ -218,15 +218,7 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
-		D5C629691C3A809D007F7B7C /* Sources */ = {
-			isa = PBXGroup;
-			children = (
-				D90179DC1FE2AAD9008A9ABD /* CloudCore */,
-			);
-			path = Sources;
-			sourceTree = "<group>";
-		};
-		D90179DC1FE2AAD9008A9ABD /* CloudCore */ = {
+		D5C629691C3A809D007F7B7C /* Source */ = {
 			isa = PBXGroup;
 			children = (
 				E2FA744B1E76B7AC00C3489D /* Resources */,
@@ -236,7 +228,7 @@
 				E2E296C81E49DA0100E7D6ED /* Model */,
 				E23C47931E48CE54004310F9 /* Protocols */,
 			);
-			path = CloudCore;
+			path = Source;
 			sourceTree = "<group>";
 		};
 		D90811681FE2BE3A00898F24 /* CloudCoreTests */ = {
@@ -932,7 +924,7 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
-				INFOPLIST_FILE = "$(SRCROOT)/Sources/CloudCore/Resources/Info.plist";
+				INFOPLIST_FILE = "$(SRCROOT)/Source/Resources/Info.plist";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = uvasily.CloudCore;
@@ -957,7 +949,7 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
-				INFOPLIST_FILE = "$(SRCROOT)/Sources/CloudCore/Resources/Info.plist";
+				INFOPLIST_FILE = "$(SRCROOT)/Source/Resources/Info.plist";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = uvasily.CloudCore;
