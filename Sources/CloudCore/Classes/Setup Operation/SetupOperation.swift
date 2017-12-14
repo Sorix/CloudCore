@@ -52,16 +52,22 @@ class SetupOperation: Operation {
 		}
 		
 		// Subscribe operation
+		#if !os(watchOS)
 		let subscribeOperation = SubscribeOperation()
 		subscribeOperation.errorBlock = errorBlock
 		subscribeOperation.addDependency(createZoneOperation)
-		
+		queue.addOperation(subscribeOperation)
+		#endif
+			
 		// Upload all local data
 		let uploadOperation = UploadAllLocalDataOperation(parentContext: childContext, managedObjectModel: container.managedObjectModel)
 		uploadOperation.errorBlock = errorBlock
-		uploadOperation.addDependency(subscribeOperation)
 		
-		queue.addOperations([createZoneOperation, subscribeOperation, uploadOperation], waitUntilFinished: true)
+		#if !os(watchOS)
+		uploadOperation.addDependency(subscribeOperation)
+		#endif
+			
+		queue.addOperations([createZoneOperation, uploadOperation], waitUntilFinished: true)
 		
 		if self.parentContext == nil {
 			do {

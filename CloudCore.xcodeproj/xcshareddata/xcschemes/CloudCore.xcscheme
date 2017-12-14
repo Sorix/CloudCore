@@ -14,9 +14,9 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "D5C6293F1C3A7FAA007F7B7C"
+               BlueprintIdentifier = "D5B2E89E1C3A780C00C0327D"
                BuildableName = "CloudCore.framework"
-               BlueprintName = "CloudCore-Mac"
+               BlueprintName = "CloudCore"
                ReferencedContainer = "container:CloudCore.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -27,15 +27,16 @@
       selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
       language = ""
-      shouldUseLaunchSchemeArgsEnv = "YES">
+      shouldUseLaunchSchemeArgsEnv = "YES"
+      codeCoverageEnabled = "YES">
       <Testables>
          <TestableReference
             skipped = "NO">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "E29D11811E69B30C00E3DCBF"
-               BuildableName = "CloudCoreTests-macOS.xctest"
-               BlueprintName = "CloudCoreTests-macOS"
+               BlueprintIdentifier = "E29BB2271E436F310020F5B6"
+               BuildableName = "CloudCoreTests.xctest"
+               BlueprintName = "CloudCoreTests"
                ReferencedContainer = "container:CloudCore.xcodeproj">
             </BuildableReference>
          </TestableReference>
@@ -43,9 +44,9 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "D5C6293F1C3A7FAA007F7B7C"
+            BlueprintIdentifier = "D5B2E89E1C3A780C00C0327D"
             BuildableName = "CloudCore.framework"
-            BlueprintName = "CloudCore-Mac"
+            BlueprintName = "CloudCore"
             ReferencedContainer = "container:CloudCore.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
@@ -66,9 +67,9 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "D5C6293F1C3A7FAA007F7B7C"
+            BlueprintIdentifier = "D5B2E89E1C3A780C00C0327D"
             BuildableName = "CloudCore.framework"
-            BlueprintName = "CloudCore-Mac"
+            BlueprintName = "CloudCore"
             ReferencedContainer = "container:CloudCore.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
@@ -84,9 +85,9 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "D5C6293F1C3A7FAA007F7B7C"
+            BlueprintIdentifier = "D5B2E89E1C3A780C00C0327D"
             BuildableName = "CloudCore.framework"
-            BlueprintName = "CloudCore-Mac"
+            BlueprintName = "CloudCore"
             ReferencedContainer = "container:CloudCore.xcodeproj">
          </BuildableReference>
       </MacroExpansion>

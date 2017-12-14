@@ -79,19 +79,25 @@ open class CloudCore {
 		self.coreDataListener = listener
 		
 		// Subscribe (subscription may be outdated/removed)
+		#if !os(watchOS)
 		let subscribeOperation = SubscribeOperation()
 		subscribeOperation.errorBlock = { [weak errorDelegate] in
 			handle(subscriptionError: $0, container: container, errorDelegate: errorDelegate)
 		}
+		queue.addOperation(subscribeOperation)
+		#endif
 		
 		// Fetch updated data (e.g. push notifications weren't received)
 		let updateFromCloudOperation = FetchAndSaveOperation(persistentContainer: container)
 		updateFromCloudOperation.errorBlock = { [weak errorDelegate] in
 			errorDelegate?.cloudCore(error: $0, module: .some(.fetchFromCloud))
 		}
-		updateFromCloudOperation.addDependency(subscribeOperation)
 		
-		queue.addOperations([subscribeOperation, updateFromCloudOperation], waitUntilFinished: false)
+		#if !os(watchOS)
+		updateFromCloudOperation.addDependency(subscribeOperation)
+		#endif
+			
+		queue.addOperation(updateFromCloudOperation)
 	}
 	
 	/// Disables synchronization (push notifications won't be sent also)

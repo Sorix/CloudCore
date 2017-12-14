@@ -107,16 +107,18 @@ class CoreDataListener {
 			}
 			
 			// Subscribe operation
-			let subscribeOperation = SubscribeOperation()
-			subscribeOperation.errorBlock = errorBlock
-			subscribeOperation.addDependency(createZoneOperation)
+			#if !os(watchOS)
+				let subscribeOperation = SubscribeOperation()
+				subscribeOperation.errorBlock = errorBlock
+				subscribeOperation.addDependency(createZoneOperation)
+				cloudSaveOperationQueue.addOperation(subscribeOperation)
+			#endif
 			
 			// Upload all local data
 			let uploadOperation = UploadAllLocalDataOperation(parentContext: parentContext, managedObjectModel: container.managedObjectModel)
 			uploadOperation.errorBlock = errorBlock
-			uploadOperation.addDependency(subscribeOperation)
 			
-			cloudSaveOperationQueue.addOperations([createZoneOperation, subscribeOperation, uploadOperation], waitUntilFinished: true)
+			cloudSaveOperationQueue.addOperations([createZoneOperation, uploadOperation], waitUntilFinished: true)
 		case .operationCancelled: return
 		default: errorBlock?(cloudError)
 		}
