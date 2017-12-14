@@ -48,7 +48,7 @@ public class FetchAndSaveOperation: Operation {
 	override public func main() {
 		if self.isCancelled { return }
 
-		NotificationCenter.default.post(name: .CloudCoreWillSyncFromCloud, object: nil)
+		CloudCore.delegate?.willSyncFromCloud()
 		
 		let backgroundContext = persistentContainer.newBackgroundContext()
 		backgroundContext.name = CloudCore.config.contextName
@@ -65,7 +65,7 @@ public class FetchAndSaveOperation: Operation {
 			errorBlock?(error)
 		}
 		
-		NotificationCenter.default.post(name: .CloudCoreDidSyncFromCloud, object: nil)
+		CloudCore.delegate?.didSyncFromCloud()
 	}
 	
 	private func addRecordZoneChangesOperation(recordZoneIDs: [CKRecordZoneID], database: CKDatabase, context: NSManagedObjectContext) {

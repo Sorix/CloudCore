@@ -32,9 +32,9 @@ class UploadAllLocalDataOperation: Operation {
 	override func main() {
 		super.main()
 		
-		NotificationCenter.default.post(name: .CloudCoreWillSyncToCloud, object: nil)
+		CloudCore.delegate?.willSyncToCloud()
 		defer {
-			NotificationCenter.default.post(name: .CloudCoreDidSyncToCloud, object: nil)
+			CloudCore.delegate?.didSyncToCloud()
 		}
 		
 		let childContext = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)

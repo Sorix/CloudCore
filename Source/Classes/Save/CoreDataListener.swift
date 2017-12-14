@@ -19,13 +19,14 @@ class CoreDataListener {
 
 	let cloudContextName = "CloudCoreSync"
 	
-	let errorBlock: ErrorBlock?
+	// Used for errors delegation
+	weak var delegate: CloudCoreDelegate?
 	
-	public init(container: NSPersistentContainer, errorBlock: ErrorBlock?) {
-		self.errorBlock = errorBlock
+	public init(container: NSPersistentContainer) {
 		self.container = container
-		
-		converter.errorBlock = errorBlock
+		converter.errorBlock = { [weak self] in
+			self?.delegate?.error(error: $0, module: .some(.saveToCloud))
+		}
 	}
 	
 	/// Observe Core Data willSave and didSave notifications
@@ -66,7 +67,7 @@ class CoreDataListener {
 		
 		DispatchQueue.global(qos: .utility).async { [weak self] in
 			guard let listener = self else { return }
-			NotificationCenter.default.post(name: .CloudCoreWillSyncToCloud, object: nil)
+			CloudCore.delegate?.willSyncToCloud()
 			
 			let backgroundContext = listener.container.newBackgroundContext()
 			backgroundContext.name = listener.cloudContextName
@@ -81,16 +82,16 @@ class CoreDataListener {
 					try backgroundContext.save()
 				}
 			} catch {
-				listener.errorBlock?(error)
+				listener.delegate?.error(error: error, module: .some(.saveToCloud))
 			}
 
-			NotificationCenter.default.post(name: .CloudCoreDidSyncToCloud, object: nil)
+			CloudCore.delegate?.didSyncToCloud()
 		}
 	}
 	
 	private func handle(error: Error, parentContext: NSManagedObjectContext) {
 		guard let cloudError = error as? CKError else {
-			errorBlock?(error)
+			delegate?.error(error: error, module: .some(.saveToCloud))
 			return
 		}
 
@@ -102,25 +103,25 @@ class CoreDataListener {
 			// Create CloudCore Zone
 			let createZoneOperation = CreateCloudCoreZoneOperation()
 			createZoneOperation.errorBlock = {
-				self.errorBlock?($0)
+				self.delegate?.error(error: $0, module: .some(.saveToCloud))
 				self.cloudSaveOperationQueue.cancelAllOperations()
 			}
 			
 			// Subscribe operation
 			#if !os(watchOS)
 				let subscribeOperation = SubscribeOperation()
-				subscribeOperation.errorBlock = errorBlock
+				subscribeOperation.errorBlock = { self.delegate?.error(error: $0, module: .some(.saveToCloud)) }
 				subscribeOperation.addDependency(createZoneOperation)
 				cloudSaveOperationQueue.addOperation(subscribeOperation)
 			#endif
 			
 			// Upload all local data
 			let uploadOperation = UploadAllLocalDataOperation(parentContext: parentContext, managedObjectModel: container.managedObjectModel)
-			uploadOperation.errorBlock = errorBlock
+			uploadOperation.errorBlock = { self.delegate?.error(error: $0, module: .some(.saveToCloud)) }
 			
 			cloudSaveOperationQueue.addOperations([createZoneOperation, uploadOperation], waitUntilFinished: true)
 		case .operationCancelled: return
-		default: errorBlock?(cloudError)
+		default: delegate?.error(error: cloudError, module: .some(.saveToCloud))
 		}
 	}
 

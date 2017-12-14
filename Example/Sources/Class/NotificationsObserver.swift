@@ -10,25 +10,26 @@ import Foundation
 import CloudCore
 import os.log
 
-class NotificationsObserver {
+class CloudCoreDelegateHandler: CloudCoreDelegate {
 	
-	func observe() {
-		NotificationCenter.default.addObserver(forName: .CloudCoreWillSyncFromCloud, object: nil, queue: nil) { _ in
-			os_log("🔁 Started fetching from iCloud", log: OSLog.default, type: .debug)
-		}
-		
-		NotificationCenter.default.addObserver(forName: .CloudCoreDidSyncFromCloud, object: nil, queue: nil) { _ in
-			os_log("✅ Finishing fetching from iCloud", log: OSLog.default, type: .debug)
-		}
-		
-		NotificationCenter.default.addObserver(forName: .CloudCoreWillSyncToCloud, object: nil, queue: nil) { _ in
-			os_log("💾 Started saving to iCloud", log: OSLog.default, type: .debug)
-		}
-		
-		NotificationCenter.default.addObserver(forName: .CloudCoreDidSyncToCloud, object: nil, queue: nil) { _ in
-			os_log("✅ Finished saving to iCloud", log: OSLog.default, type: .debug)
-		}
-		
+	func willSyncFromCloud() {
+		os_log("🔁 Started fetching from iCloud", log: OSLog.default, type: .debug)
+	}
+	
+	func didSyncFromCloud() {
+		os_log("✅ Finishing fetching from iCloud", log: OSLog.default, type: .debug)
+	}
+	
+	func willSyncToCloud() {
+		os_log("💾 Started saving to iCloud", log: OSLog.default, type: .debug)
+	}
+
+	func didSyncToCloud() {
+		os_log("✅ Finished saving to iCloud", log: OSLog.default, type: .debug)
+	}
+	
+	func error(error: Error, module: Module?) {
+		print("⚠️ CloudCore error detected in module \(String(describing: module)): \(error)")
 	}
 	
 }

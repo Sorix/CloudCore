@@ -58,6 +58,12 @@ open class CloudCore {
 	/// `Tokens` object, read more at class description. By default variable is loaded from User Defaults.
 	public static var tokens = Tokens.loadFromUserDefaults()
 	
+	public static weak var delegate: CloudCoreDelegate? {
+		didSet {
+			coreDataListener?.delegate = delegate
+		}
+	}
+	
 	public typealias NotificationUserInfo = [AnyHashable : Any]
 	
 	static private let queue = OperationQueue()
@@ -69,28 +75,24 @@ open class CloudCore {
 	/// - Parameters:
 	///   - container: `NSPersistentContainer` that will be used to save data
 	///   - errorDelegate: errors will be occured to that delegate (that delegate is a `weak`)
-	public static func enable(persistentContainer container: NSPersistentContainer, errorDelegate: CloudCoreErrorDelegate?) {
-		
+	public static func enable(persistentContainer container: NSPersistentContainer) {
 		// Listen for local changes
-		let listener = CoreDataListener(container: container, errorBlock: { [weak errorDelegate] in
-			errorDelegate?.cloudCore(error: $0, module: .some(.saveToCloud))
-		})
+		let listener = CoreDataListener(container: container)
+		listener.delegate = self.delegate
 		listener.observe()
 		self.coreDataListener = listener
 		
 		// Subscribe (subscription may be outdated/removed)
 		#if !os(watchOS)
 		let subscribeOperation = SubscribeOperation()
-		subscribeOperation.errorBlock = { [weak errorDelegate] in
-			handle(subscriptionError: $0, container: container, errorDelegate: errorDelegate)
-		}
+		subscribeOperation.errorBlock = { handle(subscriptionError: $0, container: container) }
 		queue.addOperation(subscribeOperation)
 		#endif
 		
 		// Fetch updated data (e.g. push notifications weren't received)
 		let updateFromCloudOperation = FetchAndSaveOperation(persistentContainer: container)
-		updateFromCloudOperation.errorBlock = { [weak errorDelegate] in
-			errorDelegate?.cloudCore(error: $0, module: .some(.fetchFromCloud))
+		updateFromCloudOperation.errorBlock = {
+			self.delegate?.error(error: $0, module: .some(.fetchFromCloud))
 		}
 		
 		#if !os(watchOS)
@@ -180,9 +182,9 @@ open class CloudCore {
 		}
 	}
 
-	static private func handle(subscriptionError: Error, container: NSPersistentContainer, errorDelegate: CloudCoreErrorDelegate?) {
+	static private func handle(subscriptionError: Error, container: NSPersistentContainer) {
 		guard let cloudError = subscriptionError as? CKError, let partialErrorValues = cloudError.partialErrorsByItemID?.values else {
-			errorDelegate?.cloudCore(error: subscriptionError, module: nil)
+			delegate?.error(error: subscriptionError, module: nil)
 			return
 		}
 		
@@ -200,7 +202,7 @@ open class CloudCore {
 			}
 		}
 		
-		errorDelegate?.cloudCore(error: subscriptionError, module: nil)
+		delegate?.error(error: subscriptionError, module: nil)
 	}
 
 }

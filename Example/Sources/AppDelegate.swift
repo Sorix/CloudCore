@@ -12,24 +12,18 @@ import CloudCore
 
 let persistentContainer = (UIApplication.shared.delegate as! AppDelegate).persistentContainer
 
-extension AppDelegate: CloudCoreErrorDelegate {
-	
-	func cloudCore(error: Error, module: Module?) {
-		print("⚠️ CloudCore error detected in module \(String(describing: module)): \(error)")
-	}
-	
-}
-
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate, UISplitViewControllerDelegate {
+	
+	let delegateHandler = CloudCoreDelegateHandler()
 
 	func application(_ application: UIApplication, willFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey : Any]? = nil) -> Bool {
 		// Register for push notifications about changes
 		application.registerForRemoteNotifications()
 		
 		// Enable uploading changed local data to CoreData
-		NotificationsObserver().observe()
-		CloudCore.enable(persistentContainer: persistentContainer, errorDelegate: self)
+		CloudCore.delegate = delegateHandler
+		CloudCore.enable(persistentContainer: persistentContainer)
 		
 		return true
 	}
