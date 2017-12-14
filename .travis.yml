@@ -1,45 +1,39 @@
 osx_image: xcode9
 language: objective-c
+podfile: "Example/Podfile"
 
 branches:
   only:
     - master
 
 env:
-  global:
-    - PROJECT="CloudCore.xcodeproj"
-    - EXAMPLE_PROJECT="Example/CloudCoreExample.xcodeproj"
-
-    - IOS_FRAMEWORK_SCHEME="CloudCore-iOS"
-    - MACOS_FRAMEWORK_SCHEME="CloudCore-Mac"
-    - EXAMPLE_SCHEME="CloudCoreExample"
-  matrix:
-    - DESTINATION="OS=11.0,name=iPhone 7 Plus"     SCHEME="$IOS_FRAMEWORK_SCHEME"   BUILD_EXAMPLE="YES" POD_LINT="YES"
-    - DESTINATION="arch=x86_64"                    SCHEME="$MACOS_FRAMEWORK_SCHEME" BUILD_EXAMPLE="NO"  POD_LINT="NO"
+  - DESTINATION='platform=OS X' POD_LINT="YES"
+  - DESTINATION='platform=iOS Simulator,name=iPhone 6S' BUILD_EXAMPLE == "YES"
+  - DESTINATION='platform=watchOS Simulator,name=Apple Watch - 38mm' SKIP_TEST="YES"
+  - DESTINATION='platform=tvOS Simulator,name=Apple TV 1080p'
 
 before_install:
  - gem install cocoapods --pre --no-rdoc --no-ri --no-document --quiet
  - gem install xcpretty-travis-formatter
 
 script:
- - set -o pipefail
+  - set -o pipefail
+  - xcodebuild -scheme CloudCore -destination "$DESTINATION" build | xcpretty -f `xcpretty-travis-formatter`
+  - if [ $SKIP_TEST != "YES" ]; then
+      xcodebuild -scheme CloudCore -destination "$DESTINATION" test | xcpretty -f `xcpretty-travis-formatter`;
+    fi
 
- # Build and test in debug
- - xcodebuild -project "$PROJECT" -scheme "$SCHEME" -destination "$DESTINATION" -configuration Debug ONLY_ACTIVE_ARCH=NO ENABLE_TESTABILITY=YES test | xcpretty -f `xcpretty-travis-formatter`
- # Build and test in release
- - xcodebuild -project "$PROJECT" -scheme "$SCHEME" -destination "$DESTINATION" -configuration Release ONLY_ACTIVE_ARCH=NO ENABLE_TESTABILITY=YES test | xcpretty -f `xcpretty-travis-formatter`
+  # Example
+  - if [ $BUILD_EXAMPLE == "YES" ]; then
+      xcodebuild -project "Example/CloudCoreExample.xcodeproj" -scheme "CloudCoreExample" -destination "$DESTINATION" build | xcpretty -f `xcpretty-travis-formatter`;
+    fi
 
- # Build example project
- - if [ $BUILD_EXAMPLE == "YES" ]; then
-    xcodebuild -project "$EXAMPLE_PROJECT" -scheme "$EXAMPLE_SCHEME" -destination "$DESTINATION" -configuration Debug ONLY_ACTIVE_ARCH=NO build | xcpretty -f `xcpretty-travis-formatter`;
-   fi
-
- # Run on Pull Request
- - if [ $POD_LINT == "YES" && $TRAVIS_PULL_REQUEST != "false" ]; then
+  # Run on Pull Request
+  - if [ $POD_LINT == "YES" && $TRAVIS_PULL_REQUEST != "false" ]; then
      pod lib lint --allow-warnings;
-   fi
+    fi
 
-# Run release to master branch
- - if [ $POD_LINT == "YES" && $TRAVIS_BRANCH = "master" ]; then
-     pod spec lint --allow-warnings;
-   fi
+  # Run release to master branch
+  - if [ $POD_LINT == "YES" && $TRAVIS_BRANCH = "master" ]; then
+      pod spec lint --allow-warnings;
+    fi
