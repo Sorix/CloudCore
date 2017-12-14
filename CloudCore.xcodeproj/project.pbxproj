@@ -90,8 +90,7 @@
 
 /* Begin PBXFileReference section */
 		D5B2E89F1C3A780C00C0327D /* CloudCore.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = CloudCore.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		D5C6298B1C3A8BBD007F7B7C /* Info-iOS.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "Info-iOS.plist"; sourceTree = "<group>"; };
-		D5C6298C1C3A8BBD007F7B7C /* Info-Mac.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "Info-Mac.plist"; sourceTree = "<group>"; };
+		D5C6298B1C3A8BBD007F7B7C /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		D9089D491FE14E57000FC60C /* SetupOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetupOperation.swift; sourceTree = "<group>"; };
 		D985DE9C1FDFF9D400236870 /* PurgeLocalDatabaseOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurgeLocalDatabaseOperation.swift; sourceTree = "<group>"; };
 		D985DEA31FE026D400236870 /* CreateCloudCoreZoneOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateCloudCoreZoneOperation.swift; sourceTree = "<group>"; };
@@ -130,7 +129,6 @@
 		E247EF8B1E67773F00EBD75E /* ErrorBlockProxyTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ErrorBlockProxyTests.swift; sourceTree = "<group>"; };
 		E247EF951E67873900EBD75E /* DeleteFromCoreDataOperationTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DeleteFromCoreDataOperationTests.swift; sourceTree = "<group>"; };
 		E247EF981E678EA200EBD75E /* CustomFunctions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CustomFunctions.swift; sourceTree = "<group>"; };
-		E24BD55D1E788C2200D092E6 /* Package.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Package.swift; sourceTree = "<group>"; };
 		E24F44A51E4595B900F78819 /* CoreDataRelationship.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CoreDataRelationship.swift; sourceTree = "<group>"; };
 		E24F44A81E459E3E00F78819 /* NSManagedObjectTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NSManagedObjectTests.swift; sourceTree = "<group>"; };
 		E2564BFE1E5061BC002E518B /* ErrorBlockProxy.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ErrorBlockProxy.swift; sourceTree = "<group>"; };
@@ -202,11 +200,9 @@
 			isa = PBXGroup;
 			children = (
 				D5B2E8A01C3A780C00C0327D /* Products */,
-				E2FA744B1E76B7AC00C3489D /* Resources */,
 				D5C629691C3A809D007F7B7C /* Sources */,
 				E29BB2291E436F310020F5B6 /* Tests */,
 				E22C40441E4291FB009469A1 /* CloudCore.podspec */,
-				E24BD55D1E788C2200D092E6 /* Package.swift */,
 				D9B3C7301FCEFC9C00CDB7FF /* Frameworks */,
 			);
 			sourceTree = "<group>";
@@ -233,6 +229,7 @@
 		D90179DC1FE2AAD9008A9ABD /* CloudCore */ = {
 			isa = PBXGroup;
 			children = (
+				E2FA744B1E76B7AC00C3489D /* Resources */,
 				E2075FF11E4BB6EF00E31F1F /* Classes */,
 				E2D507961E464FEA0038B6F8 /* Enum */,
 				E29BB21F1E433FDA0020F5B6 /* Extensions */,
@@ -510,8 +507,7 @@
 		E2FA744B1E76B7AC00C3489D /* Resources */ = {
 			isa = PBXGroup;
 			children = (
-				D5C6298C1C3A8BBD007F7B7C /* Info-Mac.plist */,
-				D5C6298B1C3A8BBD007F7B7C /* Info-iOS.plist */,
+				D5C6298B1C3A8BBD007F7B7C /* Info.plist */,
 			);
 			path = Resources;
 			sourceTree = "<group>";
@@ -936,7 +932,7 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
-				INFOPLIST_FILE = "$(SRCROOT)/Resources/Info-iOS.plist";
+				INFOPLIST_FILE = "$(SRCROOT)/Sources/CloudCore/Resources/Info.plist";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = uvasily.CloudCore;
@@ -961,7 +957,7 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
-				INFOPLIST_FILE = "$(SRCROOT)/Resources/Info-iOS.plist";
+				INFOPLIST_FILE = "$(SRCROOT)/Sources/CloudCore/Resources/Info.plist";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = uvasily.CloudCore;
