@@ -22,6 +22,10 @@ public enum CloudCoreError: Error, CustomStringConvertible {
 	
 	/// Custom error, description is placed inside associated value
 	case custom(String)
+	
+	
+	/// CloudCore doesn't support relationships with `NSOrderedSet` type
+	case orderedSetRelationshipIsNotSupported(NSRelationshipDescription)
 
 	/// A textual representation of error
 	public var localizedDescription: String {
@@ -32,11 +36,21 @@ public enum CloudCoreError: Error, CustomStringConvertible {
 		case .cloudKit(let text): return "iCloud error: \(text)"
 		case .coreData(let text): return "Core Data error: \(text)"
 		case .custom(let error): return error
+		case .orderedSetRelationshipIsNotSupported(let relationship): return "Relationships with NSOrderedSet type are not supported. Error occured in: \(relationship)"
 		}
 	}
 	
 	/// A textual representation of error
 	public var description: String { return self.localizedDescription }
+}
+
+public struct UnexpectedError: Error, CustomDebugStringConvertible {
+	public let debugDescription: String
+	
+	init(file: String = #file, line: Int = #line, function: String = #function) {
+		debugDescription = "Unexpected error at file: " + file + ", method: " + function + ", line: " + String(line)
+		assertionFailure(debugDescription)
+	}
 }
 
 public typealias ErrorBlock = (Error) -> Void

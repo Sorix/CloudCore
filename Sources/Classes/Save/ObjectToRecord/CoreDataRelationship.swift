@@ -40,6 +40,10 @@ class CoreDataRelationship {
 	/// - Returns: `CKReference` or `[CKReference]`
 	func makeRecordValue() throws -> Any? {
 		if self.description.isToMany {
+			if value is NSOrderedSet {
+				throw CloudCoreError.orderedSetRelationshipIsNotSupported(description)
+			}
+			
 			guard let objectsSet = value as? NSSet else { return nil }
 	
 			var referenceList = [CKReference]()

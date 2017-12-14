@@ -16,7 +16,7 @@
 * Respects of Core Data options (cascade deletions, external storage).
 * Knows and manages with CloudKit errors like `userDeletedZone`, `zoneNotFound`, `changeTokenExpired`, `isMore`.
 * Covered with Unit and CloudKit online **tests**.
-* All public methods are **[100% documentated](http://cocoadocs.org/docsets/CloudCore/)**.
+* All public methods are **[100% documented](http://cocoadocs.org/docsets/CloudCore/)**.
 * Currently only **private database** is supported.
 
 ## How it works?
