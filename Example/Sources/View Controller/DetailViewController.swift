@@ -48,8 +48,9 @@ class DetailViewController: UITableViewController {
 	}
 	
 	@objc private func navAddButtonDidTap(_ sender: UIBarButtonItem) {
-		ModelFactory.insertOrganizationWithEmployees(context: context)
-		try! context.save()
+		let employee = ModelFactory.insertEmployee(context: context)
+		let organization = context.object(with: organizationID) as! Organization
+		employee.organization = organization
 	}
 	
 	@objc private func navRenameButtonDidTap(_ sender: UIBarButtonItem) {

@@ -41,7 +41,7 @@ class ModelFactory {
 		return org
 	}
 	
-	private static func insertEmployee(context: NSManagedObjectContext) -> Employee {
+	static func insertEmployee(context: NSManagedObjectContext) -> Employee {
 		let user = Employee(context: context)
 		user.department = faker.commerce.department()
 		user.name = faker.name.name()
