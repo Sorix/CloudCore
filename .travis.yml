@@ -14,7 +14,6 @@ env:
 
 before_install:
  - gem install xcpretty-travis-formatter
-# - pod install --project-directory=Example
 
 script:
   - set -o pipefail
@@ -25,15 +24,15 @@ script:
 
   # Example
   - if [ "$BUILD_EXAMPLE" = "YES" ]; then
-      xcodebuild -project "Example/CloudCoreExample.xcworkspace" -scheme "CloudCoreExample" -destination "$DESTINATION" build | xcpretty -f `xcpretty-travis-formatter`;
+      xcodebuild -workspace "Example/CloudCoreExample.xcworkspace" -scheme "CloudCoreExample" -destination "$DESTINATION" build | xcpretty -f `xcpretty-travis-formatter`;
     fi
 
   # Run on Pull Request
-  - if [ "$POD_LINT" = "YES" && "$TRAVIS_PULL_REQUEST" != "false" ]; then
+  - if [ "$POD_LINT" = "YES" ] && [ "$TRAVIS_PULL_REQUEST" != "false" ]; then
      pod lib lint --allow-warnings;
     fi
 
   # Run release to master branch
-  - if [ "$POD_LINT" = "YES" && "$TRAVIS_BRANCH" = "master" ]; then
+  - if [ "$POD_LINT" = "YES" ] && [ "$TRAVIS_BRANCH" = "master" ]; then
       pod spec lint --allow-warnings;
     fi
