@@ -19,21 +19,21 @@ before_install:
 script:
   - set -o pipefail
   - xcodebuild -scheme CloudCore -destination "$DESTINATION" build | xcpretty -f `xcpretty-travis-formatter`
-  - if [ $SKIP_TEST != "YES" ]; then
+  - if [ "$SKIP_TEST" != "YES" ]; then
       xcodebuild -scheme CloudCore -destination "$DESTINATION" test | xcpretty -f `xcpretty-travis-formatter`;
     fi
 
   # Example
-  - if [ $BUILD_EXAMPLE == "YES" ]; then
+  - if [ "$BUILD_EXAMPLE" == "YES" ]; then
       xcodebuild -project "Example/CloudCoreExample.xcodeproj" -scheme "CloudCoreExample" -destination "$DESTINATION" build | xcpretty -f `xcpretty-travis-formatter`;
     fi
 
   # Run on Pull Request
-  - if [ $POD_LINT == "YES" && $TRAVIS_PULL_REQUEST != "false" ]; then
+  - if [ "$POD_LINT" == "YES" && "$TRAVIS_PULL_REQUEST" != "false" ]; then
      pod lib lint --allow-warnings;
     fi
 
   # Run release to master branch
-  - if [ $POD_LINT == "YES" && $TRAVIS_BRANCH = "master" ]; then
+  - if [ "$POD_LINT" == "YES" && "$TRAVIS_BRANCH" = "master" ]; then
       pod spec lint --allow-warnings;
     fi
