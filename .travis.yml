@@ -10,11 +10,11 @@ env:
   - DESTINATION='platform=OS X' POD_LINT="YES"
   - DESTINATION='platform=iOS Simulator,name=iPhone 6S' BUILD_EXAMPLE="YES"
   - DESTINATION='platform=watchOS Simulator,name=Apple Watch - 38mm' SKIP_TEST="YES"
-  - DESTINATION='platform=tvOS Simulator,name=Apple TV 1080p'
+  - DESTINATION='platform=tvOS Simulator,name=Apple TV 4K'
 
 before_install:
- - gem install cocoapods --pre --no-rdoc --no-ri --no-document --quiet
  - gem install xcpretty-travis-formatter
+ - pod install --project-directory=Example
 
 script:
   - set -o pipefail
