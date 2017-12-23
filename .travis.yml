@@ -28,11 +28,11 @@ script:
     fi
 
   # Run on Pull Request
-  - if [ "$POD_LINT" = "YES" ] && [ "$TRAVIS_PULL_REQUEST" != "false" ]; then
+  - if [[ "$POD_LINT" = "YES" && "$TRAVIS_PULL_REQUEST" != "false" ]]; then
      pod lib lint --allow-warnings;
     fi
 
   # Run release to master branch
-  - if [ "$POD_LINT" = "YES" ] && [ "$TRAVIS_BRANCH" = "master" ]; then
+  - if [[ "$POD_LINT" = "YES" && "$TRAVIS_BRANCH" = "master" ]]; then
       pod spec lint --allow-warnings;
     fi
