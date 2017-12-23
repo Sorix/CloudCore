@@ -8,7 +8,7 @@ branches:
 
 env:
   - DESTINATION='platform=OS X' POD_LINT="YES"
-  - DESTINATION='platform=iOS Simulator,name=iPhone 6S' BUILD_EXAMPLE == "YES"
+  - DESTINATION='platform=iOS Simulator,name=iPhone 6S' BUILD_EXAMPLE="YES"
   - DESTINATION='platform=watchOS Simulator,name=Apple Watch - 38mm' SKIP_TEST="YES"
   - DESTINATION='platform=tvOS Simulator,name=Apple TV 1080p'
 
@@ -24,16 +24,16 @@ script:
     fi
 
   # Example
-  - if [ "$BUILD_EXAMPLE" == "YES" ]; then
+  - if [ "$BUILD_EXAMPLE" = "YES" ]; then
       xcodebuild -project "Example/CloudCoreExample.xcodeproj" -scheme "CloudCoreExample" -destination "$DESTINATION" build | xcpretty -f `xcpretty-travis-formatter`;
     fi
 
   # Run on Pull Request
-  - if [ "$POD_LINT" == "YES" && "$TRAVIS_PULL_REQUEST" != "false" ]; then
+  - if [ "$POD_LINT" = "YES" && "$TRAVIS_PULL_REQUEST" != "false" ]; then
      pod lib lint --allow-warnings;
     fi
 
   # Run release to master branch
-  - if [ "$POD_LINT" == "YES" && "$TRAVIS_BRANCH" = "master" ]; then
+  - if [ "$POD_LINT" = "YES" && "$TRAVIS_BRANCH" = "master" ]; then
       pod spec lint --allow-warnings;
     fi
