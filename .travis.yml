@@ -14,7 +14,7 @@ env:
 
 before_install:
  - gem install xcpretty-travis-formatter
- - pod install --project-directory=Example
+# - pod install --project-directory=Example
 
 script:
   - set -o pipefail
@@ -25,7 +25,7 @@ script:
 
   # Example
   - if [ "$BUILD_EXAMPLE" = "YES" ]; then
-      xcodebuild -project "Example/CloudCoreExample.xcodeproj" -scheme "CloudCoreExample" -destination "$DESTINATION" build | xcpretty -f `xcpretty-travis-formatter`;
+      xcodebuild -project "Example/CloudCoreExample.xcworkspace" -scheme "CloudCoreExample" -destination "$DESTINATION" build | xcpretty -f `xcpretty-travis-formatter`;
     fi
 
   # Run on Pull Request
