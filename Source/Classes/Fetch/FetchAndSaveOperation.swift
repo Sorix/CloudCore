@@ -58,7 +58,7 @@ public class FetchAndSaveOperation: Operation {
 		}
 		
 		self.queue.waitUntilAllOperationsAreFinished()
-		
+
 		do {
 			try backgroundContext.save()
 		} catch {

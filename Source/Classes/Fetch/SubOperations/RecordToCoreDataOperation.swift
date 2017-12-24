@@ -10,11 +10,14 @@ import CoreData
 import CloudKit
 
 /// Convert CKRecord to NSManagedObject and save it to parent context, thread-safe
-class RecordToCoreDataOperation: Operation {
+class RecordToCoreDataOperation: AsynchronousOperation {
 	let parentContext: NSManagedObjectContext
 	let record: CKRecord
 	var errorBlock: ErrorBlock?
 	
+    /// - Parameters:
+    ///   - parentContext: operation will be safely performed in that context, **operation doesn't save that context** you need to do it manually
+    ///   - record: record that will be converted to `NSManagedObject`
 	init(parentContext: NSManagedObjectContext, record: CKRecord) {
 		self.parentContext = parentContext
 		self.record = record
@@ -26,16 +29,16 @@ class RecordToCoreDataOperation: Operation {
 	
 	override func main() {
 		if self.isCancelled { return }
-		
-		let childContext = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
-		childContext.parent = parentContext
-		
-		do {
-			try self.setManagedObject(in: childContext)
-			try childContext.save()
-		} catch {
-			self.errorBlock?(error)
-		}
+
+        parentContext.perform {
+            do {
+                try self.setManagedObject(in: self.parentContext)
+            } catch {
+                self.errorBlock?(error)
+            }
+            
+            self.state = .finished
+        }
 	}
 	
 	/// Create or update existing NSManagedObject from CKRecord

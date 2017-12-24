@@ -11,7 +11,6 @@
 #### Features
 * Sync manually or on **push notifications**.
 * **Differential sync**, only changed object and values are uploaded and downloaded. CloudCore even differs changed and not changed values inside objects.
-* Supports of **all relationship types**.
 * Respects of Core Data options (cascade deletions, external storage).
 * Knows and manages with CloudKit errors like `userDeletedZone`, `zoneNotFound`, `changeTokenExpired`, `isMore`.
 * Covered with Unit and CloudKit online **tests**.
