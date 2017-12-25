@@ -17,9 +17,20 @@ class RecordToCoreDataOperationTests: CoreDataTestCase {
 	// - MARK: Tests
 	
 	func testOperation() {
-		let (operation, record) = makeConvertOperation(in: self.context)
-		operation.start()
-		fetchAndCheck(record: record, in: self.context)
+		let finishExpectation = expectation(description: "conversionFinished")
+		let queue = OperationQueue()
+		let (convertOperation, record) = makeConvertOperation(in: self.context)
+		
+		let checkOperation = BlockOperation {
+			finishExpectation.fulfill()
+		}
+		checkOperation.addDependency(convertOperation)
+		
+		queue.addOperations([convertOperation, checkOperation], waitUntilFinished: false)
+		
+		wait(for: [finishExpectation], timeout: 2)
+		
+		self.fetchAndCheck(record: record, in: self.context)
 	}
 	
 	func testOperationsPerformance() {
@@ -56,7 +67,7 @@ class RecordToCoreDataOperationTests: CoreDataTestCase {
 			fetchRequest.predicate = NSPredicate(format: "recordID = %@", record.recordID.encodedString)
 			do {
 				guard let managedObject = try context.fetch(fetchRequest).first else {
-					XCTFail()
+					XCTFail("Couldn't find converted object")
 					return
 				}
 				
