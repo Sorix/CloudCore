@@ -13,28 +13,17 @@ import CloudCore
 let persistentContainer = (UIApplication.shared.delegate as! AppDelegate).persistentContainer
 
 @UIApplicationMain
-class AppDelegate: UIResponder, UIApplicationDelegate, UISplitViewControllerDelegate, CloudCoreErrorDelegate {
+class AppDelegate: UIResponder, UIApplicationDelegate, UISplitViewControllerDelegate {
+	
+	let delegateHandler = CloudCoreDelegateHandler()
 
-	// MARK: - CloudCore
-	
-	func cloudCore(saveToCloudDidFailed error: Error) {
-		print("SaveToCloudDidFailed: \(error)")
-	}
-	
 	func application(_ application: UIApplication, willFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey : Any]? = nil) -> Bool {
 		// Register for push notifications about changes
-		UIApplication.shared.registerForRemoteNotifications()
+		application.registerForRemoteNotifications()
 		
 		// Enable uploading changed local data to CoreData
-		CloudCore.observeCoreDataChanges(persistentContainer: self.persistentContainer, errorDelegate: self)
-		
-		// Sync on startup if push notifications is missed, disabled etc
-		// Also it acts as initial sync if no sync was done before
-		CloudCore.fetchAndSave(container: persistentContainer, error: { (error) in
-			print("\(error)")
-		}) { 
-			NSLog("On-startup sync completed")
-		}
+		CloudCore.delegate = delegateHandler
+		CloudCore.enable(persistentContainer: persistentContainer)
 		
 		return true
 	}
@@ -44,7 +33,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UISplitViewControllerDele
 		// Check if it CloudKit's and CloudCore notification
 		if CloudCore.isCloudCoreNotification(withUserInfo: userInfo) {
 			// Fetch changed data from iCloud
-			CloudCore.fetchAndSave(using: userInfo, container: self.persistentContainer, error: nil, completion: { (fetchResult) in
+			CloudCore.fetchAndSave(using: userInfo, to: persistentContainer, error: {
+				print("fetchAndSave from didReceiveRemoteNotification error: \($0)")
+			}, completion: { (fetchResult) in
 				completionHandler(fetchResult.uiBackgroundFetchResult)
 			})
 		}
@@ -60,32 +51,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UISplitViewControllerDele
 	var window: UIWindow?
 
 	func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
-		// Override point for customization after application launch.
-		let splitViewController = self.window!.rootViewController as! UISplitViewController
-		let navigationController = splitViewController.viewControllers[splitViewController.viewControllers.count-1] as! UINavigationController
-		navigationController.topViewController!.navigationItem.leftBarButtonItem = splitViewController.displayModeButtonItem
-		splitViewController.delegate = self
-
-		self.persistentContainer.viewContext.automaticallyMergesChangesFromParent = true
-		
-		let masterNavigationController = splitViewController.viewControllers[0] as! UINavigationController
-		let controller = masterNavigationController.topViewController as! MasterViewController
-		controller.managedObjectContext = self.persistentContainer.viewContext
-
 		return true
-	}
-
-
-	// MARK: Split view
-
-	func splitViewController(_ splitViewController: UISplitViewController, collapseSecondary secondaryViewController:UIViewController, onto primaryViewController:UIViewController) -> Bool {
-	    guard let secondaryAsNavController = secondaryViewController as? UINavigationController else { return false }
-	    guard let topAsDetailController = secondaryAsNavController.topViewController as? DetailViewController else { return false }
-	    if topAsDetailController.detailItem == nil {
-	        // Return true to indicate that we have handled the collapse by doing nothing; the secondary controller will be discarded.
-	        return true
-	    }
-	    return false
 	}
 	
 	// MARK: Core Data stack
@@ -114,6 +80,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UISplitViewControllerDele
 	            fatalError("Unresolved error \(error), \(error.userInfo)")
 	        }
 	    })
+		container.viewContext.automaticallyMergesChangesFromParent = true
 	    return container
 	}()
 

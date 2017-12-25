@@ -1,38 +1,39 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="11759" systemVersion="16D32" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
-    <entity name="Event" representedClassName="Event" syncable="YES" codeGenerationType="class">
-        <attribute name="asset" optional="YES" attributeType="Binary" allowsExternalBinaryDataStorage="YES" syncable="YES"/>
-        <attribute name="recordData" optional="YES" attributeType="Binary" syncable="YES">
-            <userInfo>
-                <entry key="CloudCoreType" value="recordData"/>
-            </userInfo>
-        </attribute>
-        <attribute name="recordID" optional="YES" attributeType="String" indexed="YES" syncable="YES">
-            <userInfo>
-                <entry key="CloudCoreType" value="recordID"/>
-            </userInfo>
-        </attribute>
-        <attribute name="timestamp" optional="YES" attributeType="Date">
-            <userInfo/>
-        </attribute>
-        <relationship name="subevent" optional="YES" maxCount="1" deletionRule="Cascade" destinationEntity="Subevent" inverseName="event" inverseEntity="Subevent" syncable="YES"/>
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="13772" systemVersion="17B1003" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
+    <entity name="Employee" representedClassName="Employee" syncable="YES" codeGenerationType="class">
+        <attribute name="department" attributeType="String" syncable="YES"/>
+        <attribute name="name" attributeType="String" syncable="YES"/>
+        <attribute name="photoData" optional="YES" attributeType="Binary" allowsExternalBinaryDataStorage="YES" syncable="YES"/>
+        <attribute name="recordData" optional="YES" attributeType="Binary" syncable="YES"/>
+        <attribute name="recordID" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="workingSince" optional="YES" attributeType="Date" usesScalarValueType="NO" syncable="YES"/>
+        <relationship name="organization" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Organization" inverseName="employees" inverseEntity="Organization" syncable="YES"/>
+        <fetchIndex name="byRecordIDIndex">
+            <fetchIndexElement property="recordID" type="Binary" order="ascending"/>
+        </fetchIndex>
     </entity>
-    <entity name="Subevent" representedClassName="Subevent" syncable="YES" codeGenerationType="class">
+    <entity name="Organization" representedClassName="Organization" syncable="YES" codeGenerationType="class">
+        <attribute name="bs" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="founded" optional="YES" attributeType="Date" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="name" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="recordData" optional="YES" attributeType="Binary" syncable="YES">
             <userInfo>
                 <entry key="CloudCoreType" value="recordData"/>
             </userInfo>
         </attribute>
-        <attribute name="recordID" optional="YES" attributeType="String" indexed="YES" syncable="YES">
+        <attribute name="recordID" optional="YES" attributeType="String" syncable="YES">
             <userInfo>
                 <entry key="CloudCoreType" value="recordID"/>
             </userInfo>
         </attribute>
-        <attribute name="timestamp" optional="YES" attributeType="Date" usesScalarValueType="NO" syncable="YES"/>
-        <relationship name="event" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Event" inverseName="subevent" inverseEntity="Event" syncable="YES"/>
+        <attribute name="sort" attributeType="Integer 32" defaultValueString="1" usesScalarValueType="YES" syncable="YES"/>
+        <relationship name="employees" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="Employee" inverseName="organization" inverseEntity="Employee" syncable="YES"/>
+        <fetchIndex name="byRecordIDIndex">
+            <fetchIndexElement property="recordID" type="Binary" order="ascending"/>
+        </fetchIndex>
     </entity>
     <elements>
-        <element name="Event" positionX="261" positionY="189" width="128" height="118"/>
-        <element name="Subevent" positionX="261" positionY="216" width="128" height="103"/>
+        <element name="Organization" positionX="261" positionY="189" width="128" height="150"/>
+        <element name="Employee" positionX="261" positionY="216" width="128" height="150"/>
     </elements>
 </model>

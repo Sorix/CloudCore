@@ -1,20 +1,29 @@
 # CloudCore
 
-[![Build Status](https://travis-ci.org/Sorix/CloudCore.svg?branch=master)](https://travis-ci.org/Sorix/CloudCore)
 [![Documentation](https://img.shields.io/cocoapods/metrics/doc-percent/CloudCore.svg)](http://cocoadocs.org/docsets/CloudCore/)
 [![Version](https://img.shields.io/cocoapods/v/CloudCore.svg?style=flat)](https://cocoapods.org/pods/CloudCore)
 ![Platform](https://img.shields.io/cocoapods/p/CloudCore.svg?style=flat)
-![Status](https://img.shields.io/badge/status-alpha-red.svg)
+![Status](https://img.shields.io/badge/status-beta-orange.svg)
 ![Swift](https://img.shields.io/badge/swift-4-orange.svg)
 
-**CloudCore** is a framework that manages syncing between iCloud (CloudKit) and Core Data written on native Swift.
+**CloudCore** is a framework that manages syncing between iCloud (CloudKit) and Core Data written on native Swift. It maybe used are CloudKit caching.
 
 #### Features
-* Differential sync, only changed values in objects are uploaded and downloaded
-* Support of all relationship types
-* Respect of Core Data options (cascade deletions, external storage options)
-* Unit and performance tests
-* Private and shared CloudKit databases (to be tested) are supported
+* Sync manually or on **push notifications**.
+* **Differential sync**, only changed object and values are uploaded and downloaded. CloudCore even differs changed and not changed values inside objects.
+* Respects of Core Data options (cascade deletions, external storage).
+* Knows and manages with CloudKit errors like `userDeletedZone`, `zoneNotFound`, `changeTokenExpired`, `isMore`.
+* Covered with Unit and CloudKit online **tests**.
+* All public methods are **[100% documented](http://cocoadocs.org/docsets/CloudCore/)**.
+* Currently only **private database** is supported.
+
+## How it works?
+CloudCore is built using "black box" architecture, so it works invisibly for your application, you just need to add several lines to `AppDelegate` to enable it. Synchronization and error resolving is managed automatically.
+
+1. CloudCore stores *change tokens* from CloudKit, so only changed data is downloaded.
+2. When CloudCore is enabled (`CloudCore.enable`) it fetches changed data from CloudKit and subscribes to CloudKit push notifications about new changes.
+3. When `CloudCore.fetchAndSave` is called manually or by push notification, CloudCore fetches and saves changed data to Core Data.
+4. When data is written to persistent container (parent context is saved) CloudCore founds locally changed data and uploads it to CloudKit.
 
 ## Installation
 
@@ -23,25 +32,15 @@
 it, simply add the following line to your Podfile:
 
 ```ruby
-pod 'CloudCore', '~> 1.0'
-```
-
-### Swift Package Manager
-The [Swift Package Manager](https://swift.org/package-manager/) is a tool for automating the distribution of Swift code and is integrated into the swift compiler. You can read more about package manager in [An Introduction to the Swift Package Manager](https://www.raywenderlich.com/148832/introduction-swift-package-manager) article.
-
-Once you have set up Swift package for your application, just add CloudCore as dependency at your `Package.swift`:
-
-```swift
-dependencies: [
-    .Package(url: "https://github.com/Sorix/CloudCore", majorVersion: 1)
-]
+pod 'CloudCore', '~> 2.0'
 ```
 
 ## How to help?
 Current version of framework hasn't been deeply tested and may contain errors. If you can test framework, I will be very glad. If you found an error, please post [an issue](https://github.com/Sorix/CloudCore/issues).
 
 ## Documentation
-Detailed documentation is [available at CocoaDocs](http://cocoadocs.org/docsets/CloudCore/).
+All public methods are documented using [XCode Markup](https://developer.apple.com/library/content/documentation/Xcode/Reference/xcode_markup_formatting_ref/) and available inside XCode.
+HTML-generated version of that documentation is [available here at CocoaDocs](http://cocoadocs.org/docsets/CloudCore/).
 
 ## Quick start
 1. Enable CloudKit capability for you application:
@@ -55,30 +54,27 @@ Detailed documentation is [available at CocoaDocs](http://cocoadocs.org/docsets/
 
 ```swift
 func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
-	// Register for push notifications about changes
-	UIApplication.shared.registerForRemoteNotifications()
+  // Register for push notifications about changes
+  application.registerForRemoteNotifications()
 
-	// Enable uploading changed local data to CoreData
-	CloudCore.observeCoreDataChanges(persistentContainer: persistentContainer, errorDelegate: nil)
+  // Enable CloudCore syncing
+  CloudCore.enable(persistentContainer: persistentContainer, errorDelegate: self)
 
-	// Sync on startup if push notifications is missed, disabled etc
-	// Also it acts as initial sync if no sync was done before
-	CloudCore.fetchAndSave(container: persistentContainer, error: nil, completion: nil)
-
-	return true
+  return true
 }
 
+// Notification from CloudKit about changes in remote database
 func application(_ application: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable : Any], fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {
-	// Check if it CloudKit's and CloudCore notification
-	if CloudCore.isCloudCoreNotification(withUserInfo: userInfo) {
-		// Fetch changed data from iCloud
-		CloudCore.fetchAndSave(using: userInfo, container: self.persistentContainer, error: nil, completion: { (fetchResult) in
-			completionHandler(fetchResult.uiBackgroundFetchResult)
-		})
-	}
+  // Check if it CloudKit's and CloudCore notification
+  if CloudCore.isCloudCoreNotification(withUserInfo: userInfo) {
+    // Fetch changed data from iCloud
+    CloudCore.fetchAndSave(using: userInfo, to: persistentContainer, error: nil, completion: { (fetchResult) in
+      completionHandler(fetchResult.uiBackgroundFetchResult)
+    })
+  }
 }
 
-func applicationDidEnterBackground(_ application: UIApplication) {
+func applicationWillTerminate(_ application: UIApplication) {
 	// Save tokens on exit used to differential sync
 	CloudCore.tokens.saveToUserDefaults()
 }
@@ -111,7 +107,6 @@ The most simple way is to name attributes with default names because you don't n
 * *Record Data* attribute is used to store archived version of `CKRecord` with system fields only (like timestamps, tokens), so don't worry about size, no real data will be stored here.
 
 ## Example application
-
 You can find example application at [Example](/Example/) directory.
 
 **How to run it:**
@@ -128,7 +123,7 @@ You can find example application at [Example](/Example/) directory.
 CloudKit objects can't be mocked up, that's why I create 2 different types of tests:
 
 * `Tests/Unit` here I placed tests that can be performed without CloudKit connection. That tests are executed when you submit a Pull Request.
-* `Tests/CloudKit` here are located "manually" tests, they are most important tests that can be run only in configured environment because they work with CloudKit and your Apple ID.
+* `Tests/CloudKit` here located "manual" tests, they are most important tests that can be run only in configured environment because they work with CloudKit and your Apple ID.
 
   Nothing will be wrong with your account, tests use only private `CKDatabase` for application.
 
@@ -139,12 +134,14 @@ CloudKit objects can't be mocked up, that's why I create 2 different types of te
   3. Configure iCloud on that device: Settings.app → iCloud → Login.
   4. Run `CloudKitTests`, they are attached to `TestableApp`, so CloudKit connection will work.
 
-
 ## Roadmap
 
-- [ ] Add more tests, it's crucial for such type of project
-- [ ] Add support of migration of existing databases
+- [x] Move from alpha to beta status.
+- [ ] Add `CloudCore.disable` method
+- [ ] Add methods to clear local cache and remote database
+- [ ] Add error resolving for `limitExceeded` error (split saves by relationships).
 
 ## Author
 
+Open for hire / relocation.
 Vasily Ulianov, [va...@me.com](http://www.google.com/recaptcha/mailhide/d?k=01eFEpy-HM-qd0Vf6QGABTjw==&c=JrKKY2bjm0Bp58w7zTvPiQ==)
