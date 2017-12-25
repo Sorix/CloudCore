@@ -15,14 +15,15 @@ extension CoreDataTestCase {
 	
 	func configureCloudKitIfNeeded() {
 		if UserDefaults.standard.bool(forKey: "isCloudKitConfigured") { return }
-		
-		CloudCore.observeCoreDataChanges(persistentContainer: persistentContainer, errorDelegate: nil)
-		defer {
-			CloudCore.removeCoreDataObserver()
-		}
-		
-		let didSyncExpectation = expectation(forNotification: .CloudCoreDidSyncToCloud, object: nil, handler: nil)
-		
+
+		// Setup delegate and expectation
+		let didSyncExpectation = expectation(description: "didSyncToCloudBlock")
+		let delegateListener = CloudCoreDelegateToBlock()
+		delegateListener.didSyncToCloudBlock = { didSyncExpectation.fulfill() }
+		CloudCore.delegate = delegateListener
+
+		CloudCore.enable(persistentContainer: persistentContainer)
+
 		let object = CorrectObject()
 		let objectMO = object.insert(in: persistentContainer.viewContext)
 		
@@ -34,16 +35,17 @@ extension CoreDataTestCase {
 		
 		wait(for: [didSyncExpectation], timeout: 10)
 		
-		let exp = expectation(description: "fetchAndSave")
-		
-		CloudCore.fetchAndSave(container: persistentContainer, error: { (error) in
-			XCTFail("saveToCloudDidFailed: \(error)")
+		let fetchAndSaveExpectation = expectation(description: "fetchAndSave")
+		CloudCore.fetchAndSave(to: persistentContainer, error: { (error) in
+			XCTFail("fetchAndSave error: \(error)")
 		}) {
-			exp.fulfill()
+			fetchAndSaveExpectation.fulfill()
 		}
 		
-		wait(for: [exp], timeout: 20)
+		wait(for: [fetchAndSaveExpectation], timeout: 10)
 		UserDefaults.standard.set(true, forKey: "isCloudKitConfigured")
+		
+		delegateListener.didSyncToCloudBlock = nil
 	}
 	
 	static func deleteAllRecordsFromCloudKit() {
@@ -81,6 +83,16 @@ extension CoreDataTestCase {
 		deleteOperation.database = publicDatabase
 		operationQueue.addOperation(deleteOperation)
 		operationQueue.waitUntilAllOperationsAreFinished()
+	}
+	
+}
+
+class CloudCoreDelegateToBlock: CloudCoreDelegate {
+	
+	var didSyncToCloudBlock: (() -> Void)?
+	
+	func didSyncToCloud() {
+		didSyncToCloudBlock?()
 	}
 	
 }

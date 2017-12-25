@@ -27,12 +27,12 @@ class CloudKitTests: CoreDataTestCase {
     }
     
     func testLocalToRemote() {
-		CloudCore.observeCoreDataChanges(persistentContainer: self.persistentContainer, errorDelegate: self)
-		defer {
-			CloudCore.removeCoreDataObserver()
-		}
-		
-		let didSyncExpectation = expectation(forNotification: .CloudCoreDidSyncToCloud, object: nil, handler: nil)
+		CloudCore.enable(persistentContainer: persistentContainer)
+
+		let didSyncExpectation = expectation(description: "didSyncToCloudBlock")
+		let delegateListener = CloudCoreDelegateToBlock()
+		delegateListener.didSyncToCloudBlock = { didSyncExpectation.fulfill() }
+		CloudCore.delegate = delegateListener
 		
 		// Insert and save managed object
         let object = CorrectObject()
@@ -43,19 +43,19 @@ class CloudKitTests: CoreDataTestCase {
 		wait(for: [didSyncExpectation], timeout: 10)
 		
 		// Prepare fresh DB and nullify CloudCore to fetch uploaded data
-		CloudCore.removeCoreDataObserver()
+		CloudCore.disable()
 		CloudCore.tokens = Tokens()
 		let freshPersistentContainer = loadPersistenContainer()
-		context.automaticallyMergesChangesFromParent = true
+		freshPersistentContainer.viewContext.automaticallyMergesChangesFromParent = true
 		
 		// Fetch data from CloudKit
 		let fetchExpectation = expectation(description: "fetchExpectation")
-		CloudCore.fetchAndSave(container: freshPersistentContainer, error: { (error) in
+		CloudCore.fetchAndSave(to: freshPersistentContainer, error: { (error) in
 			XCTFail("Error while trying to fetch from CloudKit: \(error)")
 		}) {
 			fetchExpectation.fulfill()
 		}
-		
+
 		wait(for: [fetchExpectation], timeout: 10)
 		
 		// Fetch data from CoreData
@@ -64,13 +64,5 @@ class CloudKitTests: CoreDataTestCase {
 		
 		object.assertEqualAttributes(to: testEntity)
     }
-	
-}
-
-extension CloudKitTests: CloudCoreErrorDelegate {
-	
-	func cloudCore(saveToCloudDidFailed error: Error) {
-		XCTFail("saveToCloudDidFailed: \(error)")
-	}
 	
 }

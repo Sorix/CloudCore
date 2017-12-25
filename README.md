@@ -107,7 +107,6 @@ The most simple way is to name attributes with default names because you don't n
 * *Record Data* attribute is used to store archived version of `CKRecord` with system fields only (like timestamps, tokens), so don't worry about size, no real data will be stored here.
 
 ## Example application
-
 You can find example application at [Example](/Example/) directory.
 
 **How to run it:**
@@ -124,7 +123,7 @@ You can find example application at [Example](/Example/) directory.
 CloudKit objects can't be mocked up, that's why I create 2 different types of tests:
 
 * `Tests/Unit` here I placed tests that can be performed without CloudKit connection. That tests are executed when you submit a Pull Request.
-* `Tests/CloudKit` here are located "manually" tests, they are most important tests that can be run only in configured environment because they work with CloudKit and your Apple ID.
+* `Tests/CloudKit` here located "manual" tests, they are most important tests that can be run only in configured environment because they work with CloudKit and your Apple ID.
 
   Nothing will be wrong with your account, tests use only private `CKDatabase` for application.
 
@@ -138,10 +137,11 @@ CloudKit objects can't be mocked up, that's why I create 2 different types of te
 ## Roadmap
 
 - [x] Move from alpha to beta status.
-- [ ] Add more tests, it's crucial for such type of project.
-- [ ] Add support of migration of existing databases.
+- [ ] Add `CloudCore.disable` method
+- [ ] Add methods to clear local cache and remote database
 - [ ] Add error resolving for `limitExceeded` error (split saves by relationships).
 
 ## Author
 
+Open for hire / relocation.
 Vasily Ulianov, [va...@me.com](http://www.google.com/recaptcha/mailhide/d?k=01eFEpy-HM-qd0Vf6QGABTjw==&c=JrKKY2bjm0Bp58w7zTvPiQ==)
