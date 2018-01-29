@@ -91,7 +91,7 @@ open class CloudCore {
 		#endif
 		
 		// Fetch updated data (e.g. push notifications weren't received)
-		let updateFromCloudOperation = FetchAndSaveOperation(persistentContainer: container)
+        let updateFromCloudOperation = FetchAndSaveOperation(from: allDatabases, persistentContainer: container)
 		updateFromCloudOperation.errorBlock = {
 			self.delegate?.error(error: $0, module: .some(.fetchFromCloud))
 		}
@@ -153,7 +153,7 @@ open class CloudCore {
 		- completion: `FetchResult` enumeration with results of operation
 	*/
 	public static func fetchAndSave(to container: NSPersistentContainer, error: ErrorBlock?, completion: (() -> Void)?) {
-		let operation = FetchAndSaveOperation(persistentContainer: container)
+        let operation = FetchAndSaveOperation(from: allDatabases, persistentContainer: container)
 		operation.errorBlock = error
 		operation.completionBlock = completion
 
@@ -169,6 +169,16 @@ open class CloudCore {
 		return (database(for: userInfo) != nil)
 	}
 	
+    /// Private cloud database for the CKContainer specified by CloudCoreConfig
+    static var allDatabases: [CKDatabase] {
+        let container = config.container
+        return [
+            //container.publicCloudDatabase,
+            container.privateCloudDatabase,
+            //container.sharedCloudDatabase
+        ]
+    }
+    
 	static func database(for notificationUserInfo: NotificationUserInfo) -> CKDatabase? {
 		guard let notificationDictionary = notificationUserInfo as? [String: NSObject] else { return nil }
 		let notification = CKNotification(fromRemoteNotificationDictionary: notificationDictionary)
@@ -176,9 +186,9 @@ open class CloudCore {
 		guard let id = notification.subscriptionID else { return nil }
 		
 		switch id {
-		case config.subscriptionIDForPrivateDB: return CKContainer.default().privateCloudDatabase
-		case config.subscriptionIDForSharedDB: return CKContainer.default().sharedCloudDatabase
-		case _ where id.hasPrefix(config.publicSubscriptionIDPrefix): return CKContainer.default().publicCloudDatabase
+		case config.subscriptionIDForPrivateDB: return config.container.privateCloudDatabase
+		case config.subscriptionIDForSharedDB: return config.container.sharedCloudDatabase
+		case _ where id.hasPrefix(config.publicSubscriptionIDPrefix): return config.container.publicCloudDatabase
 		default: return nil
 		}
 	}

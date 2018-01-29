@@ -27,7 +27,7 @@ class CreateCloudCoreZoneOperation: AsynchronousOperation {
 			self.state = .finished
 		}
 		
-		CKContainer.default().privateCloudDatabase.add(recordZoneOperation)
+		CloudCore.config.container.privateCloudDatabase.add(recordZoneOperation)
 		self.createZoneOperation = recordZoneOperation
 	}
 	
