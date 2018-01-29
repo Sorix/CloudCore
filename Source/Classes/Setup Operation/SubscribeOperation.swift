@@ -20,7 +20,7 @@ class SubscribeOperation: AsynchronousOperation {
 	override func main() {
 		super.main()
 
-		let container = CKContainer.default()
+		let container = CloudCore.config.container
 		
 		// Subscribe operation
 		let subcribeToPrivate = self.makeRecordZoneSubscriptionOperation(for: container.privateCloudDatabase, id: CloudCore.config.subscriptionIDForPrivateDB)

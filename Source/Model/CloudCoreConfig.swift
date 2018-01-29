@@ -27,6 +27,12 @@ public struct CloudCoreConfig {
 	
 	// MARK: CloudKit
 	
+    /// The CKContainer to store CoreData. Set this to a custom container to
+    /// support sharing data between multiple apps in an App Group (e.g. iOS and macOS).
+    ///
+    /// Default value is `CKContainer.default()`
+    public var container = CKContainer.default()
+    
 	/// RecordZone inside private database to store CoreData.
 	///
 	/// Default value is `CloudCore`
