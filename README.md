@@ -1,6 +1,6 @@
 # CloudCore
 
-[![Documentation](https://img.shields.io/cocoapods/metrics/doc-percent/CloudCore.svg)](http://cocoadocs.org/docsets/CloudCore/)
+[![Documentation](https://sorix.github.io/CloudCore/badge.svg)](https://sorix.github.io/CloudCore/)
 [![Version](https://img.shields.io/cocoapods/v/CloudCore.svg?style=flat)](https://cocoapods.org/pods/CloudCore)
 ![Platform](https://img.shields.io/cocoapods/p/CloudCore.svg?style=flat)
 ![Status](https://img.shields.io/badge/status-beta-orange.svg)
@@ -14,7 +14,7 @@
 * Respects of Core Data options (cascade deletions, external storage).
 * Knows and manages with CloudKit errors like `userDeletedZone`, `zoneNotFound`, `changeTokenExpired`, `isMore`.
 * Covered with Unit and CloudKit online **tests**.
-* All public methods are **[100% documented](http://cocoadocs.org/docsets/CloudCore/)**.
+* All public methods are **[100% documented](https://sorix.github.io/CloudCore/)**.
 * Currently only **private database** is supported.
 
 ## How it works?
@@ -40,7 +40,7 @@ Current version of framework hasn't been deeply tested and may contain errors. I
 
 ## Documentation
 All public methods are documented using [XCode Markup](https://developer.apple.com/library/content/documentation/Xcode/Reference/xcode_markup_formatting_ref/) and available inside XCode.
-HTML-generated version of that documentation is [available here at CocoaDocs](http://cocoadocs.org/docsets/CloudCore/).
+HTML-generated version of that documentation is [**available here**](https://sorix.github.io/CloudCore/).
 
 ## Quick start
 1. Enable CloudKit capability for you application:
