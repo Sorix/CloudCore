@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Classes  Reference</title>
+    <link rel="stylesheet" type="text/css" href="css/jazzy.css" />
+    <link rel="stylesheet" type="text/css" href="css/highlight.css" />
+    <meta charset='utf-8'>
+    <script src="js/jquery.min.js" defer></script>
+    <script src="js/jazzy.js" defer></script>
+    
+  </head>
+  <body>
+    <a title="Classes  Reference"></a>
+    <header>
+      <div class="content-wrapper">
+        <p><a href="index.html">CloudCore Docs</a> (98% documented)</p>
+      </div>
+    </header>
+    <div class="content-wrapper">
+      <p id="breadcrumbs">
+        <a href="index.html">CloudCore Reference</a>
+        <img id="carat" src="img/carat.png" />
+        Classes  Reference
+      </p>
+    </div>
+    <div class="content-wrapper">
+      <nav class="sidebar">
+        <ul class="nav-groups">
+          <li class="nav-group-name">
+            <a href="Classes.html">Classes</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a href="Classes/CloudCore.html">CloudCore</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="Classes/FetchAndSaveOperation.html">FetchAndSaveOperation</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="Classes/Tokens.html">Tokens</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-group-name">
+            <a href="Enums.html">Enumerations</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a href="Enums/CloudCoreError.html">CloudCoreError</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="Enums/FetchResult.html">FetchResult</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="Enums/Module.html">Module</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-group-name">
+            <a href="Extensions.html">Extensions</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a href="Extensions/FetchResult.html">FetchResult</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-group-name">
+            <a href="Protocols.html">Protocols</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a href="Protocols/CloudCoreDelegate.html">CloudCoreDelegate</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-group-name">
+            <a href="Structs.html">Structures</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a href="Structs/CloudCoreConfig.html">CloudCoreConfig</a>
+              </li>
+            </ul>
+          </li>
+        </ul>
+      </nav>
+      <article class="main-content">
+        <section>
+          <section class="section">
+            <h1>Classes</h1>
+            <p>The following classes are available globally.</p>
+
+          </section>
+          <section class="section task-group-section">
+            <div class="task-group">
+              <ul>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/c:@M@CloudCore@objc(cs)FetchAndSaveOperation"></a>
+                    <a name="//apple_ref/swift/Class/FetchAndSaveOperation" class="dashAnchor"></a>
+                    <a class="token" href="#/c:@M@CloudCore@objc(cs)FetchAndSaveOperation">FetchAndSaveOperation</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>An operation that fetches data from CloudKit and saves it to Core Data, you can use it without calling <code>CloudCore.fetchAndSave</code> methods if you application relies on <code>Operation</code></p>
+
+                        <a href="Classes/FetchAndSaveOperation.html" class="slightly-smaller">See more</a>
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">class</span> <span class="kt">FetchAndSaveOperation</span><span class="p">:</span> <span class="kt">Operation</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+              </ul>
+            </div>
+            <div class="task-group">
+              <ul>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/c:@M@CloudCore@objc(cs)Tokens"></a>
+                    <a name="//apple_ref/swift/Class/Tokens" class="dashAnchor"></a>
+                    <a class="token" href="#/c:@M@CloudCore@objc(cs)Tokens">Tokens</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>CloudCore&rsquo;s class for storing global <code>CKToken</code> objects. Framework uses one to upload or download only changed data (smart-sync).</p>
+
+<p>To detect what data is new and old, framework uses CloudKit&rsquo;s <code>CKToken</code> objects and it is needed to be loaded every time application launches and saved on exit.</p>
+
+<p>Framework stores tokens in 2 places:</p>
+
+<ul>
+<li>singleton <code>Tokens</code> object in <code><a href="Classes/CloudCore.html#/s:9CloudCoreAAC6tokensAA6TokensCvZ">CloudCore.tokens</a></code></li>
+<li>tokens per record inside <em>Record Data</em> attribute, it is managed automatically you don&rsquo;t need to take any actions about that token</li>
+</ul>
+
+<p>You need to save <code>Tokens</code> object before application terminates otherwise you will loose smart-sync ability.</p>
+<h3 id='example' class='heading'>Example</h3>
+<pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">applicationWillTerminate</span><span class="p">(</span><span class="n">_</span> <span class="nv">application</span><span class="p">:</span> <span class="kt">UIApplication</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kt">CloudCore</span><span class="o">.</span><span class="n">tokens</span><span class="o">.</span><span class="nf">saveToUserDefaults</span><span class="p">()</span>
+<span class="p">}</span>
+</code></pre>
+
+                        <a href="Classes/Tokens.html" class="slightly-smaller">See more</a>
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">open</span> <span class="kd">class</span> <span class="kt">Tokens</span><span class="p">:</span> <span class="kt">NSObject</span><span class="p">,</span> <span class="kt">NSCoding</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+              </ul>
+            </div>
+            <div class="task-group">
+              <ul>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:9CloudCoreAAC"></a>
+                    <a name="//apple_ref/swift/Class/CloudCore" class="dashAnchor"></a>
+                    <a class="token" href="#/s:9CloudCoreAAC">CloudCore</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Main framework class, in most cases you will use only methods from this class, all methods and properties are <code>static</code>.</p>
+<h2 id='save-to-cloud' class='heading'>Save to cloud</h2>
+
+<p>On application inialization call <code><a href="Classes/CloudCore.html#/s:9CloudCoreAAC6enableySo21NSPersistentContainerC010persistentE0_tFZ">CloudCore.enable(persistentContainer:)</a></code> method, so framework will automatically monitor changes at Core Data and upload it to iCloud.</p>
+<h3 id='example' class='heading'>Example</h3>
+<pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">application</span><span class="p">(</span><span class="n">_</span> <span class="nv">application</span><span class="p">:</span> <span class="kt">UIApplication</span><span class="p">,</span> <span class="n">didFinishLaunchingWithOptions</span> <span class="nv">launchOptions</span><span class="p">:</span> <span class="p">[</span><span class="kt">UIApplicationLaunchOptionsKey</span><span class="p">:</span> <span class="kt">Any</span><span class="p">]?)</span> <span class="o">-&gt;</span> <span class="kt">Bool</span> <span class="p">{</span>
+    <span class="c1">// Register for push notifications about changes</span>
+    <span class="n">application</span><span class="o">.</span><span class="nf">registerForRemoteNotifications</span><span class="p">()</span>
+
+    <span class="c1">// Enable CloudCore syncing</span>
+    <span class="kt">CloudCore</span><span class="o">.</span><span class="n">delegate</span> <span class="o">=</span> <span class="n">someDelegate</span> <span class="c1">// it is recommended to set delegate to track errors</span>
+    <span class="kt">CloudCore</span><span class="o">.</span><span class="nf">enable</span><span class="p">(</span><span class="nv">persistentContainer</span><span class="p">:</span> <span class="n">persistentContainer</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="kc">true</span>
+<span class="p">}</span>
+</code></pre>
+<h2 id='fetch-from-cloud' class='heading'>Fetch from cloud</h2>
+
+<p>When CloudKit data is changed <strong>push notification</strong> is posted to an application. You need to handle it and fetch changed data from CloudKit with <code><a href="Classes/CloudCore.html#/s:9CloudCoreAAC12fetchAndSaveys10DictionaryVys11AnyHashableVypG5using_So21NSPersistentContainerC2toys5Error_pcSg5erroryAA11FetchResultOc10completiontFZ">CloudCore.fetchAndSave(using:to:error:completion:)</a></code> method.</p>
+<h3 id='example' class='heading'>Example</h3>
+<pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">application</span><span class="p">(</span><span class="n">_</span> <span class="nv">application</span><span class="p">:</span> <span class="kt">UIApplication</span><span class="p">,</span> <span class="n">didReceiveRemoteNotification</span> <span class="nv">userInfo</span><span class="p">:</span> <span class="p">[</span><span class="kt">AnyHashable</span> <span class="p">:</span> <span class="kt">Any</span><span class="p">],</span> <span class="n">fetchCompletionHandler</span> <span class="nv">completionHandler</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="p">(</span><span class="kt">UIBackgroundFetchResult</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Void</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c1">// Check if it CloudKit's and CloudCore notification</span>
+    <span class="k">if</span> <span class="kt">CloudCore</span><span class="o">.</span><span class="nf">isCloudCoreNotification</span><span class="p">(</span><span class="nv">withUserInfo</span><span class="p">:</span> <span class="n">userInfo</span><span class="p">)</span> <span class="p">{</span>
+        <span class="c1">// Fetch changed data from iCloud</span>
+        <span class="kt">CloudCore</span><span class="o">.</span><span class="nf">fetchAndSave</span><span class="p">(</span><span class="nv">using</span><span class="p">:</span> <span class="n">userInfo</span><span class="p">,</span> <span class="nv">to</span><span class="p">:</span> <span class="n">persistentContainer</span><span class="p">,</span> <span class="nv">error</span><span class="p">:</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">completion</span><span class="p">:</span> <span class="p">{</span> <span class="p">(</span><span class="n">fetchResult</span><span class="p">)</span> <span class="k">in</span>
+            <span class="nf">completionHandler</span><span class="p">(</span><span class="n">fetchResult</span><span class="o">.</span><span class="n">uiBackgroundFetchResult</span><span class="p">)</span>
+        <span class="p">})</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre>
+
+<p>You can also check for updated data at CloudKit <strong>manually</strong> (e.g. push notifications are not working). Use for that <code><a href="Classes/CloudCore.html#/s:9CloudCoreAAC12fetchAndSaveySo21NSPersistentContainerC2to_ys5Error_pcSg5erroryycSg10completiontFZ">CloudCore.fetchAndSave(to:error:completion:)</a></code></p>
+
+                        <a href="Classes/CloudCore.html" class="slightly-smaller">See more</a>
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">open</span> <span class="kd">class</span> <span class="kt">CloudCore</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+              </ul>
+            </div>
+          </section>
+        </section>
+        <section id="footer">
+          <p>&copy; 2018 <a class="link" href="https://github.com/sorix/CloudCore" target="_blank" rel="external">Vasily Ulianov</a>. All rights reserved. (Last updated: 2018-02-03)</p>
+          <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external">jazzy ♪♫ v0.9.1</a>, a <a class="link" href="http://realm.io" target="_blank" rel="external">Realm</a> project.</p>
+        </section>
+      </article>
+    </div>
+  </body>
+</div>
+</html>

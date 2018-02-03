@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>CloudCore  Reference</title>
+    <link rel="stylesheet" type="text/css" href="css/jazzy.css" />
+    <link rel="stylesheet" type="text/css" href="css/highlight.css" />
+    <meta charset='utf-8'>
+    <script src="js/jquery.min.js" defer></script>
+    <script src="js/jazzy.js" defer></script>
+    
+  </head>
+  <body>
+    <a title="CloudCore  Reference"></a>
+    <header>
+      <div class="content-wrapper">
+        <p><a href="index.html">CloudCore Docs</a> (98% documented)</p>
+      </div>
+    </header>
+    <div class="content-wrapper">
+      <p id="breadcrumbs">
+        <a href="index.html">CloudCore Reference</a>
+        <img id="carat" src="img/carat.png" />
+        CloudCore  Reference
+      </p>
+    </div>
+    <div class="content-wrapper">
+      <nav class="sidebar">
+        <ul class="nav-groups">
+          <li class="nav-group-name">
+            <a href="Classes.html">Classes</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a href="Classes/CloudCore.html">CloudCore</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="Classes/FetchAndSaveOperation.html">FetchAndSaveOperation</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="Classes/Tokens.html">Tokens</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-group-name">
+            <a href="Enums.html">Enumerations</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a href="Enums/CloudCoreError.html">CloudCoreError</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="Enums/FetchResult.html">FetchResult</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="Enums/Module.html">Module</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-group-name">
+            <a href="Extensions.html">Extensions</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a href="Extensions/FetchResult.html">FetchResult</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-group-name">
+            <a href="Protocols.html">Protocols</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a href="Protocols/CloudCoreDelegate.html">CloudCoreDelegate</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-group-name">
+            <a href="Structs.html">Structures</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a href="Structs/CloudCoreConfig.html">CloudCoreConfig</a>
+              </li>
+            </ul>
+          </li>
+        </ul>
+      </nav>
+      <article class="main-content">
+        <section>
+          <section class="section">
+            
+            <h1 id='cloudcore' class='heading'>CloudCore</h1>
+
+<p><a href="https://sorix.github.io/CloudCore/"><img src="badge.svg" alt="Documentation"></a>
+<a href="https://cocoapods.org/pods/CloudCore"><img src="https://img.shields.io/cocoapods/v/CloudCore.svg?style=flat" alt="Version"></a>
+<img src="https://img.shields.io/cocoapods/p/CloudCore.svg?style=flat" alt="Platform">
+<img src="https://img.shields.io/badge/status-beta-orange.svg" alt="Status">
+<img src="https://img.shields.io/badge/swift-4-orange.svg" alt="Swift"></p>
+
+<p><strong>CloudCore</strong> is a framework that manages syncing between iCloud (CloudKit) and Core Data written on native Swift. It maybe used are CloudKit caching.</p>
+<h4 id='features' class='heading'>Features</h4>
+
+<ul>
+<li>Sync manually or on <strong>push notifications</strong>.</li>
+<li><strong>Differential sync</strong>, only changed object and values are uploaded and downloaded. CloudCore even differs changed and not changed values inside objects.</li>
+<li>Respects of Core Data options (cascade deletions, external storage).</li>
+<li>Knows and manages with CloudKit errors like <code>userDeletedZone</code>, <code>zoneNotFound</code>, <code>changeTokenExpired</code>, <code>isMore</code>.</li>
+<li>Covered with Unit and CloudKit online <strong>tests</strong>.</li>
+<li>All public methods are <strong><a href="https://sorix.github.io/CloudCore/">100% documented</a></strong>.</li>
+<li>Currently only <strong>private database</strong> is supported.</li>
+</ul>
+<h2 id='how-it-works' class='heading'>How it works?</h2>
+
+<p>CloudCore is built using <q>black box</q> architecture, so it works invisibly for your application, you just need to add several lines to <code>AppDelegate</code> to enable it. Synchronization and error resolving is managed automatically.</p>
+
+<ol>
+<li>CloudCore stores <em>change tokens</em> from CloudKit, so only changed data is downloaded.</li>
+<li>When CloudCore is enabled (<code>CloudCore.enable</code>) it fetches changed data from CloudKit and subscribes to CloudKit push notifications about new changes.</li>
+<li>When <code>CloudCore.fetchAndSave</code> is called manually or by push notification, CloudCore fetches and saves changed data to Core Data.</li>
+<li>When data is written to persistent container (parent context is saved) CloudCore founds locally changed data and uploads it to CloudKit.</li>
+</ol>
+<h2 id='installation' class='heading'>Installation</h2>
+<h3 id='cocoapods' class='heading'>CocoaPods</h3>
+
+<p><strong>CloudCore</strong> is available through <a href="http://cocoapods.org">CocoaPods</a>. To install
+it, simply add the following line to your Podfile:</p>
+<pre class="highlight ruby"><code><span class="n">pod</span> <span class="s1">'CloudCore'</span><span class="p">,</span> <span class="s1">'~&gt; 2.0'</span>
+</code></pre>
+<h2 id='how-to-help' class='heading'>How to help?</h2>
+
+<p>Current version of framework hasn&rsquo;t been deeply tested and may contain errors. If you can test framework, I will be very glad. If you found an error, please post <a href="https://github.com/Sorix/CloudCore/issues">an issue</a>.</p>
+<h2 id='documentation' class='heading'>Documentation</h2>
+
+<p>All public methods are documented using <a href="https://developer.apple.com/library/content/documentation/Xcode/Reference/xcode_markup_formatting_ref/">XCode Markup</a> and available inside XCode.
+HTML-generated version of that documentation is <a href="https://sorix.github.io/CloudCore/"><strong>available here</strong></a>.</p>
+<h2 id='quick-start' class='heading'>Quick start</h2>
+
+<ol>
+<li><p>Enable CloudKit capability for you application:
+<img src="https://cloud.githubusercontent.com/assets/5610904/25092841/28305bc0-2398-11e7-9fbf-f94c619c264f.png" alt="CloudKit capability"></p></li>
+<li><p>Add 2 service attributes to each entity in CoreData model you want to sync:</p>
+
+<ul>
+<li><code>recordData</code> attribute with <code>Binary</code> type</li>
+<li><code>recordID</code> attribute with <code>String</code> type</li>
+</ul></li>
+<li><p>Make changes in your <strong>AppDelegate.swift</strong> file:</p></li>
+</ol>
+<pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">application</span><span class="p">(</span><span class="n">_</span> <span class="nv">application</span><span class="p">:</span> <span class="kt">UIApplication</span><span class="p">,</span> <span class="n">didFinishLaunchingWithOptions</span> <span class="nv">launchOptions</span><span class="p">:</span> <span class="p">[</span><span class="kt">UIApplicationLaunchOptionsKey</span><span class="p">:</span> <span class="kt">Any</span><span class="p">]?)</span> <span class="o">-&gt;</span> <span class="kt">Bool</span> <span class="p">{</span>
+  <span class="c1">// Register for push notifications about changes</span>
+  <span class="n">application</span><span class="o">.</span><span class="nf">registerForRemoteNotifications</span><span class="p">()</span>
+
+  <span class="c1">// Enable CloudCore syncing</span>
+  <span class="kt">CloudCore</span><span class="o">.</span><span class="nf">enable</span><span class="p">(</span><span class="nv">persistentContainer</span><span class="p">:</span> <span class="n">persistentContainer</span><span class="p">,</span> <span class="nv">errorDelegate</span><span class="p">:</span> <span class="k">self</span><span class="p">)</span>
+
+  <span class="k">return</span> <span class="kc">true</span>
+<span class="p">}</span>
+
+<span class="c1">// Notification from CloudKit about changes in remote database</span>
+<span class="kd">func</span> <span class="nf">application</span><span class="p">(</span><span class="n">_</span> <span class="nv">application</span><span class="p">:</span> <span class="kt">UIApplication</span><span class="p">,</span> <span class="n">didReceiveRemoteNotification</span> <span class="nv">userInfo</span><span class="p">:</span> <span class="p">[</span><span class="kt">AnyHashable</span> <span class="p">:</span> <span class="kt">Any</span><span class="p">],</span> <span class="n">fetchCompletionHandler</span> <span class="nv">completionHandler</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="p">(</span><span class="kt">UIBackgroundFetchResult</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Void</span><span class="p">)</span> <span class="p">{</span>
+  <span class="c1">// Check if it CloudKit's and CloudCore notification</span>
+  <span class="k">if</span> <span class="kt">CloudCore</span><span class="o">.</span><span class="nf">isCloudCoreNotification</span><span class="p">(</span><span class="nv">withUserInfo</span><span class="p">:</span> <span class="n">userInfo</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c1">// Fetch changed data from iCloud</span>
+    <span class="kt">CloudCore</span><span class="o">.</span><span class="nf">fetchAndSave</span><span class="p">(</span><span class="nv">using</span><span class="p">:</span> <span class="n">userInfo</span><span class="p">,</span> <span class="nv">to</span><span class="p">:</span> <span class="n">persistentContainer</span><span class="p">,</span> <span class="nv">error</span><span class="p">:</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">completion</span><span class="p">:</span> <span class="p">{</span> <span class="p">(</span><span class="n">fetchResult</span><span class="p">)</span> <span class="k">in</span>
+      <span class="nf">completionHandler</span><span class="p">(</span><span class="n">fetchResult</span><span class="o">.</span><span class="n">uiBackgroundFetchResult</span><span class="p">)</span>
+    <span class="p">})</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kd">func</span> <span class="nf">applicationWillTerminate</span><span class="p">(</span><span class="n">_</span> <span class="nv">application</span><span class="p">:</span> <span class="kt">UIApplication</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c1">// Save tokens on exit used to differential sync</span>
+    <span class="kt">CloudCore</span><span class="o">.</span><span class="n">tokens</span><span class="o">.</span><span class="nf">saveToUserDefaults</span><span class="p">()</span>
+<span class="p">}</span>
+</code></pre>
+
+<ol>
+<li>Make first run of your application in a development environment, fill an example data in Core Data and wait until sync completes. CloudCore create needed CloudKit schemes automatically.</li>
+</ol>
+<h2 id='service-attributes' class='heading'>Service attributes</h2>
+
+<p>CloudCore stores service CloudKit information in managed objects, you need to add that attributes to your Core Data model. If required attributes are not found in entity that entity won&rsquo;t be synced.</p>
+
+<p>Required attributes for each synced entity:</p>
+
+<ol>
+<li><em>Record Data</em> attribute with <code>Binary</code> type</li>
+<li><em>Record ID</em> attribute with <code>String</code> type</li>
+</ol>
+
+<p>You may specify attributes&rsquo; names in 2 ways (you may combine that ways in different entities).</p>
+<h3 id='user-info' class='heading'>User Info</h3>
+
+<p>First off CloudCore try to search attributes by looking up User Info at your model, you may specify User Info key <code>CloudCoreType</code> fro attribute to mark one as service one. Values are:</p>
+
+<ul>
+<li><em>Record Data</em> value is <code>recordData</code>.</li>
+<li><em>Record ID</em> value is <code>recordID</code>.</li>
+</ul>
+
+<p><img src="https://cloud.githubusercontent.com/assets/5610904/24004400/52e0ff94-0a77-11e7-9dd9-e1e24a86add5.png" alt="Model editor User Info"></p>
+<h3 id='default-names' class='heading'>Default names</h3>
+
+<p>The most simple way is to name attributes with default names because you don&rsquo;t need to specify any User Info.</p>
+<h3 id='tips' class='heading'>💡 Tips</h3>
+
+<ul>
+<li>You can name attribute as you want, value of User Info is not changed (you can create attribute <code>myid</code> with User Info: <code>CloudCoreType: recordID</code>)</li>
+<li>I recommend to mark <em>Record ID</em> attribute as <code>Indexed</code>, that can speed up updates in big databases.</li>
+<li><em>Record Data</em> attribute is used to store archived version of <code>CKRecord</code> with system fields only (like timestamps, tokens), so don&rsquo;t worry about size, no real data will be stored here.</li>
+</ul>
+<h2 id='example-application' class='heading'>Example application</h2>
+
+<p>You can find example application at <a href="/Example/">Example</a> directory.</p>
+
+<p><strong>How to run it:</strong></p>
+
+<ol>
+<li>Set Bundle Identifier.</li>
+<li>Check that embedded binaries has a correct path (you can remove and add again CloudCore.framework).</li>
+<li>If you&rsquo;re using simulator, login at iCloud on it.</li>
+</ol>
+
+<p><strong>How to use it:</strong></p>
+
+<ul>
+<li><strong>+</strong> button adds new object to local storage (that will be automatically synced to Cloud)</li>
+<li><strong>refresh</strong> button calls <code>fetchAndSave</code> to fetch data from Cloud. That is useful button for simulators because Simulator unable to receive push notifications</li>
+<li>Use <a href="https://icloud.developer.apple.com/dashboard/">CloudKit dashboard</a> to make changes and see it at application, and make change in application and see ones in dashboard. Don&rsquo;t forget to refresh dashboard&rsquo;s page because it doesn&rsquo;t update data on-the-fly.</li>
+</ul>
+<h2 id='tests' class='heading'>Tests</h2>
+
+<p>CloudKit objects can&rsquo;t be mocked up, that&rsquo;s why I create 2 different types of tests:</p>
+
+<ul>
+<li><code>Tests/Unit</code> here I placed tests that can be performed without CloudKit connection. That tests are executed when you submit a Pull Request.</li>
+<li><code>Tests/CloudKit</code> here located <q>manual</q> tests, they are most important tests that can be run only in configured environment because they work with CloudKit and your Apple ID.</li>
+</ul>
+
+<p>Nothing will be wrong with your account, tests use only private <code>CKDatabase</code> for application.</p>
+
+<p><strong>Please run these tests before opening pull requests.</strong>
+ To run them you need to:</p>
+
+<ol>
+<li>Change <code>TestableApp</code> bundle id.</li>
+<li>Run in simulator or real device <code>TestableApp</code> target.</li>
+<li>Configure iCloud on that device: Settings.app → iCloud → Login.</li>
+<li>Run <code>CloudKitTests</code>, they are attached to <code>TestableApp</code>, so CloudKit connection will work.</li>
+</ol>
+<h2 id='roadmap' class='heading'>Roadmap</h2>
+
+<ul>
+<li>[x] Move from alpha to beta status.</li>
+<li>[ ] Add <code>CloudCore.disable</code> method</li>
+<li>[ ] Add methods to clear local cache and remote database</li>
+<li>[ ] Add error resolving for <code>limitExceeded</code> error (split saves by relationships).</li>
+</ul>
+<h2 id='author' class='heading'>Author</h2>
+
+<p>Open for hire / relocation.
+Vasily Ulianov, <a href="http://www.google.com/recaptcha/mailhide/d?k=01eFEpy-HM-qd0Vf6QGABTjw==&c=JrKKY2bjm0Bp58w7zTvPiQ==">va&hellip;@me.com</a></p>
+
+          </section>
+        </section>
+        <section id="footer">
+          <p>&copy; 2018 <a class="link" href="https://github.com/sorix/CloudCore" target="_blank" rel="external">Vasily Ulianov</a>. All rights reserved. (Last updated: 2018-02-03)</p>
+          <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external">jazzy ♪♫ v0.9.1</a>, a <a class="link" href="http://realm.io" target="_blank" rel="external">Realm</a> project.</p>
+        </section>
+      </article>
+    </div>
+  </body>
+</div>
+</html>

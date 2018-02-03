@@ -1,0 +1,12 @@
+{
+  "warnings": [
+    {
+      "file": "/Users/sorix/Documents/CloudCore/Source/Model/CloudCoreConfig.swift",
+      "line": 35,
+      "symbol": "CloudCoreConfig.container",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    }
+  ],
+  "source_directory": "/Users/sorix/Documents/CloudCore"
+}
