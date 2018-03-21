@@ -67,25 +67,80 @@ public class FetchAndSaveOperation: Operation {
 		
 		CloudCore.delegate?.didSyncFromCloud()
 	}
+    
+    func dependencyGraph() -> Graph {
+        
+        let cloudCoreEnabledEntities = self.persistentContainer.managedObjectModel.cloudCoreEnabledEntities
+        let entityNames = cloudCoreEnabledEntities.flatMap({$0.name})
+        let dependencyGraph: Graph = Graph(vertices: entityNames)
+        
+        for entityDescription in cloudCoreEnabledEntities {
+            guard let name = entityDescription.name else {continue}
+            
+            for relationshipDescription in entityDescription.relationshipsByName {
+                guard let destinationEntityName = relationshipDescription.value.destinationEntity?.name else {continue}
+                
+                dependencyGraph.addEdge(from: destinationEntityName, to: name)
+            }
+        }
+        return dependencyGraph
+    }
+    
+    
+    func createConvertOperationsByRecordType(records:[CKRecord], context:NSManagedObjectContext) -> [String:[Operation]] {
+        var operationsByRecordType = [String:[Operation]]()
+        for record in records {
+            // Convert and write CKRecord To NSManagedObject Operation
+            let convertOperation = RecordToCoreDataOperation(parentContext: context, record: record)
+            convertOperation.errorBlock = { self.errorBlock?($0) }
+            
+            var auxOperations = operationsByRecordType[record.recordType] ?? [Operation]()
+            auxOperations.append(convertOperation)
+            operationsByRecordType[record.recordType] = auxOperations
+        }
+        return operationsByRecordType
+    }
+    
 	
 	private func addRecordZoneChangesOperation(recordZoneIDs: [CKRecordZoneID], database: CKDatabase, context: NSManagedObjectContext) {
 		if recordZoneIDs.isEmpty { return }
 		
 		let recordZoneChangesOperation = FetchRecordZoneChangesOperation(from: database, recordZoneIDs: recordZoneIDs, tokens: tokens)
 		
-		recordZoneChangesOperation.recordChangedBlock = {
-			// Convert and write CKRecord To NSManagedObject Operation
-			let convertOperation = RecordToCoreDataOperation(parentContext: context, record: $0)
-			convertOperation.errorBlock = { self.errorBlock?($0) }
-			self.queue.addOperation(convertOperation)
-		}
-		
-		recordZoneChangesOperation.recordWithIDWasDeletedBlock = {
-			// Delete NSManagedObject with specified recordID Operation
-			let deleteOperation = DeleteFromCoreDataOperation(parentContext: context, recordID: $0)
-			deleteOperation.errorBlock = { self.errorBlock?($0) }
-			self.queue.addOperation(deleteOperation)
-		}
+        recordZoneChangesOperation.recordChangedCompletionBlock = { changedRecords, deletedRecordIDs in
+            
+            // Record Changes
+            let operationsByRecordType = self.createConvertOperationsByRecordType(records: changedRecords, context: context)
+            let dependencyGraph = self.dependencyGraph()
+            
+            if let topologicalSort = dependencyGraph.topologicalSort() {
+                for recordType in topologicalSort {
+                    guard let operations = operationsByRecordType[recordType] else {continue}
+                    operations.forEach { changeOperation in
+                        self.queue.addOperation(changeOperation)
+                    }
+                }
+            } else {
+                
+                // Perform all changes many times to fill the all the relationships.
+                let cycleLength = dependencyGraph.detectCycles().flatMap({$0.count}).sorted().last ?? 2
+                for _ in 0...cycleLength {
+                    changedRecords.forEach {record in
+                        let convertOperation = RecordToCoreDataOperation(parentContext: context, record: record)
+                        convertOperation.errorBlock = { self.errorBlock?($0) }
+                        self.queue.addOperation(convertOperation)
+                    }
+                }
+            }
+            
+            // Record Deletions
+            deletedRecordIDs.forEach {
+                // Delete NSManagedObject with specified recordID Operation
+                let deleteOperation = DeleteFromCoreDataOperation(parentContext: context, recordID: $0)
+                deleteOperation.errorBlock = { self.errorBlock?($0) }
+                self.queue.addOperation(deleteOperation)
+            }
+        }
 		
 		recordZoneChangesOperation.errorBlock = { zoneID, error in
 			self.handle(recordZoneChangesError: error, in: zoneID, database: database, context: context)

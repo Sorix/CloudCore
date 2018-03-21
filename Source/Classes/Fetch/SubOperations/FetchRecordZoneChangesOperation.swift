@@ -14,10 +14,11 @@ class FetchRecordZoneChangesOperation: Operation {
 	let recordZoneIDs: [CKRecordZoneID]
 	let database: CKDatabase
 	//
-	
+
+    var updatedRecords = [CKRecord]()
+    var deletedRecordIDs = [CKRecordID]()
+    var recordChangedCompletionBlock: ((_ changed:[CKRecord],_ deleted:[CKRecordID]) -> Void)?
 	var errorBlock: ((CKRecordZoneID, Error) -> Void)?
-	var recordChangedBlock: ((CKRecord) -> Void)?
-	var recordWithIDWasDeletedBlock: ((CKRecordID) -> Void)?
 	
 	private let optionsByRecordZoneID: [CKRecordZoneID: CKFetchRecordZoneChangesOptions]
 	private let fetchQueue = OperationQueue()
@@ -53,12 +54,12 @@ class FetchRecordZoneChangesOperation: Operation {
 		// Init Fetch Operation
 		let fetchOperation = CKFetchRecordZoneChangesOperation(recordZoneIDs: recordZoneIDs, optionsByRecordZoneID: optionsByRecordZoneID)
 		
-		fetchOperation.recordChangedBlock = {
-			self.recordChangedBlock?($0)
-		}
-		fetchOperation.recordWithIDWasDeletedBlock = { recordID, _ in
-			self.recordWithIDWasDeletedBlock?(recordID)
-		}
+        fetchOperation.recordChangedBlock = {
+            self.updatedRecords.append($0)
+        }
+        fetchOperation.recordWithIDWasDeletedBlock = { recordID, _ in
+            self.deletedRecordIDs.append(recordID)
+        }
 		fetchOperation.recordZoneFetchCompletionBlock = { zoneId, serverChangeToken, clientChangeTokenData, isMore, error in
 			self.tokens.tokensByRecordZoneID[zoneId] = serverChangeToken
 			
@@ -69,7 +70,9 @@ class FetchRecordZoneChangesOperation: Operation {
 			if isMore {
 				let moreOperation = self.makeFetchOperation(optionsByRecordZoneID: optionsByRecordZoneID)
 				self.fetchQueue.addOperation(moreOperation)
-			}
+            } else {
+                self.recordChangedCompletionBlock?(self.updatedRecords, self.deletedRecordIDs)
+            }
 		}
 		
 		fetchOperation.qualityOfService = self.qualityOfService
