@@ -11,11 +11,11 @@ import Foundation
 /// Enumeration with module name that issued an error in `CloudCoreErrorDelegate`
 @objc public enum Module: Int {
 	
-	/// Save to CloudKit module
-	case saveToCloud
-	
-	/// Fetch from CloudKit module
-	case fetchFromCloud
+    /// Save to CloudKit module
+    case saveToCloud
+
+    /// Fetch from CloudKit module
+    case fetchFromCloud
 
     /// No CloudKit module
     case subscribeToCloud
