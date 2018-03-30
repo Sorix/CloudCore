@@ -47,7 +47,7 @@ import CloudKit
 
 	You can also check for updated data at CloudKit **manually** (e.g. push notifications are not working). Use for that `CloudCore.fetchAndSave(to:error:completion:)`
 */
-@objc public class CloudCore: NSObject {
+open class CloudCore: NSObject {
 	
 	// MARK: - Properties
 	
