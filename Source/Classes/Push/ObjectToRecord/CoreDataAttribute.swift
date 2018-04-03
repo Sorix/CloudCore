@@ -23,14 +23,22 @@ class CoreDataAttribute {
 			// it is not an attribute
 			return nil
 		}
-		
-		self.description = description
+        
+        self.description = description
 		
 		if value is NSNull {
 			self.value = nil
-		} else {
-			self.value = value
-		}
+        } else if let attribute = entity.attributesByName[attributeName],
+            attribute.attributeType == .transformableAttributeType {
+            if let transformerName = attribute.valueTransformerName,
+                let transformer = ValueTransformer(forName: NSValueTransformerName(rawValue: transformerName)) {
+                self.value = transformer.reverseTransformedValue(value)
+            } else {
+                self.value = NSKeyedArchiver.archivedData(withRootObject: value)
+            }
+        } else {
+            self.value = value
+        }
 
 		self.name = attributeName
 	}
