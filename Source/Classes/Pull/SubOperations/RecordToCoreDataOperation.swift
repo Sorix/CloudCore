@@ -9,11 +9,16 @@
 import CoreData
 import CloudKit
 
+typealias AttributeName = String
+typealias RecordID = String
+typealias MissingReferences = [NSManagedObject: [AttributeName: [RecordID]]]
+
 /// Convert CKRecord to NSManagedObject and save it to parent context, thread-safe
 class RecordToCoreDataOperation: AsynchronousOperation {
 	let parentContext: NSManagedObjectContext
 	let record: CKRecord
 	var errorBlock: ErrorBlock?
+    var missingObjectsPerEntities = MissingReferences()
 	
     /// - Parameters:
     ///   - parentContext: operation will be safely performed in that context, **operation doesn't save that context** you need to do it manually
@@ -91,6 +96,7 @@ class RecordToCoreDataOperation: AsynchronousOperation {
                 }
             } else {
                 object.setValue(coreDataValue, forKey: key)
+                missingObjectsPerEntities[object] = attribute.notFoundRecordIDsForAttribute
             }
 		}
 		

@@ -19,6 +19,7 @@ class CloudKitAttribute {
 	let entityName: String
 	let serviceAttributes: ServiceAttributeNames
 	let context: NSManagedObjectContext
+    var notFoundRecordIDsForAttribute = [AttributeName: [RecordID]]()
 	
 	init(value: Any?, fieldName: String, entityName: String, serviceAttributes: ServiceAttributeNames, context: NSManagedObjectContext) {
 		self.value = value
@@ -56,7 +57,13 @@ class CloudKitAttribute {
 		fetchRequest.includesPropertyValues = false
 		
 		let foundObject = try context.fetch(fetchRequest).first as? NSManagedObject
-		
+        
+        if foundObject == nil {
+            var values = notFoundRecordIDsForAttribute[fieldName] ?? []
+            values.append(recordID.encodedString)
+            notFoundRecordIDsForAttribute[fieldName] = values
+        }
+        
 		return foundObject
 	}
 	
