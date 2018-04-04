@@ -92,7 +92,7 @@ Required attributes for each synced entity:
 You may specify attributes' names in 2 ways (you may combine that ways in different entities).
 
 ### User Info
-First off CloudCore try to search attributes by looking up User Info at your model, you may specify User Info key `CloudCoreType` fro attribute to mark one as service one. Values are:
+First off CloudCore try to search attributes by looking up User Info at your model, you may specify User Info key `CloudCoreType` for attribute to mark one as service one. Values are:
 * *Record Data* value is `recordData`.
 * *Record ID* value is `recordID`.
 
