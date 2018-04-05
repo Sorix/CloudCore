@@ -32,7 +32,6 @@ class PurgeLocalDatabaseOperation: Operation {
 			
 			let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: entityName)
 			fetchRequest.includesPropertyValues = false
-			fetchRequest.includesSubentities = false
 			
 			do {
 				// I don't user `NSBatchDeleteRequest` because we can't notify viewContextes about changes
