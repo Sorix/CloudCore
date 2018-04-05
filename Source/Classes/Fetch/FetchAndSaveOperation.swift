@@ -123,12 +123,10 @@ public class FetchAndSaveOperation: Operation {
                                         object.setValue(foundObject, forKey: attributeName)
                                     }
                                 } else {
-                                    // TODO: show warning?
-                                    print("NOT FOUND " + recordId)
+                                    print("warning: object not found " + recordId)
                                 }
                             } catch {
-                                // TODO: handle error
-                                print("ERROR: \(error)")
+                                self.errorBlock?(error)
                             }
                         }
                     }
