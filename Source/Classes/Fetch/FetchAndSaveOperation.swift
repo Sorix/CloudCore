@@ -105,11 +105,11 @@ public class FetchAndSaveOperation: Operation {
                         for recordId in recordIDs {
                             guard let relationship = object.entity.relationshipsByName[attributeName], let targetEntityName = relationship.destinationEntity?.name else { continue }
                             
-                            // TODO: move to extension
                             let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: targetEntityName)
                             fetchRequest.predicate = NSPredicate(format: serviceAttributes.recordID + " == %@" , recordId)
                             fetchRequest.fetchLimit = 1
                             fetchRequest.includesPropertyValues = false
+                            fetchRequest.includesSubentities = false
                             
                             do {
                                 let foundObject = try context.fetch(fetchRequest).first as? NSManagedObject
