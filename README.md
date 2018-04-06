@@ -58,7 +58,7 @@ func application(_ application: UIApplication, didFinishLaunchingWithOptions lau
   application.registerForRemoteNotifications()
 
   // Enable CloudCore syncing
-  CloudCore.enable(persistentContainer: persistentContainer, errorDelegate: self)
+  CloudCore.enable(persistentContainer: persistentContainer)
 
   return true
 }
