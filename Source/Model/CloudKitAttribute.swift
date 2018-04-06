@@ -54,7 +54,6 @@ class CloudKitAttribute {
 		fetchRequest.predicate = NSPredicate(format: serviceAttributes.recordID + " == %@" , recordID.encodedString)
 		fetchRequest.fetchLimit = 1
 		fetchRequest.includesPropertyValues = false
-		fetchRequest.includesSubentities = false
 		
 		let foundObject = try context.fetch(fetchRequest).first as? NSManagedObject
 		
