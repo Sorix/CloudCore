@@ -109,7 +109,6 @@ public class FetchAndSaveOperation: Operation {
                             fetchRequest.predicate = NSPredicate(format: serviceAttributes.recordID + " == %@" , recordId)
                             fetchRequest.fetchLimit = 1
                             fetchRequest.includesPropertyValues = false
-                            fetchRequest.includesSubentities = false
                             
                             do {
                                 let foundObject = try context.fetch(fetchRequest).first as? NSManagedObject
