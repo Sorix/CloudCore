@@ -11,7 +11,7 @@ import CoreData
 import CloudKit
 
 /// Class responsible for taking action on Core Data save notifications
-class CoreDataListener {
+class CoreDataObserver {
 	var container: NSPersistentContainer
 	
 	let converter = ObjectToRecordConverter()
@@ -30,18 +30,18 @@ class CoreDataListener {
 	}
 	
 	/// Observe Core Data willSave and didSave notifications
-	func observe() {
+	func start() {
 		NotificationCenter.default.addObserver(self, selector: #selector(self.willSave(notification:)), name: .NSManagedObjectContextWillSave, object: nil)
 		NotificationCenter.default.addObserver(self, selector: #selector(self.didSave(notification:)), name: .NSManagedObjectContextDidSave, object: nil)
 	}
 	
 	/// Remove Core Data observers
-	func stopObserving() {
+	func stop() {
 		NotificationCenter.default.removeObserver(self)
 	}
 	
 	deinit {
-		stopObserving()
+		stop()
 	}
 	
 	@objc private func willSave(notification: Notification) {
@@ -53,7 +53,7 @@ class CoreDataListener {
 		// Upload only for changes in root context that will be saved to persistentStore
 		if context.parent != nil { return }
 		
-		converter.setUnconfirmedOperations(inserted: context.insertedObjects,
+		converter.prepareOperationsFor(inserted: context.insertedObjects,
 		                                  updated: context.updatedObjects,
 		                                  deleted: context.deletedObjects)
 	}
@@ -63,7 +63,7 @@ class CoreDataListener {
 		if context.name == CloudCore.config.contextName { return }
 		if context.parent != nil { return }
 
-		if converter.notConfirmedConvertOperations.isEmpty && converter.recordIDsToDelete.isEmpty { return }
+		if converter.pendingConvertOperations.isEmpty && converter.recordIDsToDelete.isEmpty { return }
 		
 		DispatchQueue.global(qos: .utility).async { [weak self] in
 			guard let listener = self else { return }
@@ -72,7 +72,7 @@ class CoreDataListener {
 			let backgroundContext = listener.container.newBackgroundContext()
 			backgroundContext.name = listener.cloudContextName
 			
-			let records = listener.converter.confirmConvertOperationsAndWait(in: backgroundContext)
+			let records = listener.converter.processPendingOperations(in: backgroundContext)
 			listener.pushOperationQueue.errorBlock = { listener.handle(error: $0, parentContext: backgroundContext) }
 			listener.pushOperationQueue.addOperations(recordsToSave: records.recordsToSave, recordIDsToDelete: records.recordIDsToDelete)
 			listener.pushOperationQueue.waitUntilAllOperationsAreFinished()

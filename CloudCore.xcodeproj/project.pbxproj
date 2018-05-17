@@ -37,7 +37,7 @@
 		E20A73CC1E68608100A6851A /* RecordToCoreDataOperationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E20A73CB1E68608100A6851A /* RecordToCoreDataOperationTests.swift */; };
 		E21FA03E1E4A7E7200B1DAA2 /* RecordToCoreDataOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = E21FA03D1E4A7E7200B1DAA2 /* RecordToCoreDataOperation.swift */; };
 		E22A53DA1E4A8743009286C0 /* CloudKitAttribute.swift in Sources */ = {isa = PBXBuildFile; fileRef = E22A53D91E4A8743009286C0 /* CloudKitAttribute.swift */; };
-		E22C40461E42956C009469A1 /* CoreDataListener.swift in Sources */ = {isa = PBXBuildFile; fileRef = E22C40451E42956C009469A1 /* CoreDataListener.swift */; };
+		E22C40461E42956C009469A1 /* CoreDataObserver.swift in Sources */ = {isa = PBXBuildFile; fileRef = E22C40451E42956C009469A1 /* CoreDataObserver.swift */; };
 		E23C478C1E48A404004310F9 /* PushOperationQueue.swift in Sources */ = {isa = PBXBuildFile; fileRef = E23C478B1E48A404004310F9 /* PushOperationQueue.swift */; };
 		E247EF8D1E67775500EBD75E /* ErrorBlockProxyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E247EF8B1E67773F00EBD75E /* ErrorBlockProxyTests.swift */; };
 		E247EF971E67873E00EBD75E /* DeleteFromCoreDataOperationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E247EF951E67873900EBD75E /* DeleteFromCoreDataOperationTests.swift */; };
@@ -124,7 +124,7 @@
 		E21FA03D1E4A7E7200B1DAA2 /* RecordToCoreDataOperation.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RecordToCoreDataOperation.swift; sourceTree = "<group>"; };
 		E22A53D91E4A8743009286C0 /* CloudKitAttribute.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CloudKitAttribute.swift; sourceTree = "<group>"; };
 		E22C40441E4291FB009469A1 /* CloudCore.podspec */ = {isa = PBXFileReference; lastKnownFileType = text; path = CloudCore.podspec; sourceTree = "<group>"; };
-		E22C40451E42956C009469A1 /* CoreDataListener.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CoreDataListener.swift; sourceTree = "<group>"; };
+		E22C40451E42956C009469A1 /* CoreDataObserver.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CoreDataObserver.swift; sourceTree = "<group>"; };
 		E23C478B1E48A404004310F9 /* PushOperationQueue.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PushOperationQueue.swift; sourceTree = "<group>"; };
 		E247EF8B1E67773F00EBD75E /* ErrorBlockProxyTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ErrorBlockProxyTests.swift; sourceTree = "<group>"; };
 		E247EF951E67873900EBD75E /* DeleteFromCoreDataOperationTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DeleteFromCoreDataOperationTests.swift; sourceTree = "<group>"; };
@@ -327,7 +327,7 @@
 				E2FA74461E769D8700C3489D /* Model */,
 				E288C5751E4C9519002360A1 /* ObjectToRecord */,
 				E23C478B1E48A404004310F9 /* PushOperationQueue.swift */,
-				E22C40451E42956C009469A1 /* CoreDataListener.swift */,
+				E22C40451E42956C009469A1 /* CoreDataObserver.swift */,
 			);
 			path = Push;
 			sourceTree = "<group>";
@@ -701,7 +701,7 @@
 				E23C478C1E48A404004310F9 /* PushOperationQueue.swift in Sources */,
 				E2FA74441E769BF900C3489D /* RecordWithDatabase.swift in Sources */,
 				E2C3A6D11E4A8EAF009151F3 /* FetchResult.swift in Sources */,
-				E22C40461E42956C009469A1 /* CoreDataListener.swift in Sources */,
+				E22C40461E42956C009469A1 /* CoreDataObserver.swift in Sources */,
 				E2075FF91E4BBEAC00E31F1F /* AsynchronousOperation.swift in Sources */,
 				E24F44A61E4595B900F78819 /* CoreDataRelationship.swift in Sources */,
 				D9089D4A1FE14E57000FC60C /* SetupOperation.swift in Sources */,

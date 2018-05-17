@@ -51,7 +51,7 @@ open class CloudCore {
 	
 	// MARK: - Properties
 	
-	private(set) static var coreDataListener: CoreDataListener?
+	private(set) static var coreDataObserver: CoreDataObserver?
 	
 	/// CloudCore configuration, it's recommended to set up before calling any of CloudCore methods. You can read more at `CloudCoreConfig` struct description
 	public static var config = CloudCoreConfig()
@@ -62,7 +62,7 @@ open class CloudCore {
 	/// Error and sync actions are reported to that delegate
 	public static weak var delegate: CloudCoreDelegate? {
 		didSet {
-			coreDataListener?.delegate = delegate
+			coreDataObserver?.delegate = delegate
 		}
 	}
 	
@@ -78,10 +78,10 @@ open class CloudCore {
 	///   - container: `NSPersistentContainer` that will be used to save data
 	public static func enable(persistentContainer container: NSPersistentContainer) {
 		// Listen for local changes
-		let listener = CoreDataListener(container: container)
-		listener.delegate = self.delegate
-		listener.observe()
-		self.coreDataListener = listener
+		let observer = CoreDataObserver(container: container)
+		observer.delegate = self.delegate
+		observer.start()
+		self.coreDataObserver = observer
 		
 		// Subscribe (subscription may be outdated/removed)
 		#if !os(watchOS)
@@ -107,8 +107,8 @@ open class CloudCore {
 	public static func disable() {
 		queue.cancelAllOperations()
 
-		coreDataListener?.stopObserving()
-		coreDataListener = nil
+		coreDataObserver?.stop()
+		coreDataObserver = nil
 		
 		// FIXME: unsubscribe
 	}

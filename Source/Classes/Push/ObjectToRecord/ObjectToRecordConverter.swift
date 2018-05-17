@@ -16,15 +16,15 @@ class ObjectToRecordConverter {
 	
 	var errorBlock: ErrorBlock?
 	
-	private(set) var notConfirmedConvertOperations = [ObjectToRecordOperation]()
+	private(set) var pendingConvertOperations = [ObjectToRecordOperation]()
 	private let operationQueue = OperationQueue()
 	
 	private var convertedRecords = [RecordWithDatabase]()
 	private(set) var recordIDsToDelete = [RecordIDWithDatabase]()
 	
-	func setUnconfirmedOperations(inserted: Set<NSManagedObject>, updated: Set<NSManagedObject>, deleted: Set<NSManagedObject>) {
-		self.notConfirmedConvertOperations = self.convertOperations(from: inserted, changeType: .inserted)
-		self.notConfirmedConvertOperations += self.convertOperations(from: updated, changeType: .updated)
+	func prepareOperationsFor(inserted: Set<NSManagedObject>, updated: Set<NSManagedObject>, deleted: Set<NSManagedObject>) {
+		self.pendingConvertOperations = self.convertOperations(from: inserted, changeType: .inserted)
+		self.pendingConvertOperations += self.convertOperations(from: updated, changeType: .updated)
 		
 		self.recordIDsToDelete = convert(deleted: deleted)
 	}
@@ -100,13 +100,13 @@ class ObjectToRecordConverter {
 	
 	/// Add all uncofirmed operations to operation queue
 	/// - attention: Don't call this method from same context's `perfom`, that will cause deadlock
-	func confirmConvertOperationsAndWait(in context: NSManagedObjectContext) -> (recordsToSave: [RecordWithDatabase], recordIDsToDelete: [RecordIDWithDatabase]) {
-		for operation in notConfirmedConvertOperations {
+	func processPendingOperations(in context: NSManagedObjectContext) -> (recordsToSave: [RecordWithDatabase], recordIDsToDelete: [RecordIDWithDatabase]) {
+		for operation in pendingConvertOperations {
 			operation.parentContext = context
 			operationQueue.addOperation(operation)
 		}
 
-		notConfirmedConvertOperations = [ObjectToRecordOperation]()
+		pendingConvertOperations = [ObjectToRecordOperation]()
 		operationQueue.waitUntilAllOperationsAreFinished()
 		
 		let recordsToSave = self.convertedRecords

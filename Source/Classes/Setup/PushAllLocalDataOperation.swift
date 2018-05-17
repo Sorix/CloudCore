@@ -56,8 +56,8 @@ class PushAllLocalDataOperation: Operation {
 			}
 		}
 		
-		converter.setUnconfirmedOperations(inserted: allManagedObjects, updated: Set<NSManagedObject>(), deleted: Set<NSManagedObject>())
-		let recordsToSave = converter.confirmConvertOperationsAndWait(in: childContext).recordsToSave
+		converter.prepareOperationsFor(inserted: allManagedObjects, updated: Set<NSManagedObject>(), deleted: Set<NSManagedObject>())
+		let recordsToSave = converter.processPendingOperations(in: childContext).recordsToSave
 		pushOperationQueue.addOperations(recordsToSave: recordsToSave, recordIDsToDelete: [RecordIDWithDatabase]())
 		pushOperationQueue.waitUntilAllOperationsAreFinished()
 		
