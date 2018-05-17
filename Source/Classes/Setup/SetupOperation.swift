@@ -60,7 +60,7 @@ class SetupOperation: Operation {
 		#endif
 			
 		// Upload all local data
-		let uploadOperation = UploadAllLocalDataOperation(parentContext: childContext, managedObjectModel: container.managedObjectModel)
+		let uploadOperation = PushAllLocalDataOperation(parentContext: childContext, managedObjectModel: container.managedObjectModel)
 		uploadOperation.errorBlock = errorBlock
 		
 		#if !os(watchOS)

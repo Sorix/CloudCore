@@ -91,7 +91,7 @@ open class CloudCore {
 		#endif
 		
 		// Fetch updated data (e.g. push notifications weren't received)
-        let updateFromCloudOperation = FetchAndSaveOperation(persistentContainer: container)
+        let updateFromCloudOperation = PullOperation(persistentContainer: container)
 		updateFromCloudOperation.errorBlock = {
 			self.delegate?.error(error: $0, module: .some(.fetchFromCloud))
 		}
@@ -133,7 +133,7 @@ open class CloudCore {
 
 		DispatchQueue.global(qos: .utility).async {
 			let errorProxy = ErrorBlockProxy(destination: error)
-			let operation = FetchAndSaveOperation(from: [cloudDatabase], persistentContainer: container)
+			let operation = PullOperation(from: [cloudDatabase], persistentContainer: container)
 			operation.errorBlock = { errorProxy.send(error: $0) }
 			operation.start()
 			
@@ -153,7 +153,7 @@ open class CloudCore {
 		- completion: `FetchResult` enumeration with results of operation
 	*/
 	public static func fetchAndSave(to container: NSPersistentContainer, error: ErrorBlock?, completion: (() -> Void)?) {
-        let operation = FetchAndSaveOperation(persistentContainer: container)
+        let operation = PullOperation(persistentContainer: container)
 		operation.errorBlock = error
 		operation.completionBlock = completion
 

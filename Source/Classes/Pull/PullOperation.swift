@@ -10,7 +10,7 @@ import CloudKit
 import CoreData
 
 /// An operation that fetches data from CloudKit and saves it to Core Data, you can use it without calling `CloudCore.fetchAndSave` methods if you application relies on `Operation`
-public class FetchAndSaveOperation: Operation {
+public class PullOperation: Operation {
 	
 	/// Private cloud database for the CKContainer specified by CloudCoreConfig
 	public static let allDatabases = [
@@ -36,7 +36,7 @@ public class FetchAndSaveOperation: Operation {
 	///   - databases: list of databases to fetch data from (only private is supported now)
 	///   - persistentContainer: `NSPersistentContainer` that will be used to save data
 	///   - tokens: previously saved `Tokens`, you can generate new ones if you want to fetch all data
-	public init(from databases: [CKDatabase] = FetchAndSaveOperation.allDatabases, persistentContainer: NSPersistentContainer, tokens: Tokens = CloudCore.tokens) {
+	public init(from databases: [CKDatabase] = PullOperation.allDatabases, persistentContainer: NSPersistentContainer, tokens: Tokens = CloudCore.tokens) {
 		self.tokens = tokens
 		self.databases = databases
 		self.persistentContainer = persistentContainer

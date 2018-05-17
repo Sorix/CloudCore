@@ -9,7 +9,7 @@
 import Foundation
 import CoreData
 
-class UploadAllLocalDataOperation: Operation {
+class PushAllLocalDataOperation: Operation {
 	
 	let managedObjectModel: NSManagedObjectModel
 	let parentContext: NSManagedObjectContext
@@ -17,12 +17,12 @@ class UploadAllLocalDataOperation: Operation {
 	var errorBlock: ErrorBlock? {
 		didSet {
 			converter.errorBlock = errorBlock
-			cloudSaveOperationQueue.errorBlock = errorBlock
+			pushOperationQueue.errorBlock = errorBlock
 		}
 	}
 	
 	private let converter = ObjectToRecordConverter()
-	private let cloudSaveOperationQueue = CloudSaveOperationQueue()
+	private let pushOperationQueue = PushOperationQueue()
 	
 	init(parentContext: NSManagedObjectContext, managedObjectModel: NSManagedObjectModel) {
 		self.parentContext = parentContext
@@ -58,8 +58,8 @@ class UploadAllLocalDataOperation: Operation {
 		
 		converter.setUnconfirmedOperations(inserted: allManagedObjects, updated: Set<NSManagedObject>(), deleted: Set<NSManagedObject>())
 		let recordsToSave = converter.confirmConvertOperationsAndWait(in: childContext).recordsToSave
-		cloudSaveOperationQueue.addOperations(recordsToSave: recordsToSave, recordIDsToDelete: [RecordIDWithDatabase]())
-		cloudSaveOperationQueue.waitUntilAllOperationsAreFinished()
+		pushOperationQueue.addOperations(recordsToSave: recordsToSave, recordIDsToDelete: [RecordIDWithDatabase]())
+		pushOperationQueue.waitUntilAllOperationsAreFinished()
 		
 		do {
 			try childContext.save()
@@ -69,7 +69,7 @@ class UploadAllLocalDataOperation: Operation {
 	}
 	
 	override func cancel() {
-		cloudSaveOperationQueue.cancelAllOperations()
+		pushOperationQueue.cancelAllOperations()
 		
 		super.cancel()
 	}

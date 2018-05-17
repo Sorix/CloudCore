@@ -15,7 +15,7 @@ class CoreDataListener {
 	var container: NSPersistentContainer
 	
 	let converter = ObjectToRecordConverter()
-	let cloudSaveOperationQueue = CloudSaveOperationQueue()
+	let pushOperationQueue = PushOperationQueue()
 
 	let cloudContextName = "CloudCoreSync"
 	
@@ -73,9 +73,9 @@ class CoreDataListener {
 			backgroundContext.name = listener.cloudContextName
 			
 			let records = listener.converter.confirmConvertOperationsAndWait(in: backgroundContext)
-			listener.cloudSaveOperationQueue.errorBlock = { listener.handle(error: $0, parentContext: backgroundContext) }
-			listener.cloudSaveOperationQueue.addOperations(recordsToSave: records.recordsToSave, recordIDsToDelete: records.recordIDsToDelete)
-			listener.cloudSaveOperationQueue.waitUntilAllOperationsAreFinished()
+			listener.pushOperationQueue.errorBlock = { listener.handle(error: $0, parentContext: backgroundContext) }
+			listener.pushOperationQueue.addOperations(recordsToSave: records.recordsToSave, recordIDsToDelete: records.recordIDsToDelete)
+			listener.pushOperationQueue.waitUntilAllOperationsAreFinished()
 			
 			do {
 				if backgroundContext.hasChanges {
@@ -98,13 +98,13 @@ class CoreDataListener {
 		switch cloudError.code {
 		// Zone was accidentally deleted (NOT PURGED), we need to reupload all data accroding Apple Guidelines
 		case .zoneNotFound:
-			cloudSaveOperationQueue.cancelAllOperations()
+			pushOperationQueue.cancelAllOperations()
 			
 			// Create CloudCore Zone
 			let createZoneOperation = CreateCloudCoreZoneOperation()
 			createZoneOperation.errorBlock = {
 				self.delegate?.error(error: $0, module: .some(.saveToCloud))
-				self.cloudSaveOperationQueue.cancelAllOperations()
+				self.pushOperationQueue.cancelAllOperations()
 			}
 			
 			// Subscribe operation
@@ -112,14 +112,14 @@ class CoreDataListener {
 				let subscribeOperation = SubscribeOperation()
 				subscribeOperation.errorBlock = { self.delegate?.error(error: $0, module: .some(.saveToCloud)) }
 				subscribeOperation.addDependency(createZoneOperation)
-				cloudSaveOperationQueue.addOperation(subscribeOperation)
+				pushOperationQueue.addOperation(subscribeOperation)
 			#endif
 			
 			// Upload all local data
-			let uploadOperation = UploadAllLocalDataOperation(parentContext: parentContext, managedObjectModel: container.managedObjectModel)
+			let uploadOperation = PushAllLocalDataOperation(parentContext: parentContext, managedObjectModel: container.managedObjectModel)
 			uploadOperation.errorBlock = { self.delegate?.error(error: $0, module: .some(.saveToCloud)) }
 			
-			cloudSaveOperationQueue.addOperations([createZoneOperation, uploadOperation], waitUntilFinished: true)
+			pushOperationQueue.addOperations([createZoneOperation, uploadOperation], waitUntilFinished: true)
 		case .operationCancelled: return
 		default: delegate?.error(error: cloudError, module: .some(.saveToCloud))
 		}
