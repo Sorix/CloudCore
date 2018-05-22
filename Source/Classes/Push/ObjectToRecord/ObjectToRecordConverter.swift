@@ -27,10 +27,10 @@ class ObjectToRecordConverter {
     }
     
 	func prepareOperationsFor(inserted: Set<NSManagedObject>, updated: Set<NSManagedObject>, deleted: Set<NSManagedObject>) {
-		self.pendingConvertOperations = self.convertOperations(from: inserted, changeType: .inserted)
-		self.pendingConvertOperations += self.convertOperations(from: updated, changeType: .updated)
+		pendingConvertOperations = convertOperations(from: inserted, changeType: .inserted)
+		pendingConvertOperations += convertOperations(from: updated, changeType: .updated)
 		
-		self.recordIDsToDelete = convert(deleted: deleted)
+		recordIDsToDelete = convert(deleted: deleted)
 	}
 	
 	private func convertOperations(from objectSet: Set<NSManagedObject>, changeType: ManagedObjectChangeType) -> [ObjectToRecordOperation] {
@@ -102,17 +102,18 @@ class ObjectToRecordConverter {
 		return recordIDs
 	}
 	
-	/// Add all uncofirmed operations to operation queue
+	/// Add all unconfirmed operations to operation queue
 	/// - attention: Don't call this method from same context's `perfom`, that will cause deadlock
 	func processPendingOperations(in context: NSManagedObjectContext) -> (recordsToSave: [RecordWithDatabase], recordIDsToDelete: [RecordIDWithDatabase]) {
 		for operation in pendingConvertOperations {
 			operation.parentContext = context
 			operationQueue.addOperation(operation)
 		}
-
+        
 		pendingConvertOperations = [ObjectToRecordOperation]()
+        
 		operationQueue.waitUntilAllOperationsAreFinished()
-		
+        
 		let recordsToSave = self.convertedRecords
 		let recordIDsToDelete = self.recordIDsToDelete
 		
