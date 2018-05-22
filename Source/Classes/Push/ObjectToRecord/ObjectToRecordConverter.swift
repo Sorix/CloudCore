@@ -16,12 +16,16 @@ class ObjectToRecordConverter {
 	
 	var errorBlock: ErrorBlock?
 	
-	private(set) var pendingConvertOperations = [ObjectToRecordOperation]()
+	private var pendingConvertOperations = [ObjectToRecordOperation]()
 	private let operationQueue = OperationQueue()
 	
 	private var convertedRecords = [RecordWithDatabase]()
-	private(set) var recordIDsToDelete = [RecordIDWithDatabase]()
+	private var recordIDsToDelete = [RecordIDWithDatabase]()
 	
+    var hasPendingOperations: Bool {
+        return !pendingConvertOperations.isEmpty || !recordIDsToDelete.isEmpty
+    }
+    
 	func prepareOperationsFor(inserted: Set<NSManagedObject>, updated: Set<NSManagedObject>, deleted: Set<NSManagedObject>) {
 		self.pendingConvertOperations = self.convertOperations(from: inserted, changeType: .inserted)
 		self.pendingConvertOperations += self.convertOperations(from: updated, changeType: .updated)
