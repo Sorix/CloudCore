@@ -10,7 +10,7 @@ import Foundation
 import CoreData
 import CloudKit
 
-/// Class responsible for taking action on Core Data save notifications
+/// Class responsible for taking action on Core Data changes
 class CoreDataObserver {
 	var container: NSPersistentContainer
 	
@@ -31,8 +31,13 @@ class CoreDataObserver {
 	
 	/// Observe Core Data willSave and didSave notifications
 	func start() {
-		NotificationCenter.default.addObserver(self, selector: #selector(self.willSave(notification:)), name: .NSManagedObjectContextWillSave, object: nil)
-		NotificationCenter.default.addObserver(self, selector: #selector(self.didSave(notification:)), name: .NSManagedObjectContextDidSave, object: nil)
+        NotificationCenter.default.addObserver(self,
+                                               selector: #selector(self.willSave(notification:)), name: .NSManagedObjectContextWillSave,
+                                               object: nil)
+        NotificationCenter.default.addObserver(self,
+                                               selector: #selector(self.didSave(notification:)),
+                                               name: .NSManagedObjectContextDidSave,
+                                               object: nil)
 	}
 	
 	/// Remove Core Data observers
@@ -54,6 +59,30 @@ class CoreDataObserver {
         return true
     }
     
+    func processChanges() {
+        CloudCore.delegate?.willSyncToCloud()
+        
+        let backgroundContext = container.newBackgroundContext()
+        backgroundContext.name = cloudContextName
+        
+        let records = converter.processPendingOperations(in: backgroundContext)
+        pushOperationQueue.errorBlock = {
+            self.handle(error: $0, parentContext: backgroundContext)
+        }
+        pushOperationQueue.addOperations(recordsToSave: records.recordsToSave, recordIDsToDelete: records.recordIDsToDelete)
+        pushOperationQueue.waitUntilAllOperationsAreFinished()
+        
+        do {
+            if backgroundContext.hasChanges {
+                try backgroundContext.save()
+            }
+        } catch {
+            delegate?.error(error: error, module: .some(.saveToCloud))
+        }
+        
+        CloudCore.delegate?.didSyncToCloud()
+    }
+        
 	@objc private func willSave(notification: Notification) {
 		guard let context = notification.object as? NSManagedObjectContext else { return }
         guard shouldProcess(context) else { return }
@@ -66,29 +95,12 @@ class CoreDataObserver {
 	@objc private func didSave(notification: Notification) {
 		guard let context = notification.object as? NSManagedObjectContext else { return }
         guard shouldProcess(context) else { return }
+        
         guard converter.hasPendingOperations else { return }
         
 		DispatchQueue.global(qos: .utility).async { [weak self] in
 			guard let observer = self else { return }
-			CloudCore.delegate?.willSyncToCloud()
-			
-			let backgroundContext = observer.container.newBackgroundContext()
-			backgroundContext.name = observer.cloudContextName
-			
-			let records = observer.converter.processPendingOperations(in: backgroundContext)
-			observer.pushOperationQueue.errorBlock = { observer.handle(error: $0, parentContext: backgroundContext) }
-			observer.pushOperationQueue.addOperations(recordsToSave: records.recordsToSave, recordIDsToDelete: records.recordIDsToDelete)
-			observer.pushOperationQueue.waitUntilAllOperationsAreFinished()
-			
-			do {
-				if backgroundContext.hasChanges {
-					try backgroundContext.save()
-				}
-			} catch {
-				observer.delegate?.error(error: error, module: .some(.saveToCloud))
-			}
-
-			CloudCore.delegate?.didSyncToCloud()
+            observer.processChanges()
 		}
 	}
 	
