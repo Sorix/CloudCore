@@ -5,33 +5,26 @@
 //  Created by Vasily Ulianov on 06.02.17.
 //  Copyright © 2017 Vasily Ulianov. All rights reserved.
 //
-
 import CoreData
 import CloudKit
 
 /**
 	Main framework class, in most cases you will use only methods from this class, all methods and properties are `static`.
-
 	## Save to cloud
 	On application inialization call `CloudCore.enable(persistentContainer:)` method, so framework will automatically monitor changes at Core Data and upload it to iCloud.
-
 	### Example
 	```swift
 	func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
 		// Register for push notifications about changes
 		application.registerForRemoteNotifications()
-
 		// Enable CloudCore syncing
 		CloudCore.delegate = someDelegate // it is recommended to set delegate to track errors
 		CloudCore.enable(persistentContainer: persistentContainer)
-
 		return true
 	}
 	```
-
 	## Fetch from cloud
 	When CloudKit data is changed **push notification** is posted to an application. You need to handle it and fetch changed data from CloudKit with `CloudCore.fetchAndSave(using:to:error:completion:)` method.
-
 	### Example
 	```swift
 	func application(_ application: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable : Any], fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {
@@ -44,7 +37,6 @@ import CloudKit
 		}
 	}
 	```
-
 	You can also check for updated data at CloudKit **manually** (e.g. push notifications are not working). Use for that `CloudCore.fetchAndSave(to:error:completion:)`
 */
 open class CloudCore {
@@ -57,7 +49,11 @@ open class CloudCore {
 	public static var config = CloudCoreConfig()
 	
 	/// `Tokens` object, read more at class description. By default variable is loaded from User Defaults.
-	public static var tokens = Tokens.loadFromUserDefaults()
+    	public static var tokens = Tokens.loadFromUserDefaults() {
+        	didSet {
+            		tokens.saveToUserDefaults()
+        	}
+    	}
 	
 	/// Error and sync actions are reported to that delegate
 	public static weak var delegate: CloudCoreDelegate? {
@@ -116,9 +112,7 @@ open class CloudCore {
 	// MARK: Fetchers
 	
 	/** Fetch changes from one CloudKit database and save it to CoreData from `didReceiveRemoteNotification` method.
-
 	Don't forget to check notification's UserInfo by calling `isCloudCoreNotification(withUserInfo:)`. If incorrect user info is provided `FetchResult.noData` will be returned at completion block.
-
 	- Parameters:
 		- userInfo: notification's user info, CloudKit database will be extraced from that notification
 		- container: `NSPersistentContainer` that will be used to save fetched data
@@ -146,7 +140,6 @@ open class CloudCore {
 	}
 
 	/** Fetch changes from all CloudKit databases and save it to Core Data
-
 	- Parameters:
 		- container: `NSPersistentContainer` that will be used to save fetched data
 		- error: block will be called every time when error occurs during process
@@ -161,7 +154,6 @@ open class CloudCore {
 	}
 	
 	/** Check if notification is CloudKit notification containing CloudCore data
-
 	 - Parameter userInfo: userInfo of notification
 	 - Returns: `true` if notification contains CloudCore data
 	*/
