@@ -124,7 +124,7 @@ class ObjectToRecordConverter {
 	}
 	
 	/// Get appropriate database for modify operations
-	private func database(for recordID: CKRecordID, serviceAttributes: ServiceAttributeNames) -> CKDatabase {
+    private func database(for recordID: CKRecord.ID, serviceAttributes: ServiceAttributeNames) -> CKDatabase {
 		let container = CloudCore.config.container
 		
 		if serviceAttributes.isPublic { return container.publicCloudDatabase }

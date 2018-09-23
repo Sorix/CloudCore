@@ -11,25 +11,25 @@ import CloudKit
 class FetchRecordZoneChangesOperation: Operation {
 	// Set on init
 	let tokens: Tokens
-	let recordZoneIDs: [CKRecordZoneID]
+	let recordZoneIDs: [CKRecordZone.ID]
 	let database: CKDatabase
 	//
 	
-	var errorBlock: ((CKRecordZoneID, Error) -> Void)?
+	var errorBlock: ((CKRecordZone.ID, Error) -> Void)?
 	var recordChangedBlock: ((CKRecord) -> Void)?
-	var recordWithIDWasDeletedBlock: ((CKRecordID) -> Void)?
+	var recordWithIDWasDeletedBlock: ((CKRecord.ID) -> Void)?
 	
-	private let optionsByRecordZoneID: [CKRecordZoneID: CKFetchRecordZoneChangesOptions]
+    private let optionsByRecordZoneID: [CKRecordZone.ID: CKFetchRecordZoneChangesOperation.ZoneOptions]
 	private let fetchQueue = OperationQueue()
 	
-	init(from database: CKDatabase, recordZoneIDs: [CKRecordZoneID], tokens: Tokens) {
+	init(from database: CKDatabase, recordZoneIDs: [CKRecordZone.ID], tokens: Tokens) {
 		self.tokens = tokens
 		self.database = database
 		self.recordZoneIDs = recordZoneIDs
 		
-		var optionsByRecordZoneID = [CKRecordZoneID: CKFetchRecordZoneChangesOptions]()
+        var optionsByRecordZoneID = [CKRecordZone.ID: CKFetchRecordZoneChangesOperation.ZoneOptions]()
 		for zoneID in recordZoneIDs {
-			let options = CKFetchRecordZoneChangesOptions()
+            let options = CKFetchRecordZoneChangesOperation.ZoneOptions()
 			options.previousServerChangeToken = self.tokens.tokensByRecordZoneID[zoneID]
 			optionsByRecordZoneID[zoneID] = options
 		}
@@ -49,7 +49,7 @@ class FetchRecordZoneChangesOperation: Operation {
 		fetchQueue.waitUntilAllOperationsAreFinished()
 	}
 	
-	private func makeFetchOperation(optionsByRecordZoneID: [CKRecordZoneID: CKFetchRecordZoneChangesOptions]) -> CKFetchRecordZoneChangesOperation {
+    private func makeFetchOperation(optionsByRecordZoneID: [CKRecordZone.ID: CKFetchRecordZoneChangesOperation.ZoneOptions]) -> CKFetchRecordZoneChangesOperation {
 		// Init Fetch Operation
 		let fetchOperation = CKFetchRecordZoneChangesOperation(recordZoneIDs: recordZoneIDs, optionsByRecordZoneID: optionsByRecordZoneID)
 		

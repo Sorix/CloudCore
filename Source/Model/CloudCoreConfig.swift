@@ -37,7 +37,7 @@ public struct CloudCoreConfig {
 	/// RecordZone inside private database to store CoreData.
 	///
 	/// Default value is `CloudCore`
-	public var zoneID = CKRecordZoneID(zoneName: "CloudCore", ownerName: CKCurrentUserDefaultName)
+    public var zoneID = CKRecordZone.ID(zoneName: "CloudCore", ownerName: CKCurrentUserDefaultName)
 	let subscriptionIDForPrivateDB = "CloudCorePrivate"
 	let subscriptionIDForSharedDB = "CloudCoreShared"
 	

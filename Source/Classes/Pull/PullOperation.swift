@@ -68,7 +68,7 @@ public class PullOperation: Operation {
 		CloudCore.delegate?.didSyncFromCloud()
 	}
 	
-	private func addRecordZoneChangesOperation(recordZoneIDs: [CKRecordZoneID], database: CKDatabase, context: NSManagedObjectContext) {
+    private func addRecordZoneChangesOperation(recordZoneIDs: [CKRecordZone.ID], database: CKDatabase, context: NSManagedObjectContext) {
 		if recordZoneIDs.isEmpty { return }
 		
 		let recordZoneChangesOperation = FetchRecordZoneChangesOperation(from: database, recordZoneIDs: recordZoneIDs, tokens: tokens)
@@ -94,7 +94,7 @@ public class PullOperation: Operation {
 		queue.addOperation(recordZoneChangesOperation)
 	}
 
-	private func handle(recordZoneChangesError: Error, in zoneId: CKRecordZoneID, database: CKDatabase, context: NSManagedObjectContext) {
+    private func handle(recordZoneChangesError: Error, in zoneId: CKRecordZone.ID, database: CKDatabase, context: NSManagedObjectContext) {
 		guard let cloudError = recordZoneChangesError as? CKError else {
 			errorBlock?(recordZoneChangesError)
 			return
