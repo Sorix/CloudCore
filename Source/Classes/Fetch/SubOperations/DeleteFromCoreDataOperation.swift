@@ -11,10 +11,10 @@ import CloudKit
 
 class DeleteFromCoreDataOperation: Operation {
 	let parentContext: NSManagedObjectContext
-	let recordID: CKRecordID
+    let recordID: CKRecord.ID
 	var errorBlock: ErrorBlock?
 	
-	init(parentContext: NSManagedObjectContext, recordID: CKRecordID) {
+    init(parentContext: NSManagedObjectContext, recordID: CKRecord.ID) {
 		self.parentContext = parentContext
 		self.recordID = recordID
 		

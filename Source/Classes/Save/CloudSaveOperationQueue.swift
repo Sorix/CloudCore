@@ -44,7 +44,7 @@ class CloudSaveOperationQueue: OperationQueue {
 		}
 	}
 	
-	private func addOperation(recordsToSave: [CKRecord], recordIDsToDelete: [CKRecordID], database: CKDatabase) {
+    private func addOperation(recordsToSave: [CKRecord], recordIDsToDelete: [CKRecord.ID], database: CKDatabase) {
 		// Modify CKRecord Operation
 		let modifyOperation = CKModifyRecordsOperation(recordsToSave: recordsToSave, recordIDsToDelete: recordIDsToDelete)
 		modifyOperation.savePolicy = .changedKeys
@@ -81,7 +81,7 @@ class CloudSaveOperationQueue: OperationQueue {
 fileprivate class DatabaseModifyDataSource {
 	let database: CKDatabase
 	var save = [CKRecord]()
-	var delete = [CKRecordID]()
+    var delete = [CKRecord.ID]()
 	
 	init(database: CKDatabase) {
 		self.database = database

@@ -68,7 +68,7 @@ public class FetchAndSaveOperation: Operation {
 		CloudCore.delegate?.didSyncFromCloud()
 	}
 	
-	private func addRecordZoneChangesOperation(recordZoneIDs: [CKRecordZoneID], database: CKDatabase, context: NSManagedObjectContext) {
+    private func addRecordZoneChangesOperation(recordZoneIDs: [CKRecordZone.ID], database: CKDatabase, context: NSManagedObjectContext) {
 		if recordZoneIDs.isEmpty { return }
 		
 		let recordZoneChangesOperation = FetchRecordZoneChangesOperation(from: database, recordZoneIDs: recordZoneIDs, tokens: tokens)
@@ -87,14 +87,14 @@ public class FetchAndSaveOperation: Operation {
 			self.queue.addOperation(deleteOperation)
 		}
 		
-		recordZoneChangesOperation.errorBlock = { zoneID, error in
-			self.handle(recordZoneChangesError: error, in: zoneID, database: database, context: context)
+		recordZoneChangesOperation.errorBlock = { recordZoneID, error in
+			self.handle(recordZoneChangesError: error, in: recordZoneID, database: database, context: context)
 		}
 		
 		queue.addOperation(recordZoneChangesOperation)
 	}
 
-	private func handle(recordZoneChangesError: Error, in zoneId: CKRecordZoneID, database: CKDatabase, context: NSManagedObjectContext) {
+    private func handle(recordZoneChangesError: Error, in recordZoneID: CKRecordZone.ID, database: CKDatabase, context: NSManagedObjectContext) {
 		guard let cloudError = recordZoneChangesError as? CKError else {
 			errorBlock?(recordZoneChangesError)
 			return
@@ -111,7 +111,7 @@ public class FetchAndSaveOperation: Operation {
 			
 		// Our token is expired, we need to refetch everything again
 		case .changeTokenExpired:
-			tokens.tokensByRecordZoneID[zoneId] = nil
+			tokens.tokensByRecordZoneID[recordZoneID] = nil
 			self.addRecordZoneChangesOperation(recordZoneIDs: [CloudCore.config.zoneID], database: database, context: context)
 		default: errorBlock?(cloudError)
 		}

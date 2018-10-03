@@ -46,7 +46,7 @@ class CoreDataRelationship {
 			
 			guard let objectsSet = value as? NSSet else { return nil }
 	
-			var referenceList = [CKReference]()
+            var referenceList = [CKRecord.Reference]()
 			for (_, managedObject) in objectsSet.enumerated() {
 				guard let managedObject = managedObject as? NSManagedObject,
 					let reference = try makeReference(from: managedObject) else { continue }
@@ -64,8 +64,8 @@ class CoreDataRelationship {
 		}
 	}
 	
-	private func makeReference(from managedObject: NSManagedObject) throws -> CKReference? {
-		let action: CKReferenceAction
+    private func makeReference(from managedObject: NSManagedObject) throws -> CKRecord.Reference? {
+        let action: CKRecord_Reference_Action
 		if case .some(NSDeleteRule.cascadeDeleteRule) = description.inverseRelationship?.deleteRule {
 			action = .deleteSelf
 		} else {
@@ -79,7 +79,7 @@ class CoreDataRelationship {
 			return nil
 		}
 		
-		return CKReference(record: record, action: action)
+        return CKRecord.Reference(record: record, action: action)
 	}
 
 }

@@ -30,8 +30,8 @@ class CloudKitAttribute {
 	
 	func makeCoreDataValue() throws -> Any? {
 		switch value {
-		case let reference as CKReference: return try findManagedObject(for: reference.recordID)
-		case let references as [CKReference]:
+        case let reference as CKRecord.Reference: return try findManagedObject(for: reference.recordID)
+        case let references as [CKRecord.Reference]:
 			let managedObjects = NSMutableSet()
 			for ref in references {
 				guard let foundObject = try findManagedObject(for: ref.recordID) else { continue }
@@ -45,7 +45,7 @@ class CloudKitAttribute {
 		}
 	}
 	
-	private func findManagedObject(for recordID: CKRecordID) throws -> NSManagedObject? {
+    private func findManagedObject(for recordID: CKRecord.ID) throws -> NSManagedObject? {
 		let targetEntityName = try findTargetEntityName()
 		let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: targetEntityName)
 		
