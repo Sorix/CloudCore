@@ -34,7 +34,7 @@ class CoreDataAttribute {
                 let transformer = ValueTransformer(forName: NSValueTransformerName(rawValue: transformerName)) {
                 self.value = transformer.reverseTransformedValue(value)
             } else {
-                self.value = NSKeyedArchiver.archivedData(withRootObject: value)
+                self.value = NSKeyedArchiver.archivedData(withRootObject: value!)
             }
         } else {
             self.value = value
