@@ -45,8 +45,9 @@ public struct CloudCoreConfig {
 	var publicSubscriptionIDPrefix = "CloudCore-"
 	
 	// MARK: Core Data
-	let contextName = "CloudCoreFetchAndSave"
-	
+    public let pushContextName = "CloudCorePushContext"
+    let pullContextName = "CloudCorePullContext"
+
 	/// Default entity's attribute name for *Record ID* if User Info is not specified.
 	///
 	/// Default value is `recordID`

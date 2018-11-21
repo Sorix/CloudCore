@@ -51,7 +51,7 @@ public class PullOperation: Operation {
 		CloudCore.delegate?.willSyncFromCloud()
 		
 		let backgroundContext = persistentContainer.newBackgroundContext()
-		backgroundContext.name = CloudCore.config.contextName
+		backgroundContext.name = CloudCore.config.pullContextName
 		
 		for database in self.databases {
 			self.addRecordZoneChangesOperation(recordZoneIDs: [CloudCore.config.zoneID], database: database, context: backgroundContext)

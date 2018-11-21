@@ -27,11 +27,17 @@ class ObjectToRecordConverter {
     }
     
 	func prepareOperationsFor(inserted: Set<NSManagedObject>, updated: Set<NSManagedObject>, deleted: Set<NSManagedObject>) {
-		pendingConvertOperations = convertOperations(from: inserted, changeType: .inserted)
-		pendingConvertOperations += convertOperations(from: updated, changeType: .updated)
-		
 		recordIDsToDelete = convert(deleted: deleted)
+        
+        prepareOperationsFor(inserted: inserted, updated: updated, deleted: recordIDsToDelete)
 	}
+    
+    func prepareOperationsFor(inserted: Set<NSManagedObject>, updated: Set<NSManagedObject>, deleted deletedIDs: [RecordIDWithDatabase]) {
+        pendingConvertOperations = convertOperations(from: inserted, changeType: .inserted)
+        pendingConvertOperations += convertOperations(from: updated, changeType: .updated)
+        
+        recordIDsToDelete = deletedIDs
+    }
 	
 	private func convertOperations(from objectSet: Set<NSManagedObject>, changeType: ManagedObjectChangeType) -> [ObjectToRecordOperation] {
 		var operations = [ObjectToRecordOperation]()
