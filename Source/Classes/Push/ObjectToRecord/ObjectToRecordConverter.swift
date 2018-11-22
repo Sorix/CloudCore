@@ -26,10 +26,8 @@ class ObjectToRecordConverter {
         return !pendingConvertOperations.isEmpty || !recordIDsToDelete.isEmpty
     }
     
-	func prepareOperationsFor(inserted: Set<NSManagedObject>, updated: Set<NSManagedObject>, deleted: Set<NSManagedObject>) {
-		recordIDsToDelete = convert(deleted: deleted)
-        
-        prepareOperationsFor(inserted: inserted, updated: updated, deleted: recordIDsToDelete)
+	func prepareOperationsFor(inserted: Set<NSManagedObject>, updated: Set<NSManagedObject>, deleted: Set<NSManagedObject>) {        
+        prepareOperationsFor(inserted: inserted, updated: updated, deleted: convert(deleted: deleted))
 	}
     
     func prepareOperationsFor(inserted: Set<NSManagedObject>, updated: Set<NSManagedObject>, deleted deletedIDs: [RecordIDWithDatabase]) {
