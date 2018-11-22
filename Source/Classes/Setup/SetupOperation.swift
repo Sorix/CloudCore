@@ -20,14 +20,14 @@ class SetupOperation: Operation {
 	
 	var errorBlock: ErrorBlock?
 	let container: NSPersistentContainer
-	let parentContext: NSManagedObjectContext?
+    let uploadAllData: Bool
 	
 	/// - Parameters:
 	///   - container: persistent container to get managedObject model from
 	///   - parentContext: context where changed data will be save (recordID's). If it is `nil`, new context will be created from `container` and saved
-	init(container: NSPersistentContainer, parentContext: NSManagedObjectContext?) {
+    init(container: NSPersistentContainer, uploadAllData: Bool) {
 		self.container = container
-		self.parentContext = parentContext
+        self.uploadAllData = uploadAllData
 	}
 	
 	private let queue = OperationQueue()
@@ -35,48 +35,47 @@ class SetupOperation: Operation {
 	override func main() {
 		super.main()
 		
-		let childContext: NSManagedObjectContext
-		
-		if let parentContext = self.parentContext {
-			childContext = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
-			childContext.parent = parentContext
-		} else {
-			childContext = container.newBackgroundContext()
-		}
-		
+		let childContext = container.newBackgroundContext()
+        var operations: [Operation] = []
+        
 		// Create CloudCore Zone
 		let createZoneOperation = CreateCloudCoreZoneOperation()
 		createZoneOperation.errorBlock = {
 			self.errorBlock?($0)
 			self.queue.cancelAllOperations()
 		}
-		
+		operations.append(createZoneOperation)
+        
 		// Subscribe operation
 		#if !os(watchOS)
 		let subscribeOperation = SubscribeOperation()
 		subscribeOperation.errorBlock = errorBlock
 		subscribeOperation.addDependency(createZoneOperation)
-		queue.addOperation(subscribeOperation)
+		operations.append(subscribeOperation)
 		#endif
-			
-		// Upload all local data
-		let uploadOperation = PushAllLocalDataOperation(parentContext: childContext, managedObjectModel: container.managedObjectModel)
-		uploadOperation.errorBlock = errorBlock
+        
+        if uploadAllData {
+            // Upload all local data
+            let uploadOperation = PushAllLocalDataOperation(parentContext: childContext, managedObjectModel: container.managedObjectModel)
+            uploadOperation.errorBlock = errorBlock
+            
+            #if !os(watchOS)
+            uploadOperation.addDependency(subscribeOperation)
+            #endif
+            operations.append(uploadOperation)
+        }
+        
+        queue.maxConcurrentOperationCount = 1
+		queue.addOperations(operations, waitUntilFinished: true)
 		
-		#if !os(watchOS)
-		uploadOperation.addDependency(subscribeOperation)
-		#endif
-			
-		queue.addOperations([createZoneOperation, uploadOperation], waitUntilFinished: true)
-		
-		if self.parentContext == nil {
-			do {
-				// It's safe to save because we instatinated that context in current thread
-				try childContext.save()
-			} catch {
-				errorBlock?(error)
-			}
-		}
+        childContext.performAndWait {
+            do {
+                // It's safe to save because we instatinated that context in current thread
+                try childContext.save()
+            } catch {
+                errorBlock?(error)
+            }
+        }
 	}
 	
 }

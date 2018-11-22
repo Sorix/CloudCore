@@ -40,15 +40,17 @@ class ObjectToRecordOperation: Operation {
 		}
 		
 		let childContext = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
-		childContext.parent = parentContext
-		
-		do {
-			try self.fillRecordWithData(using: childContext)
-			try childContext.save()
-			self.conversionCompletionBlock?(self.record)
-		} catch {
-			self.errorCompletionBlock?(error)
-		}
+        childContext.performAndWait {
+            childContext.parent = parentContext
+            
+            do {
+                try self.fillRecordWithData(using: childContext)
+                try childContext.save()
+                self.conversionCompletionBlock?(self.record)
+            } catch {
+                self.errorCompletionBlock?(error)
+            }
+        }
 	}
 	
 	private func fillRecordWithData(using context: NSManagedObjectContext) throws {

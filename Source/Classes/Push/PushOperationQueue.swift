@@ -62,13 +62,7 @@ class PushOperationQueue: OperationQueue {
 				self.errorBlock?(error)
 			}
 		}
-		
-        modifyOperation.modifyRecordsCompletionBlock = { (savedRecords, deletedRecordIDs, operationError) in
-            if let error = operationError {
-                self.errorBlock?(error)
-            }
-        }
-        
+		        
 		modifyOperation.database = database
 
 		self.addOperation(modifyOperation)

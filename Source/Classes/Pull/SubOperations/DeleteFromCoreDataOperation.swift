@@ -27,31 +27,33 @@ class DeleteFromCoreDataOperation: Operation {
 		if self.isCancelled { return }
 		
 		let childContext = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
-		childContext.parent = parentContext
-		
-		// Iterate through each entity to fetch and delete object with our recordData
-		guard let entities = childContext.persistentStoreCoordinator?.managedObjectModel.entities else { return }
-		for entity in entities {
-			guard let serviceAttributeNames = entity.serviceAttributeNames else { continue }			
-
-			do {
-				let deleted = try self.delete(entityName: serviceAttributeNames.entityName,
-				            attributeNames: serviceAttributeNames,
-				            in: childContext)
-				
-				// only 1 record with such recordData may exists, if delete we don't need to fetch other entities
-				if deleted { break }
-			} catch {
-				self.errorBlock?(error)
-				continue
-			}
-		}
-		
-		do {
-			try childContext.save()
-		} catch {
-			self.errorBlock?(error)
-		}
+        childContext.performAndWait {
+            childContext.parent = parentContext
+            
+            // Iterate through each entity to fetch and delete object with our recordData
+            guard let entities = childContext.persistentStoreCoordinator?.managedObjectModel.entities else { return }
+            for entity in entities {
+                guard let serviceAttributeNames = entity.serviceAttributeNames else { continue }
+                
+                do {
+                    let deleted = try self.delete(entityName: serviceAttributeNames.entityName,
+                                                  attributeNames: serviceAttributeNames,
+                                                  in: childContext)
+                    
+                    // only 1 record with such recordData may exists, if delete we don't need to fetch other entities
+                    if deleted { break }
+                } catch {
+                    self.errorBlock?(error)
+                    continue
+                }
+            }
+            
+            do {
+                try childContext.save()
+            } catch {
+                self.errorBlock?(error)
+            }
+        }
 	}
 	
 	/// Delete NSManagedObject with specified recordData from entity

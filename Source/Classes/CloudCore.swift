@@ -196,7 +196,7 @@ open class CloudCore {
 			if case .zoneNotFound = subError.code {
 				// Zone wasn't found, we need to create it
 				self.queue.cancelAllOperations()
-				let setupOperation = SetupOperation(container: container, parentContext: nil)
+                let setupOperation = SetupOperation(container: container, uploadAllData: !(coreDataObserver?.usePersistentHistoryForPush)!)
 				self.queue.addOperation(setupOperation)
 				
 				return

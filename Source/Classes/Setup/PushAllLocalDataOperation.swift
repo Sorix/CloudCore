@@ -38,34 +38,36 @@ class PushAllLocalDataOperation: Operation {
 		}
 		
 		let childContext = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
-		childContext.parent = parentContext
-		
-		var allManagedObjects = Set<NSManagedObject>()
-		for entity in managedObjectModel.cloudCoreEnabledEntities {
-			guard let entityName = entity.name else { continue }
-			let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: entityName)
-			
-			do {
-				guard let fetchedObjects = try childContext.fetch(fetchRequest) as? [NSManagedObject] else {
-					continue
-				}
-				
-				allManagedObjects.formUnion(fetchedObjects)
-			} catch {
-				errorBlock?(error)
-			}
-		}
-		
-		converter.prepareOperationsFor(inserted: allManagedObjects, updated: Set<NSManagedObject>(), deleted: Set<NSManagedObject>())
-		let recordsToSave = converter.processPendingOperations(in: childContext).recordsToSave
-		pushOperationQueue.addOperations(recordsToSave: recordsToSave, recordIDsToDelete: [RecordIDWithDatabase]())
-		pushOperationQueue.waitUntilAllOperationsAreFinished()
-		
-		do {
-			try childContext.save()
-		} catch {
-			errorBlock?(error)
-		}
+        childContext.performAndWait {
+            childContext.parent = parentContext
+            
+            var allManagedObjects = Set<NSManagedObject>()
+            for entity in managedObjectModel.cloudCoreEnabledEntities {
+                guard let entityName = entity.name else { continue }
+                let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: entityName)
+                
+                do {
+                    guard let fetchedObjects = try childContext.fetch(fetchRequest) as? [NSManagedObject] else {
+                        continue
+                    }
+                    
+                    allManagedObjects.formUnion(fetchedObjects)
+                } catch {
+                    errorBlock?(error)
+                }
+            }
+            
+            converter.prepareOperationsFor(inserted: allManagedObjects, updated: Set<NSManagedObject>(), deleted: Set<NSManagedObject>())
+            let recordsToSave = converter.processPendingOperations(in: childContext).recordsToSave
+            pushOperationQueue.addOperations(recordsToSave: recordsToSave, recordIDsToDelete: [RecordIDWithDatabase]())
+            pushOperationQueue.waitUntilAllOperationsAreFinished()
+            
+            do {
+                try childContext.save()
+            } catch {
+                errorBlock?(error)
+            }
+        }
 	}
 	
 	override func cancel() {
