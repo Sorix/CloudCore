@@ -201,6 +201,7 @@ class CoreDataObserver {
                             
                         case .update:
                             if let inserted = try? moc.existingObject(with: change.changedObjectID) {
+                                // TODO: optimize by using change.updatedProperties
                                 updatedObject.insert(inserted)
                             }
                             
