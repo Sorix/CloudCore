@@ -22,7 +22,7 @@ CloudCore is built using "black box" architecture, so it works invisibly for you
 
 1. CloudCore stores *change tokens* from CloudKit, so only changed data is downloaded.
 2. When CloudCore is enabled (`CloudCore.enable`) it fetches changed data from CloudKit and subscribes to CloudKit push notifications about new changes.
-3. When `CloudCore.fetchAndSave` is called manually or by push notification, CloudCore fetches and saves changed data to Core Data.
+3. When `CloudCore.pull` is called manually or by push notification, CloudCore fetches and saves changed data to Core Data.
 4. When data is written to persistent container (parent context is saved) CloudCore founds locally changed data and uploads it to CloudKit.
 
 ## Installation
@@ -68,7 +68,7 @@ func application(_ application: UIApplication, didReceiveRemoteNotification user
   // Check if it CloudKit's and CloudCore notification
   if CloudCore.isCloudCoreNotification(withUserInfo: userInfo) {
     // Fetch changed data from iCloud
-    CloudCore.fetchAndSave(using: userInfo, to: persistentContainer, error: nil, completion: { (fetchResult) in
+    CloudCore.pull(using: userInfo, to: persistentContainer, error: nil, completion: { (fetchResult) in
       completionHandler(fetchResult.uiBackgroundFetchResult)
     })
   }
@@ -116,7 +116,7 @@ You can find example application at [Example](/Example/) directory.
 
 **How to use it:**
 * **+** button adds new object to local storage (that will be automatically synced to Cloud)
-* **refresh** button calls `fetchAndSave` to fetch data from Cloud. That is useful button for simulators because Simulator unable to receive push notifications
+* **refresh** button calls `pull` to fetch data from Cloud. That is useful button for simulators because Simulator unable to receive push notifications
 * Use [CloudKit dashboard](https://icloud.developer.apple.com/dashboard/) to make changes and see it at application, and make change in application and see ones in dashboard. Don't forget to refresh dashboard's page because it doesn't update data on-the-fly.
 
 ## Tests

@@ -1,5 +1,5 @@
 //
-//  FetchAndSaveOperation.swift
+//  PullOperation.swift
 //  CloudCore
 //
 //  Created by Vasily Ulianov on 13/03/2017.
@@ -9,7 +9,7 @@
 import CloudKit
 import CoreData
 
-/// An operation that fetches data from CloudKit and saves it to Core Data, you can use it without calling `CloudCore.fetchAndSave` methods if you application relies on `Operation`
+/// An operation that fetches data from CloudKit and saves it to Core Data, you can use it without calling `CloudCore.pull` methods if you application relies on `Operation`
 public class PullOperation: Operation {
 	
 	/// Private cloud database for the CKContainer specified by CloudCoreConfig
@@ -41,7 +41,7 @@ public class PullOperation: Operation {
 		self.databases = databases
 		self.persistentContainer = persistentContainer
 		
-		queue.name = "FetchAndSaveQueue"
+		queue.name = "PullQueue"
 	}
 	
 	/// Performs the receiver’s non-concurrent task.

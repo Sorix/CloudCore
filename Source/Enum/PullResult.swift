@@ -1,5 +1,5 @@
 //
-//  FetchResult.swift
+//  PullResult.swift
 //  CloudCore
 //
 //  Created by Vasily Ulianov on 08.02.17.
@@ -9,12 +9,12 @@
 import Foundation
 
 
-/// Enumeration with results of `FetchAndSaveOperation`.
-public enum FetchResult: UInt {
+/// Enumeration with results of `PullOperation`.
+public enum PullResult: UInt {
 	/// Fetching has successfully completed without any errors
 	case newData = 0
 
-	/// No fetching was done, maybe fired with `FetchAndSaveOperation` was called with incorrect UserInfo without CloudCore's data
+	/// No fetching was done, maybe fired with `PullOperation` was called with incorrect UserInfo without CloudCore's data
 	case noData = 1
 	
 	/// There were some errors during operation
@@ -24,7 +24,7 @@ public enum FetchResult: UInt {
 #if os(iOS)
 	import UIKit
 	
-	public extension FetchResult {
+	public extension PullResult {
 		
 		/// Convert `self` to `UIBackgroundFetchResult`
 		///

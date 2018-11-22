@@ -30,7 +30,7 @@ import CloudKit
 	```
 
 	## Fetch from cloud
-	When CloudKit data is changed **push notification** is posted to an application. You need to handle it and fetch changed data from CloudKit with `CloudCore.fetchAndSave(using:to:error:completion:)` method.
+	When CloudKit data is changed **push notification** is posted to an application. You need to handle it and fetch changed data from CloudKit with `CloudCore.pull(using:to:error:completion:)` method.
 
 	### Example
 	```swift
@@ -38,14 +38,14 @@ import CloudKit
 		// Check if it CloudKit's and CloudCore notification
 		if CloudCore.isCloudCoreNotification(withUserInfo: userInfo) {
 			// Fetch changed data from iCloud
-			CloudCore.fetchAndSave(using: userInfo, to: persistentContainer, error: nil, completion: { (fetchResult) in
+			CloudCore.pull(using: userInfo, to: persistentContainer, error: nil, completion: { (fetchResult) in
 				completionHandler(fetchResult.uiBackgroundFetchResult)
 			})
 		}
 	}
 	```
 
-	You can also check for updated data at CloudKit **manually** (e.g. push notifications are not working). Use for that `CloudCore.fetchAndSave(to:error:completion:)`
+	You can also check for updated data at CloudKit **manually** (e.g. push notifications are not working). Use for that `CloudCore.pull(to:error:completion:)`
 */
 open class CloudCore {
 	
@@ -117,15 +117,15 @@ open class CloudCore {
 	
 	/** Fetch changes from one CloudKit database and save it to CoreData from `didReceiveRemoteNotification` method.
 
-	Don't forget to check notification's UserInfo by calling `isCloudCoreNotification(withUserInfo:)`. If incorrect user info is provided `FetchResult.noData` will be returned at completion block.
+	Don't forget to check notification's UserInfo by calling `isCloudCoreNotification(withUserInfo:)`. If incorrect user info is provided `PullResult.noData` will be returned at completion block.
 
 	- Parameters:
 		- userInfo: notification's user info, CloudKit database will be extraced from that notification
 		- container: `NSPersistentContainer` that will be used to save fetched data
 		- error: block will be called every time when error occurs during process
-		- completion: `FetchResult` enumeration with results of operation
+		- completion: `PullResult` enumeration with results of operation
 	*/
-	public static func fetchAndSave(using userInfo: NotificationUserInfo, to container: NSPersistentContainer, error: ErrorBlock?, completion: @escaping (_ fetchResult: FetchResult) -> Void) {
+	public static func pull(using userInfo: NotificationUserInfo, to container: NSPersistentContainer, error: ErrorBlock?, completion: @escaping (_ fetchResult: PullResult) -> Void) {
 		guard let cloudDatabase = self.database(for: userInfo) else {
 			completion(.noData)
 			return
@@ -138,9 +138,9 @@ open class CloudCore {
 			operation.start()
 			
 			if errorProxy.wasError {
-				completion(FetchResult.failed)
+				completion(PullResult.failed)
 			} else {
-				completion(FetchResult.newData)
+				completion(PullResult.newData)
 			}
 		}
 	}
@@ -150,9 +150,9 @@ open class CloudCore {
 	- Parameters:
 		- container: `NSPersistentContainer` that will be used to save fetched data
 		- error: block will be called every time when error occurs during process
-		- completion: `FetchResult` enumeration with results of operation
+		- completion: `PullResult` enumeration with results of operation
 	*/
-	public static func fetchAndSave(to container: NSPersistentContainer, error: ErrorBlock?, completion: (() -> Void)?) {
+	public static func pull(to container: NSPersistentContainer, error: ErrorBlock?, completion: (() -> Void)?) {
         let operation = PullOperation(persistentContainer: container)
 		operation.errorBlock = error
 		operation.completionBlock = completion
