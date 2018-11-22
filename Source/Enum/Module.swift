@@ -12,9 +12,9 @@ import Foundation
 public enum Module {
 	
 	/// Save to CloudKit module
-	case saveToCloud
+	case pushToCloud
 	
 	/// Fetch from CloudKit module
-	case fetchFromCloud
+	case pullFromCloud
 	
 }

@@ -93,7 +93,7 @@ open class CloudCore {
 		// Fetch updated data (e.g. push notifications weren't received)
         let updateFromCloudOperation = PullOperation(persistentContainer: container)
 		updateFromCloudOperation.errorBlock = {
-			self.delegate?.error(error: $0, module: .some(.fetchFromCloud))
+			self.delegate?.error(error: $0, module: .some(.pullFromCloud))
 		}
 		
 		#if !os(watchOS)
