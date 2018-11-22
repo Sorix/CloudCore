@@ -50,7 +50,9 @@ class CoreDataObserver {
                 usePersistentHistoryForPush = persistentHistoryNumber.boolValue
             }
             #if os(iOS) || os(tvOS) || os(macOS)
-            reachability = Reachability(hostname: "icloud.com")
+            if usePersistentHistoryForPush {
+                reachability = Reachability(hostname: "icloud.com")
+            }
             #endif
         }
 	}
@@ -203,9 +205,9 @@ class CoreDataObserver {
                             }
                             
                         case .delete:
-                            if change.tombstone != nil, let recordID = change.tombstone!["recordID"] as? String {
-                                let ckRecordID = CKRecord.ID(recordName: recordID, zoneID: CloudCore.config.zoneID)
-                                let recordIDWithDatabase = RecordIDWithDatabase(ckRecordID, CloudCore.config.container.privateCloudDatabase)
+                            if change.tombstone != nil, let recordData = change.tombstone!["recordData"] as? Data {
+                                let ckRecord = CKRecord(archivedData: recordData)
+                                let recordIDWithDatabase = RecordIDWithDatabase((ckRecord?.recordID)!, CloudCore.config.container.privateCloudDatabase)
                                 deletedRecordIDs.append(recordIDWithDatabase)
                             }
                         }
