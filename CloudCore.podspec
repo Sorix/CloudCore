@@ -20,6 +20,8 @@ Pod::Spec.new do |s|
   s.ios.frameworks = 'Foundation', 'CloudKit', 'CoreData'
   s.osx.frameworks = 'Foundation', 'CloudKit', 'CoreData'
 
+  s.ios.dependency 'ReachabilitySwift'
+
   s.pod_target_xcconfig = { 'SWIFT_VERSION' => '4.0' }
   s.documentation_url = 'http://cocoadocs.org/docsets/CloudCore/'
 end

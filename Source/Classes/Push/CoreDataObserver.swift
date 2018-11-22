@@ -9,11 +9,13 @@
 import Foundation
 import CoreData
 import CloudKit
+#if os(iOS) || os(tvOS) || os(macOS)
+import Reachability
+#endif
 
 /// Class responsible for taking action on Core Data changes
 class CoreDataObserver {
 	var container: NSPersistentContainer
-    var usePersistentHistoryForPush = false
 	
 	let converter = ObjectToRecordConverter()
 	let pushOperationQueue = PushOperationQueue()
@@ -23,6 +25,18 @@ class CoreDataObserver {
 	// Used for errors delegation
 	weak var delegate: CloudCoreDelegate?
 	
+    var usePersistentHistoryForPush = false
+    #if os(iOS) || os(tvOS) || os(macOS)
+    var reachability: Reachability?
+    var isOnline = true {
+        didSet {
+            if isOnline != oldValue && isOnline == true {
+                processPersistentHistory()
+            }
+        }
+    }
+    #endif
+    
 	public init(container: NSPersistentContainer) {
 		self.container = container
 		converter.errorBlock = { [weak self] in
@@ -35,6 +49,9 @@ class CoreDataObserver {
             {
                 usePersistentHistoryForPush = persistentHistoryNumber.boolValue
             }
+            #if os(iOS) || os(tvOS) || os(macOS)
+            reachability = Reachability(hostname: "icloud.com")
+            #endif
         }
 	}
 	
@@ -48,11 +65,24 @@ class CoreDataObserver {
                                                selector: #selector(self.didSave(notification:)),
                                                name: .NSManagedObjectContextDidSave,
                                                object: nil)
+        
+        #if os(iOS) || os(tvOS) || os(macOS)
+        NotificationCenter.default.addObserver(self,
+                                               selector: #selector(reachabilityChanged(notification:)),
+                                               name: .reachabilityChanged,
+                                               object: reachability)
+
+        try? reachability?.startNotifier()
+        #endif
 	}
 	
 	/// Remove Core Data observers
 	func stop() {
 		NotificationCenter.default.removeObserver(self)
+        
+        #if os(iOS) || os(tvOS) || os(macOS)
+        reachability?.stopNotifier()
+        #endif
 	}
 	
 	deinit {
@@ -135,7 +165,19 @@ class CoreDataObserver {
         }
 	}
     
+    #if os(iOS) || os(tvOS) || os(macOS)
+    @objc private func reachabilityChanged(notification: Notification) {
+        let reachability = notification.object as! Reachability
+        
+        isOnline = reachability.connection != .none
+    }
+    #endif
+    
     func processPersistentHistory() {
+        #if os(iOS) || os(tvOS) || os(macOS)
+        guard isOnline else { return }
+        #endif
+        
         if #available(iOS 11.0, watchOSApplicationExtension 4.0, *) {
             
             func process(_ transaction: NSPersistentHistoryTransaction, in moc: NSManagedObjectContext) -> Bool {
