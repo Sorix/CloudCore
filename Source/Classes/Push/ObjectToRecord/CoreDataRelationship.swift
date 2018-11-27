@@ -10,19 +10,19 @@ import CoreData
 import CloudKit
 
 class CoreDataRelationship {
-	typealias Class = CoreDataRelationship
-	
+    let scope: CKDatabase.Scope
 	let value: Any
 	let description: NSRelationshipDescription
 	
 	/// Initialize Core Data Attribute with properties and value
 	/// - Returns: `nil` if it is not an attribute (possible it is relationship?)
-	init?(value: Any, relationshipName: String, entity: NSEntityDescription) {
-		guard let description = Class.relationshipDescription(for: relationshipName, in: entity) else {
+	init?(scope: CKDatabase.Scope, value: Any, relationshipName: String, entity: NSEntityDescription) {
+		guard let description = CoreDataRelationship.relationshipDescription(for: relationshipName, in: entity) else {
 			// it is not a relationship
 			return nil
 		}
 		
+        self.scope = scope
 		self.description = description
 		self.value = value
 	}
@@ -71,8 +71,8 @@ class CoreDataRelationship {
 		} else {
 			action = .none
 		}
-
-		guard let record = try managedObject.restoreRecordWithSystemFields() else {
+        
+        guard let record = try managedObject.restoreRecordWithSystemFields(for: scope) else {
 			// That is possible if method is called before all managed object were filled with recordData
 			// That may cause possible reference corruption (Core Data -> iCloud), but it is not critical
 			assertionFailure("Managed Object doesn't have stored record information, should be reported as a framework bug")

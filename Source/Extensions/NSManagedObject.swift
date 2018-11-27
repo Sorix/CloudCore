@@ -14,11 +14,12 @@ extension NSManagedObject {
 	///
 	/// - Returns: unacrhived `CKRecord` containing restored system fields (like RecordID, tokens, creationg date etc)
 	/// - Throws: `CloudCoreError.missingServiceAttributes` if names of CloudCore attributes are not specified in User Info
-	func restoreRecordWithSystemFields() throws -> CKRecord? {
+    func restoreRecordWithSystemFields(for scope: CKDatabase.Scope) throws -> CKRecord? {
 		guard let serviceAttributeNames = self.entity.serviceAttributeNames else {
 			throw CloudCoreError.missingServiceAttributes(entityName: self.entity.name)
 		}
-		guard let encodedRecordData = self.value(forKey: serviceAttributeNames.recordData) as? Data else { return nil }
+        let key = scope == .public ? serviceAttributeNames.publicRecordData : serviceAttributeNames.privateRecordData
+		guard let encodedRecordData = self.value(forKey: key) as? Data else { return nil }
 		
 		return CKRecord(archivedData: encodedRecordData)
 	}
@@ -28,7 +29,7 @@ extension NSManagedObject {
 	/// - Postcondition: `self` is modified (recordData and recordID is written)
 	/// - Throws: may throw exception if unable to find attributes marked by User Info as service attributes
 	/// - Returns: new `CKRecord`
-	@discardableResult func setRecordInformation() throws -> CKRecord {
+    @discardableResult func setRecordInformation(for scope: CKDatabase.Scope) throws -> CKRecord {
 		guard let entityName = self.entity.name else {
 			throw CloudCoreError.coreData("No entity name for \(self.entity)")
 		}
@@ -36,14 +37,29 @@ extension NSManagedObject {
 			throw CloudCoreError.missingServiceAttributes(entityName: self.entity.name)
 		}
         
-        let recordName = (self.value(forKey: serviceAttributeNames.recordName) as? String) ?? UUID().uuidString
-        let recordID = CKRecord.ID(recordName: recordName, zoneID: CloudCore.config.zoneID)
-        let record = CKRecord(recordType: entityName, recordID: recordID)
+        var recordName = self.value(forKey: serviceAttributeNames.recordName) as? String
+        if recordName == nil {
+            recordName = UUID().uuidString
+            self.setValue(recordName, forKey: serviceAttributeNames.recordName)
+        }
         
-        self.setValue(recordName, forKey: serviceAttributeNames.recordName)
-		self.setValue(record.recordID.encodedString, forKey: serviceAttributeNames.recordID)
-        self.setValue(record.encdodedSystemFields, forKey: serviceAttributeNames.recordData)
+        let aRecord: CKRecord
+        if scope == .public {
+            let publicRecordID = CKRecord.ID(recordName: recordName!)
+            let publicRecord = CKRecord(recordType: entityName, recordID:publicRecordID)
+            self.setValue(publicRecord.recordID.encodedString, forKey: serviceAttributeNames.publicRecordID)
+            self.setValue(publicRecord.encdodedSystemFields, forKey: serviceAttributeNames.publicRecordData)
+            
+            aRecord = publicRecord
+        } else {
+            let privateRecordID = CKRecord.ID(recordName: recordName!, zoneID: CloudCore.config.zoneID)
+            let privateRecord = CKRecord(recordType: entityName, recordID: privateRecordID)
+            self.setValue(privateRecord.recordID.encodedString, forKey: serviceAttributeNames.privateRecordID)
+            self.setValue(privateRecord.encdodedSystemFields, forKey: serviceAttributeNames.privateRecordData)
+            
+            aRecord = privateRecord
+        }
         
-		return record
+		return aRecord
 	}
 }

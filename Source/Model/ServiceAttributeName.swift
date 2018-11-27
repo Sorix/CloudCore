@@ -14,20 +14,24 @@ struct ServiceAttributeNames {
 	static let keyIsPublic = "CloudCorePublicDatabase"
 	
     static let valueRecordName = "recordName"
-	static let valueRecordID = "recordID"
-    static let valueRecordData = "recordData"
+    static let valuePrivateRecordID = "privateRecordID"
+    static let valuePrivateRecordData = "privateRecordData"
+    static let valuePublicRecordID = "publicRecordID"
+    static let valuePublicRecordData = "publicRecordData"
     
 	let entityName: String
     
     let recordName: String
-    let recordID: String
-	let recordData: String
-    
+    let privateRecordID: String
+    let privateRecordData: String
+    let publicRecordID: String
+    let publicRecordData: String
+
 	let isPublic: Bool
     
     func contains(_ attributeName: String) -> Bool {
         switch attributeName {
-        case recordName, recordID, recordData:
+        case recordName, privateRecordID, privateRecordData, publicRecordID, publicRecordData:
             return true
         default:
             return false

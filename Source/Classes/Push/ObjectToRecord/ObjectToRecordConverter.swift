@@ -46,8 +46,10 @@ class ObjectToRecordConverter {
 			
 			do {
 				let recordWithSystemFields: CKRecord
+                
+                let scope: CKDatabase.Scope = serviceAttributeNames.isPublic ? .public : .private
 	
-				if let restoredRecord = try object.restoreRecordWithSystemFields() {
+                if let restoredRecord = try object.restoreRecordWithSystemFields(for: scope) {
 					switch changeType {
 					case .inserted:
 						// Create record with same ID but wihout token data (that record was accidently deleted from CloudKit perhaps, recordID exists in CoreData, but record doesn't exist in CloudKit
@@ -57,7 +59,7 @@ class ObjectToRecordConverter {
 						recordWithSystemFields = restoredRecord
 					}
 				} else {
-					recordWithSystemFields = try object.setRecordInformation()
+					recordWithSystemFields = try object.setRecordInformation(for: scope)
 				}
 				
 				var changedAttributes: [String]?
@@ -65,7 +67,8 @@ class ObjectToRecordConverter {
 				// Save changes keys only for updated object, for inserted objects full sync will be used
 				if case .updated = changeType { changedAttributes = Array(object.changedValues().keys) }
 				
-				let convertOperation = ObjectToRecordOperation(record: recordWithSystemFields,
+                let convertOperation = ObjectToRecordOperation(scope: scope,
+                                                               record: recordWithSystemFields,
 				                                               changedAttributes: changedAttributes,
 				                                               serviceAttributeNames: serviceAttributeNames)
 
@@ -94,7 +97,7 @@ class ObjectToRecordConverter {
 		var recordIDs = [RecordIDWithDatabase]()
 		
 		for object in objectSet {
-			if	let triedRestoredRecord = try? object.restoreRecordWithSystemFields(),
+            if	let triedRestoredRecord = try? object.restoreRecordWithSystemFields(for: .private),
 				let restoredRecord = triedRestoredRecord,
 				let serviceAttributeNames = object.entity.serviceAttributeNames {
 					let database = self.database(for: restoredRecord.recordID, serviceAttributes: serviceAttributeNames)

@@ -139,7 +139,8 @@ class CoreDataObserver {
         
         if usePersistentHistoryForPush {
             context.insertedObjects.forEach { (inserted) in
-                _ = try? inserted.setRecordInformation()
+                let _ = try? inserted.setRecordInformation(for: .private)
+                let _ = try? inserted.setRecordInformation(for: .public)
             }
         } else {
             converter.prepareOperationsFor(inserted: context.insertedObjects,
@@ -206,10 +207,17 @@ class CoreDataObserver {
                             }
                             
                         case .delete:
-                            if change.tombstone != nil, let recordData = change.tombstone!["recordData"] as? Data {
-                                let ckRecord = CKRecord(archivedData: recordData)
-                                let recordIDWithDatabase = RecordIDWithDatabase((ckRecord?.recordID)!, CloudCore.config.container.privateCloudDatabase)
-                                deletedRecordIDs.append(recordIDWithDatabase)
+                            if change.tombstone != nil {
+                                if let privateRecordData = change.tombstone!["privateRecordData"] as? Data {
+                                    let ckRecord = CKRecord(archivedData: privateRecordData)
+                                    let recordIDWithDatabase = RecordIDWithDatabase((ckRecord?.recordID)!, CloudCore.config.container.privateCloudDatabase)
+                                    deletedRecordIDs.append(recordIDWithDatabase)
+                                }
+                                if let publicRecordData = change.tombstone!["publicRecordData"] as? Data {
+                                    let ckRecord = CKRecord(archivedData: publicRecordData)
+                                    let recordIDWithDatabase = RecordIDWithDatabase((ckRecord?.recordID)!, CloudCore.config.container.publicCloudDatabase)
+                                    deletedRecordIDs.append(recordIDWithDatabase)
+                                }
                             }
                         }
                     }

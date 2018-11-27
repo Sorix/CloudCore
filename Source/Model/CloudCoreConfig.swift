@@ -48,20 +48,30 @@ public struct CloudCoreConfig {
     public let pushContextName = "CloudCorePushContext"
     let pullContextName = "CloudCorePullContext"
 
-	/// Default entity's attribute name for *Record ID* if User Info is not specified.
-	///
-	/// Default value is `recordID`
-	public var defaultAttributeNameRecordID = "recordID"
-	
-    /// Default entity's attribute name for *Record Data* if User Info is not specified
-    ///
-    /// Default value is `recordData`
-    public var defaultAttributeNameRecordData = "recordData"
-    
     /// Default entity's attribute name for *Record Name* if User Info is not specified
     ///
     /// Default value is `recordName`
     public var defaultAttributeNameRecordName = "recordName"
+    
+    /// Default entity's attribute name for *Private Record ID* if User Info is not specified.
+    ///
+    /// Default value is `privateRecordID`
+    public var defaultAttributeNamePrivateRecordID = "privateRecordID"
+    
+    /// Default entity's attribute name for *Private Record Data* if User Info is not specified
+    ///
+    /// Default value is `privateRecordData`
+    public var defaultAttributeNamePrivateRecordData = "privateRecordData"
+    
+    /// Default entity's attribute name for *Public Record ID* if User Info is not specified.
+    ///
+    /// Default value is `publicRecordID`
+    public var defaultAttributeNamePublicRecordID = "publicRecordID"
+    
+    /// Default entity's attribute name for *Public Record Data* if User Info is not specified
+    ///
+    /// Default value is `publicRecordData`
+    public var defaultAttributeNamePublicRecordData = "publicRecordData"
     
 	// MARK: User Defaults
 	

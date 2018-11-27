@@ -14,6 +14,7 @@ class ObjectToRecordOperation: Operation {
 	var parentContext: NSManagedObjectContext?
 	
 	// Set on init
+    let scope: CKDatabase.Scope
 	let record: CKRecord
 	private let changedAttributes: [String]?
 	private let serviceAttributeNames: ServiceAttributeNames
@@ -22,8 +23,9 @@ class ObjectToRecordOperation: Operation {
 	var errorCompletionBlock: ((Error) -> Void)?
 	var conversionCompletionBlock: ((CKRecord) -> Void)?
 	
-	init(record: CKRecord, changedAttributes: [String]?, serviceAttributeNames: ServiceAttributeNames) {
-		self.record = record
+    init(scope: CKDatabase.Scope, record: CKRecord, changedAttributes: [String]?, serviceAttributeNames: ServiceAttributeNames) {
+		self.scope = scope
+        self.record = record
 		self.changedAttributes = changedAttributes
 		self.serviceAttributeNames = serviceAttributeNames
 		
@@ -66,7 +68,7 @@ class ObjectToRecordOperation: Operation {
 			if let attribute = CoreDataAttribute(value: value, attributeName: attributeName, entity: managedObject.entity) {
 				let recordValue = try attribute.makeRecordValue()
 				record.setValue(recordValue, forKey: attributeName)
-			} else if let relationship = CoreDataRelationship(value: value, relationshipName: attributeName, entity: managedObject.entity) {
+            } else if let relationship = CoreDataRelationship(scope: scope, value: value, relationshipName: attributeName, entity: managedObject.entity) {
 				let references = try relationship.makeRecordValue()
 				record.setValue(references, forKey: attributeName)
 			}
