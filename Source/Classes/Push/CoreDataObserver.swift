@@ -245,7 +245,8 @@ class CoreDataObserver {
                                 let data = NSKeyedArchiver.archivedData(withRootObject: transaction.token)
                                 settings.set(data, forKey: key)
                                 
-                                NSPersistentHistoryChangeRequest.deleteHistory(before: transaction)
+                                let deleteRequest = NSPersistentHistoryChangeRequest.deleteHistory(before: transaction)
+                                try moc.execute(deleteRequest)
                             } else {
                                 break
                             }
