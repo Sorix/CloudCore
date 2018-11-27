@@ -61,9 +61,7 @@ class ObjectToRecordOperation: Operation {
 		let changedValues = managedObject.committedValues(forKeys: changedAttributes)
 		
 		for (attributeName, value) in changedValues {
-			if attributeName == serviceAttributeNames.recordData
-                || attributeName == serviceAttributeNames.recordID
-                || attributeName == serviceAttributeNames.recordName { continue }
+			if serviceAttributeNames.contains(attributeName) { continue }
 			
 			if let attribute = CoreDataAttribute(value: value, attributeName: attributeName, entity: managedObject.entity) {
 				let recordValue = try attribute.makeRecordValue()

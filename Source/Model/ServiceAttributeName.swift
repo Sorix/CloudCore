@@ -24,4 +24,13 @@ struct ServiceAttributeNames {
 	let recordData: String
     
 	let isPublic: Bool
+    
+    func contains(_ attributeName: String) -> Bool {
+        switch attributeName {
+        case recordName, recordID, recordData:
+            return true
+        default:
+            return false
+        }
+    }
 }
