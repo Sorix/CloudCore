@@ -17,38 +17,52 @@ extension NSEntityDescription {
 		// Get required attributes
 		
 		// Record Data
-		let recordDataName: String
+		let recordDataAttribute: String
 		if let recordDataUserInfoName = attributeNamesFromUserInfo.recordData {
-			recordDataName = recordDataUserInfoName
+			recordDataAttribute = recordDataUserInfoName
 		} else {
 			// Last chance: try to find default attribute name in entity
 			if self.attributesByName.keys.contains(CloudCore.config.defaultAttributeNameRecordData) {
-				recordDataName = CloudCore.config.defaultAttributeNameRecordData
+				recordDataAttribute = CloudCore.config.defaultAttributeNameRecordData
 			} else {
 				return nil
 			}
 		}
 		
-		// Record ID
-		let recordIDName: String
-		if let recordIDUserInfoName = attributeNamesFromUserInfo.recordID {
-			recordIDName = recordIDUserInfoName
-		} else {
-			// Last chance: try to find default attribute name in entity
-			if self.attributesByName.keys.contains(CloudCore.config.defaultAttributeNameRecordID) {
-				recordIDName = CloudCore.config.defaultAttributeNameRecordID
-			} else {
-				return nil
-			}
-		}
-		
-		return ServiceAttributeNames(entityName: entityName, recordData: recordDataName, recordID: recordIDName, isPublic: attributeNamesFromUserInfo.isPublic)
+        // Record ID
+        let recordIDAttribute: String
+        if let recordIDUserInfoName = attributeNamesFromUserInfo.recordID {
+            recordIDAttribute = recordIDUserInfoName
+        } else {
+            // Last chance: try to find default attribute name in entity
+            if self.attributesByName.keys.contains(CloudCore.config.defaultAttributeNameRecordID) {
+                recordIDAttribute = CloudCore.config.defaultAttributeNameRecordID
+            } else {
+                return nil
+            }
+        }
+        
+        // Record Name
+        let recordNameAttribute: String
+        if let recordNameUserInfoName = attributeNamesFromUserInfo.recordName {
+            recordNameAttribute = recordNameUserInfoName
+        } else {
+            // Last chance: try to find default attribute name in entity
+            if self.attributesByName.keys.contains(CloudCore.config.defaultAttributeNameRecordName) {
+                recordNameAttribute = CloudCore.config.defaultAttributeNameRecordName
+            } else {
+                return nil
+            }
+        }
+        
+        return ServiceAttributeNames(entityName: entityName, recordName: recordNameAttribute, recordID: recordIDAttribute, recordData: recordDataAttribute, isPublic: attributeNamesFromUserInfo.isPublic)
 	}
 	
 	/// Parse data from User Info dictionary
-	private func parseAttributeNamesFromUserInfo() -> (isPublic: Bool, recordData: String?, recordID: String?) {
-		var recordDataName: String?
-		var recordIDName: String?
+    private func parseAttributeNamesFromUserInfo() -> (isPublic: Bool, recordData: String?, recordID: String?, recordName: String?) {
+		var recordDataAttribute: String?
+		var recordIDAttribute: String?
+        var recordNameAttribute: String?
 		var isPublic = false
 		
 		// In attribute
@@ -62,8 +76,9 @@ extension NSEntityDescription {
 				
 				if key == ServiceAttributeNames.keyType {
 					switch value {
-					case ServiceAttributeNames.valueRecordID: recordIDName = attributeName
-					case ServiceAttributeNames.valueRecordData: recordDataName = attributeName
+                    case ServiceAttributeNames.valueRecordData: recordDataAttribute = attributeName
+					case ServiceAttributeNames.valueRecordID: recordIDAttribute = attributeName
+                    case ServiceAttributeNames.valueRecordName: recordNameAttribute = attributeName
 					default: continue
 					}
 				} else if key == ServiceAttributeNames.keyIsPublic {
@@ -72,7 +87,7 @@ extension NSEntityDescription {
 			}
 		}
 		
-		return (isPublic, recordDataName, recordIDName)
+		return (isPublic, recordDataAttribute, recordIDAttribute, recordNameAttribute)
 	}
 	
 }

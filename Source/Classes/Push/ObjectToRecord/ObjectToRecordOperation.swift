@@ -61,7 +61,9 @@ class ObjectToRecordOperation: Operation {
 		let changedValues = managedObject.committedValues(forKeys: changedAttributes)
 		
 		for (attributeName, value) in changedValues {
-			if attributeName == serviceAttributeNames.recordData || attributeName == serviceAttributeNames.recordID { continue }
+			if attributeName == serviceAttributeNames.recordData
+                || attributeName == serviceAttributeNames.recordID
+                || attributeName == serviceAttributeNames.recordName { continue }
 			
 			if let attribute = CoreDataAttribute(value: value, attributeName: attributeName, entity: managedObject.entity) {
 				let recordValue = try attribute.makeRecordValue()
@@ -77,7 +79,7 @@ class ObjectToRecordOperation: Operation {
 		let entityName = record.recordType
 		
 		let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: entityName)
-		fetchRequest.predicate = NSPredicate(format: serviceAttributeNames.recordID + " == %@", record.recordID.encodedString)
+		fetchRequest.predicate = NSPredicate(format: serviceAttributeNames.recordName + " == %@", record.recordID.recordName)
 		
 		return try context.fetch(fetchRequest).first as? NSManagedObject
 	}

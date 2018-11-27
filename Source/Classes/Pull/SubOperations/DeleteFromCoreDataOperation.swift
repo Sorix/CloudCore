@@ -62,7 +62,7 @@ class DeleteFromCoreDataOperation: Operation {
 	private func delete(entityName: String, attributeNames: ServiceAttributeNames, in context: NSManagedObjectContext) throws -> Bool {
 		let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: entityName)
 		fetchRequest.includesPropertyValues = false
-		fetchRequest.predicate = NSPredicate(format: attributeNames.recordID + " = %@", recordID.encodedString)
+		fetchRequest.predicate = NSPredicate(format: attributeNames.recordName + " = %@", recordID.recordName)
 		
 		guard let objects = try context.fetch(fetchRequest) as? [NSManagedObject] else { return false }
 		if objects.isEmpty { return false }

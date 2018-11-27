@@ -13,11 +13,15 @@ struct ServiceAttributeNames {
 	static let keyType = "CloudCoreType"
 	static let keyIsPublic = "CloudCorePublicDatabase"
 	
-	static let valueRecordData = "recordData"
+    static let valueRecordName = "recordName"
 	static let valueRecordID = "recordID"
-	
+    static let valueRecordData = "recordData"
+    
 	let entityName: String
+    
+    let recordName: String
+    let recordID: String
 	let recordData: String
-	let recordID: String
+    
 	let isPublic: Bool
 }

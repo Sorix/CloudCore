@@ -36,12 +36,14 @@ extension NSManagedObject {
 			throw CloudCoreError.missingServiceAttributes(entityName: self.entity.name)
 		}
         
-        let recordID = CKRecord.ID(recordName: UUID().uuidString, zoneID: CloudCore.config.zoneID)
+        let recordName = UUID().uuidString
+        let recordID = CKRecord.ID(recordName: recordName, zoneID: CloudCore.config.zoneID)
         let record = CKRecord(recordType: entityName, recordID: recordID)
         
-		self.setValue(record.encdodedSystemFields, forKey: serviceAttributeNames.recordData)
+        self.setValue(recordName, forKey: serviceAttributeNames.recordName)
 		self.setValue(record.recordID.encodedString, forKey: serviceAttributeNames.recordID)
-		
+        self.setValue(record.encdodedSystemFields, forKey: serviceAttributeNames.recordData)
+
 		return record
 	}
 }

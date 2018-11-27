@@ -19,7 +19,7 @@ class CloudKitAttribute {
 	let entityName: String
 	let serviceAttributes: ServiceAttributeNames
 	let context: NSManagedObjectContext
-    var notFoundRecordIDsForAttribute = [AttributeName: [RecordID]]()
+    var notFoundRecordNamesForAttribute = [AttributeName: [RecordName]]()
 	
 	init(value: Any?, fieldName: String, entityName: String, serviceAttributes: ServiceAttributeNames, context: NSManagedObjectContext) {
 		self.value = value
@@ -52,16 +52,16 @@ class CloudKitAttribute {
 		
 		// FIXME: user serviceAttributes.recordID from target entity (not from me)
 		
-		fetchRequest.predicate = NSPredicate(format: serviceAttributes.recordID + " == %@" , recordID.encodedString)
+		fetchRequest.predicate = NSPredicate(format: serviceAttributes.recordName + " == %@" , recordID.recordName)
 		fetchRequest.fetchLimit = 1
 		fetchRequest.includesPropertyValues = false
 		
 		let foundObject = try context.fetch(fetchRequest).first as? NSManagedObject
         
         if foundObject == nil {
-            var values = notFoundRecordIDsForAttribute[fieldName] ?? []
-            values.append(recordID.encodedString)
-            notFoundRecordIDsForAttribute[fieldName] = values
+            var values = notFoundRecordNamesForAttribute[fieldName] ?? []
+            values.append(recordID.recordName)
+            notFoundRecordNamesForAttribute[fieldName] = values
         }
         
 		return foundObject

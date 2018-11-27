@@ -53,11 +53,16 @@ public struct CloudCoreConfig {
 	/// Default value is `recordID`
 	public var defaultAttributeNameRecordID = "recordID"
 	
-	/// Default entity's attribute name for *Record Data* if User Info is not specified
-	///
-	/// Default value is `recordData`
-	public var defaultAttributeNameRecordData = "recordData"
-	
+    /// Default entity's attribute name for *Record Data* if User Info is not specified
+    ///
+    /// Default value is `recordData`
+    public var defaultAttributeNameRecordData = "recordData"
+    
+    /// Default entity's attribute name for *Record Name* if User Info is not specified
+    ///
+    /// Default value is `recordName`
+    public var defaultAttributeNameRecordName = "recordName"
+    
 	// MARK: User Defaults
 	
 	/// UserDefault's key to store `Tokens` object

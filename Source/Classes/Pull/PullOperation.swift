@@ -101,13 +101,13 @@ public class PullOperation: Operation {
                 for (object, references) in missingReferences {
                     guard let serviceAttributes = object.entity.serviceAttributeNames else { continue }
                     
-                    for (attributeName, recordIDs) in references {
-                        for recordId in recordIDs {
+                    for (attributeName, recordNames) in references {
+                        for recordName in recordNames {
                             guard let relationship = object.entity.relationshipsByName[attributeName], let targetEntityName = relationship.destinationEntity?.name else { continue }
                             
                             // TODO: move to extension
                             let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: targetEntityName)
-                            fetchRequest.predicate = NSPredicate(format: serviceAttributes.recordID + " == %@" , recordId)
+                            fetchRequest.predicate = NSPredicate(format: serviceAttributes.recordName + " == %@" , recordName)
                             fetchRequest.fetchLimit = 1
                             fetchRequest.includesPropertyValues = false
                             
@@ -123,7 +123,7 @@ public class PullOperation: Operation {
                                         object.setValue(foundObject, forKey: attributeName)
                                     }
                                 } else {
-                                    print("warning: object not found " + recordId)
+                                    print("warning: object not found " + recordName)
                                 }
                             } catch {
                                 self.errorBlock?(error)

@@ -10,8 +10,8 @@ import CoreData
 import CloudKit
 
 typealias AttributeName = String
-typealias RecordID = String
-typealias MissingReferences = [NSManagedObject: [AttributeName: [RecordID]]]
+typealias RecordName = String
+typealias MissingReferences = [NSManagedObject: [AttributeName: [RecordName]]]
 
 /// Convert CKRecord to NSManagedObject and save it to parent context, thread-safe
 class RecordToCoreDataOperation: AsynchronousOperation {
@@ -61,7 +61,7 @@ class RecordToCoreDataOperation: AsynchronousOperation {
 		
 		// Try to find existing objects
 		let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: entityName)
-		fetchRequest.predicate = NSPredicate(format: serviceAttributes.recordID + " == %@", record.recordID.encodedString)
+		fetchRequest.predicate = NSPredicate(format: serviceAttributes.recordName + " == %@", record.recordID.recordName)
 		
 		if let foundObject = try context.fetch(fetchRequest).first as? NSManagedObject {
 			try fill(object: foundObject, entityName: entityName, serviceAttributeNames: serviceAttributes, context: context)
@@ -96,11 +96,12 @@ class RecordToCoreDataOperation: AsynchronousOperation {
                 }
             } else {
                 object.setValue(coreDataValue, forKey: key)
-                missingObjectsPerEntities[object] = attribute.notFoundRecordIDsForAttribute
+                missingObjectsPerEntities[object] = attribute.notFoundRecordNamesForAttribute
             }
 		}
 		
 		// Set system headers
+        object.setValue(record.recordID.recordName, forKey: serviceAttributeNames.recordName)
 		object.setValue(record.recordID.encodedString, forKey: serviceAttributeNames.recordID)
 		object.setValue(record.encdodedSystemFields, forKey: serviceAttributeNames.recordData)
 	}
