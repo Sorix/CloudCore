@@ -139,8 +139,11 @@ class CoreDataObserver {
         
         if usePersistentHistoryForPush {
             context.insertedObjects.forEach { (inserted) in
-                let _ = try? inserted.setRecordInformation(for: .private)
-                let _ = try? inserted.setRecordInformation(for: .public)
+                if let serviceAttributeNames = inserted.entity.serviceAttributeNames {
+                    for scope in serviceAttributeNames.scopes {
+                        let _ = try? inserted.setRecordInformation(for: scope)
+                    }
+                }
             }
         } else {
             converter.prepareOperationsFor(inserted: context.insertedObjects,
