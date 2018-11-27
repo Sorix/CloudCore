@@ -7,6 +7,7 @@
 //
 
 import CoreData
+import CloudKit
 
 extension NSEntityDescription {
 	var serviceAttributeNames: ServiceAttributeNames? {
@@ -81,48 +82,64 @@ extension NSEntityDescription {
         }
         
         return ServiceAttributeNames(entityName: entityName,
+                                     scopes: attributeNamesFromUserInfo.scopes,
                                      recordName: recordNameAttribute,
                                      privateRecordID: privateRecordIDAttribute,
                                      privateRecordData: privateRecordDataAttribute,
                                      publicRecordID: publicRecordIDAttribute,
-                                     publicRecordData: publicRecordDataAttribute,
-                                     isPublic: attributeNamesFromUserInfo.isPublic)
+                                     publicRecordData: publicRecordDataAttribute)
 	}
 	
 	/// Parse data from User Info dictionary
-    private func parseAttributeNamesFromUserInfo() -> (isPublic: Bool, recordName: String?, privateRecordID: String?, privateRecordData: String?, publicRecordID: String?, publicRecordData: String?) {
-        var isPublic = false
+    private func parseAttributeNamesFromUserInfo() -> (scopes: [CKDatabase.Scope], recordName: String?, privateRecordID: String?, privateRecordData: String?, publicRecordID: String?, publicRecordData: String?) {
+        var scopes: [CKDatabase.Scope] = []
         var recordNameAttribute: String?
         var privateRecordIDAttribute: String?
         var privateRecordDataAttribute: String?
         var publicRecordIDAttribute: String?
         var publicRecordDataAttribute: String?
-
-		// In attribute
-		for (attributeName, attributeDescription) in self.attributesByName {
-			guard let userInfo = attributeDescription.userInfo else { continue }
-			
-			// In userInfo dictionary
-			for (key, value) in userInfo {
-				guard let key = key as? String,
-					let value = value as? String else { continue }
-				
-				if key == ServiceAttributeNames.keyType {
-					switch value {
+        
+        func parse(_ attributeName: String, _ userInfo: [AnyHashable: Any]) {
+            for (key, value) in userInfo {
+                guard let key = key as? String,
+                    let value = value as? String else { continue }
+                
+                if key == ServiceAttributeNames.keyType {
+                    switch value {
                     case ServiceAttributeNames.valueRecordName: recordNameAttribute = attributeName
                     case ServiceAttributeNames.valuePrivateRecordID: privateRecordIDAttribute = attributeName
                     case ServiceAttributeNames.valuePrivateRecordData: privateRecordDataAttribute = attributeName
                     case ServiceAttributeNames.valuePublicRecordID: publicRecordIDAttribute = attributeName
                     case ServiceAttributeNames.valuePublicRecordData: publicRecordDataAttribute = attributeName
-					default: continue
-					}
-				} else if key == ServiceAttributeNames.keyIsPublic {
-					if value == "true" { isPublic = true }
-				}
-			}
+                    default: continue
+                    }
+                } else if key == ServiceAttributeNames.keyScopes {
+                    let scopeStrings = value.components(separatedBy: ",")
+                    for scopeString in scopeStrings {
+                        switch scopeString {
+                        case "public":
+                            scopes.append(.public)
+                        case "private":
+                            scopes.append(.private)
+                        default:
+                            break
+                        }
+                    }
+                }
+            }
+        }
+        
+        if let userInfo = self.userInfo {
+            parse("", userInfo)
+        }
+        
+		// In attribute
+		for (attributeName, attributeDescription) in self.attributesByName {
+			guard let userInfo = attributeDescription.userInfo else { continue }
+			parse(attributeName, userInfo)
 		}
 		
-		return (isPublic, recordNameAttribute, privateRecordIDAttribute, privateRecordDataAttribute, publicRecordIDAttribute, publicRecordDataAttribute)
+		return (scopes, recordNameAttribute, privateRecordIDAttribute, privateRecordDataAttribute, publicRecordIDAttribute, publicRecordDataAttribute)
 	}
 	
 }

@@ -43,51 +43,51 @@ class ObjectToRecordConverter {
 		for object in objectSet {
 			// Ignore entities that doesn't have required service attributes
 			guard let serviceAttributeNames = object.entity.serviceAttributeNames else { continue }
-			
-			do {
-				let recordWithSystemFields: CKRecord
-                
-                let scope: CKDatabase.Scope = serviceAttributeNames.isPublic ? .public : .private
-	
-                if let restoredRecord = try object.restoreRecordWithSystemFields(for: scope) {
-					switch changeType {
-					case .inserted:
-						// Create record with same ID but wihout token data (that record was accidently deleted from CloudKit perhaps, recordID exists in CoreData, but record doesn't exist in CloudKit
-						let recordID = restoredRecord.recordID
-						recordWithSystemFields = CKRecord(recordType: restoredRecord.recordType, recordID: recordID)
-					case .updated:
-						recordWithSystemFields = restoredRecord
-					}
-				} else {
-					recordWithSystemFields = try object.setRecordInformation(for: scope)
-				}
-				
-				var changedAttributes: [String]?
-				
-				// Save changes keys only for updated object, for inserted objects full sync will be used
-				if case .updated = changeType { changedAttributes = Array(object.changedValues().keys) }
-				
-                let convertOperation = ObjectToRecordOperation(scope: scope,
-                                                               record: recordWithSystemFields,
-				                                               changedAttributes: changedAttributes,
-				                                               serviceAttributeNames: serviceAttributeNames)
 
-				convertOperation.errorCompletionBlock = { [weak self] error in
-					self?.errorBlock?(error)
-				}
-				
-				convertOperation.conversionCompletionBlock = { [weak self] record in
-					guard let me = self else { return }
-	
-					let cloudDatabase = me.database(for: record.recordID, serviceAttributes: serviceAttributeNames)
-					let recordWithDB = RecordWithDatabase(record, cloudDatabase)
-					me.convertedRecords.append(recordWithDB)
-				}
-				
-				operations.append(convertOperation)
-			} catch {
-				errorBlock?(error)
-			}
+            for scope in serviceAttributeNames.scopes {
+                do {
+                    let recordWithSystemFields: CKRecord
+                    
+                    if let restoredRecord = try object.restoreRecordWithSystemFields(for: scope) {
+                        switch changeType {
+                        case .inserted:
+                            // Create record with same ID but wihout token data (that record was accidently deleted from CloudKit perhaps, recordID exists in CoreData, but record doesn't exist in CloudKit
+                            let recordID = restoredRecord.recordID
+                            recordWithSystemFields = CKRecord(recordType: restoredRecord.recordType, recordID: recordID)
+                        case .updated:
+                            recordWithSystemFields = restoredRecord
+                        }
+                    } else {
+                        recordWithSystemFields = try object.setRecordInformation(for: scope)
+                    }
+                    
+                    var changedAttributes: [String]?
+                    
+                    // Save changes keys only for updated object, for inserted objects full sync will be used
+                    if case .updated = changeType { changedAttributes = Array(object.changedValues().keys) }
+                    
+                    let convertOperation = ObjectToRecordOperation(scope: scope,
+                                                                   record: recordWithSystemFields,
+                                                                   changedAttributes: changedAttributes,
+                                                                   serviceAttributeNames: serviceAttributeNames)
+                    
+                    convertOperation.errorCompletionBlock = { [weak self] error in
+                        self?.errorBlock?(error)
+                    }
+                    
+                    convertOperation.conversionCompletionBlock = { [weak self] record in
+                        guard let me = self else { return }
+                        
+                        let cloudDatabase = me.database(for: scope)
+                        let recordWithDB = RecordWithDatabase(record, cloudDatabase)
+                        me.convertedRecords.append(recordWithDB)
+                    }
+                    
+                    operations.append(convertOperation)
+                } catch {
+                    errorBlock?(error)
+                }
+            }
 		}
 		
 		return operations
@@ -97,13 +97,16 @@ class ObjectToRecordConverter {
 		var recordIDs = [RecordIDWithDatabase]()
 		
 		for object in objectSet {
-            if	let triedRestoredRecord = try? object.restoreRecordWithSystemFields(for: .private),
-				let restoredRecord = triedRestoredRecord,
-				let serviceAttributeNames = object.entity.serviceAttributeNames {
-					let database = self.database(for: restoredRecord.recordID, serviceAttributes: serviceAttributeNames)
-					let recordIDWithDB = RecordIDWithDatabase(restoredRecord.recordID, database)
-					recordIDs.append(recordIDWithDB)
-			}
+            guard let serviceAttributeNames = object.entity.serviceAttributeNames else { continue }
+            
+            for scope in serviceAttributeNames.scopes {
+                if let triedRestoredRecord = try? object.restoreRecordWithSystemFields(for: scope),
+                    let restoredRecord = triedRestoredRecord {
+                    let database = self.database(for: scope)
+                    let recordIDWithDB = RecordIDWithDatabase(restoredRecord.recordID, database)
+                    recordIDs.append(recordIDWithDB)
+                }
+            }
 		}
 		
 		return recordIDs
@@ -131,17 +134,15 @@ class ObjectToRecordConverter {
 	}
 	
 	/// Get appropriate database for modify operations
-    private func database(for recordID: CKRecord.ID, serviceAttributes: ServiceAttributeNames) -> CKDatabase {
+    private func database(for scope: CKDatabase.Scope) -> CKDatabase {
 		let container = CloudCore.config.container
-		
-		if serviceAttributes.isPublic { return container.publicCloudDatabase }
-		
-		let ownerName = recordID.zoneID.ownerName
-		
-		if ownerName == CKCurrentUserDefaultName {
-			return container.privateCloudDatabase
-		} else {
-			return container.sharedCloudDatabase
-		}
+        switch scope {
+        case .private:
+            return container.privateCloudDatabase
+        case .shared:
+            return container.sharedCloudDatabase
+        case .public:
+            return container.publicCloudDatabase
+        }
 	}
 }

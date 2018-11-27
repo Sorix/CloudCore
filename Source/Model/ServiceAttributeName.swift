@@ -7,11 +7,12 @@
 //
 
 import CoreData
+import CloudKit
 
 struct ServiceAttributeNames {
 	// User Info keys & values
 	static let keyType = "CloudCoreType"
-	static let keyIsPublic = "CloudCorePublicDatabase"
+	static let keyScopes = "CloudCoreScopes"
 	
     static let valueRecordName = "recordName"
     static let valuePrivateRecordID = "privateRecordID"
@@ -21,13 +22,13 @@ struct ServiceAttributeNames {
     
 	let entityName: String
     
+    let scopes: [CKDatabase.Scope]
+    
     let recordName: String
     let privateRecordID: String
     let privateRecordData: String
     let publicRecordID: String
     let publicRecordData: String
-
-	let isPublic: Bool
     
     func contains(_ attributeName: String) -> Bool {
         switch attributeName {
