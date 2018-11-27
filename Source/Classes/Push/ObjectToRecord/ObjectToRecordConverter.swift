@@ -135,14 +135,6 @@ class ObjectToRecordConverter {
 	
 	/// Get appropriate database for modify operations
     private func database(for scope: CKDatabase.Scope) -> CKDatabase {
-		let container = CloudCore.config.container
-        switch scope {
-        case .private:
-            return container.privateCloudDatabase
-        case .shared:
-            return container.sharedCloudDatabase
-        case .public:
-            return container.publicCloudDatabase
-        }
+        return CloudCore.config.container.database(with: scope)
 	}
 }
