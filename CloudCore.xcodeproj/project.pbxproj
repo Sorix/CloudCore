@@ -48,12 +48,10 @@
 		E24F44A61E4595B900F78819 /* CoreDataRelationship.swift in Sources */ = {isa = PBXBuildFile; fileRef = E24F44A51E4595B900F78819 /* CoreDataRelationship.swift */; };
 		E2564BFF1E5061BC002E518B /* ErrorBlockProxy.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2564BFE1E5061BC002E518B /* ErrorBlockProxy.swift */; };
 		E28F0B931E671E7400BF532A /* CKRecordTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E28F0B911E671E6500BF532A /* CKRecordTests.swift */; };
-		E28F0B9F1E67245A00BF532A /* CKRecordIDTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E28F0B9D1E67245600BF532A /* CKRecordIDTests.swift */; };
 		E28F0BA21E67260900BF532A /* NSEntityDescriptionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E28F0BA01E6725E700BF532A /* NSEntityDescriptionTests.swift */; };
 		E28F0BA31E67280100BF532A /* NSManagedObjectTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E24F44A81E459E3E00F78819 /* NSManagedObjectTests.swift */; };
 		E29BB21A1E4334590020F5B6 /* CloudCoreConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = E29BB2191E4334590020F5B6 /* CloudCoreConfig.swift */; };
 		E29BB21C1E43381D0020F5B6 /* CloudCoreError.swift in Sources */ = {isa = PBXBuildFile; fileRef = E29BB21B1E43381D0020F5B6 /* CloudCoreError.swift */; };
-		E29BB21E1E433E050020F5B6 /* CKRecordID.swift in Sources */ = {isa = PBXBuildFile; fileRef = E29BB21D1E433E050020F5B6 /* CKRecordID.swift */; };
 		E29BB2211E4344E80020F5B6 /* CKRecord.swift in Sources */ = {isa = PBXBuildFile; fileRef = E29BB2201E4344E80020F5B6 /* CKRecord.swift */; };
 		E29BB2231E4346FF0020F5B6 /* NSManagedObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = E29BB2221E4346FF0020F5B6 /* NSManagedObject.swift */; };
 		E29BB22D1E436F310020F5B6 /* CloudCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D5B2E89F1C3A780C00C0327D /* CloudCore.framework */; };
@@ -143,11 +141,9 @@
 		E277DB061E7726FB00DC334A /* PublicDatabaseSubscriptions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PublicDatabaseSubscriptions.swift; sourceTree = "<group>"; };
 		E277DB0C1E77F96400DC334A /* FetchPublicSubscriptionsOperation.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FetchPublicSubscriptionsOperation.swift; sourceTree = "<group>"; };
 		E28F0B911E671E6500BF532A /* CKRecordTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CKRecordTests.swift; sourceTree = "<group>"; };
-		E28F0B9D1E67245600BF532A /* CKRecordIDTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CKRecordIDTests.swift; sourceTree = "<group>"; };
 		E28F0BA01E6725E700BF532A /* NSEntityDescriptionTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NSEntityDescriptionTests.swift; sourceTree = "<group>"; };
 		E29BB2191E4334590020F5B6 /* CloudCoreConfig.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CloudCoreConfig.swift; sourceTree = "<group>"; };
 		E29BB21B1E43381D0020F5B6 /* CloudCoreError.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CloudCoreError.swift; sourceTree = "<group>"; };
-		E29BB21D1E433E050020F5B6 /* CKRecordID.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CKRecordID.swift; sourceTree = "<group>"; };
 		E29BB2201E4344E80020F5B6 /* CKRecord.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CKRecord.swift; sourceTree = "<group>"; };
 		E29BB2221E4346FF0020F5B6 /* NSManagedObject.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NSManagedObject.swift; sourceTree = "<group>"; };
 		E29BB2281E436F310020F5B6 /* CloudCoreTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CloudCoreTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -432,7 +428,6 @@
 		E28F0B9C1E67244A00BF532A /* Extensions */ = {
 			isa = PBXGroup;
 			children = (
-				E28F0B9D1E67245600BF532A /* CKRecordIDTests.swift */,
 				E28F0BA01E6725E700BF532A /* NSEntityDescriptionTests.swift */,
 				E24F44A81E459E3E00F78819 /* NSManagedObjectTests.swift */,
 			);
@@ -442,7 +437,6 @@
 		E29BB21F1E433FDA0020F5B6 /* Extensions */ = {
 			isa = PBXGroup;
 			children = (
-				E29BB21D1E433E050020F5B6 /* CKRecordID.swift */,
 				D985DEAD1FE034A900236870 /* NSManagedObjectModel.swift */,
 				E2D390071E4A49350019BBCD /* NSEntityDescription.swift */,
 				E29BB2221E4346FF0020F5B6 /* NSManagedObject.swift */,
@@ -792,7 +786,6 @@
 				E2C02A191E4CDEF1001B2871 /* DeleteFromCoreDataOperation.swift in Sources */,
 				E29BB21A1E4334590020F5B6 /* CloudCoreConfig.swift in Sources */,
 				E2EE20071E4E6DCE0060F769 /* ServiceAttributeName.swift in Sources */,
-				E29BB21E1E433E050020F5B6 /* CKRecordID.swift in Sources */,
 				D985DEAE1FE034A900236870 /* NSManagedObjectModel.swift in Sources */,
 				E23C478C1E48A404004310F9 /* PushOperationQueue.swift in Sources */,
 				E2FA74441E769BF900C3489D /* RecordWithDatabase.swift in Sources */,
@@ -856,7 +849,6 @@
 				E29D117A1E69813F00E3DCBF /* CoreDataAttributeTests.swift in Sources */,
 				E28F0B931E671E7400BF532A /* CKRecordTests.swift in Sources */,
 				E29BB2351E436F720020F5B6 /* model.xcdatamodeld in Sources */,
-				E28F0B9F1E67245A00BF532A /* CKRecordIDTests.swift in Sources */,
 				E247EF971E67873E00EBD75E /* DeleteFromCoreDataOperationTests.swift in Sources */,
 				E29D117D1E69A47700E3DCBF /* CoreDataRelationshipTests.swift in Sources */,
 				D9B3C7391FCF0C9E00CDB7FF /* CorrectObject.swift in Sources */,
