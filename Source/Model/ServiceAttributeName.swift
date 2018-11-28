@@ -15,9 +15,7 @@ struct ServiceAttributeNames {
 	static let keyScopes = "CloudCoreScopes"
 	
     static let valueRecordName = "recordName"
-    static let valuePrivateRecordID = "privateRecordID"
     static let valuePrivateRecordData = "privateRecordData"
-    static let valuePublicRecordID = "publicRecordID"
     static let valuePublicRecordData = "publicRecordData"
     
 	let entityName: String
@@ -25,14 +23,12 @@ struct ServiceAttributeNames {
     let scopes: [CKDatabase.Scope]
     
     let recordName: String
-    let privateRecordID: String
     let privateRecordData: String
-    let publicRecordID: String
     let publicRecordData: String
     
     func contains(_ attributeName: String) -> Bool {
         switch attributeName {
-        case recordName, privateRecordID, privateRecordData, publicRecordID, publicRecordData:
+        case recordName, privateRecordData, publicRecordData:
             return true
         default:
             return false

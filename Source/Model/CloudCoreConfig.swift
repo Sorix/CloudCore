@@ -53,21 +53,11 @@ public struct CloudCoreConfig {
     /// Default value is `recordName`
     public var defaultAttributeNameRecordName = "recordName"
     
-    /// Default entity's attribute name for *Private Record ID* if User Info is not specified.
-    ///
-    /// Default value is `privateRecordID`
-    public var defaultAttributeNamePrivateRecordID = "privateRecordID"
-    
     /// Default entity's attribute name for *Private Record Data* if User Info is not specified
     ///
     /// Default value is `privateRecordData`
     public var defaultAttributeNamePrivateRecordData = "privateRecordData"
-    
-    /// Default entity's attribute name for *Public Record ID* if User Info is not specified.
-    ///
-    /// Default value is `publicRecordID`
-    public var defaultAttributeNamePublicRecordID = "publicRecordID"
-    
+        
     /// Default entity's attribute name for *Public Record Data* if User Info is not specified
     ///
     /// Default value is `publicRecordData`

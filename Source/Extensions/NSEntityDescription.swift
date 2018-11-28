@@ -29,19 +29,6 @@ extension NSEntityDescription {
             }
         }
         
-        // Private Record ID
-        let privateRecordIDAttribute: String
-        if let recordIDUserInfoName = attributeNamesFromUserInfo.privateRecordID {
-            privateRecordIDAttribute = recordIDUserInfoName
-        } else {
-            // Last chance: try to find default attribute name in entity
-            if self.attributesByName.keys.contains(CloudCore.config.defaultAttributeNamePrivateRecordID) {
-                privateRecordIDAttribute = CloudCore.config.defaultAttributeNamePrivateRecordID
-            } else {
-                return nil
-            }
-        }
-        
         // Private Record Data
         let privateRecordDataAttribute: String
         if let recordDataUserInfoName = attributeNamesFromUserInfo.privateRecordData {
@@ -50,19 +37,6 @@ extension NSEntityDescription {
             // Last chance: try to find default attribute name in entity
             if self.attributesByName.keys.contains(CloudCore.config.defaultAttributeNamePrivateRecordData) {
                 privateRecordDataAttribute = CloudCore.config.defaultAttributeNamePrivateRecordData
-            } else {
-                return nil
-            }
-        }
-        
-        // Pubic Record ID
-        let publicRecordIDAttribute: String
-        if let recordIDUserInfoName = attributeNamesFromUserInfo.publicRecordID {
-            publicRecordIDAttribute = recordIDUserInfoName
-        } else {
-            // Last chance: try to find default attribute name in entity
-            if self.attributesByName.keys.contains(CloudCore.config.defaultAttributeNamePublicRecordID) {
-                publicRecordIDAttribute = CloudCore.config.defaultAttributeNamePublicRecordID
             } else {
                 return nil
             }
@@ -84,19 +58,15 @@ extension NSEntityDescription {
         return ServiceAttributeNames(entityName: entityName,
                                      scopes: attributeNamesFromUserInfo.scopes,
                                      recordName: recordNameAttribute,
-                                     privateRecordID: privateRecordIDAttribute,
                                      privateRecordData: privateRecordDataAttribute,
-                                     publicRecordID: publicRecordIDAttribute,
                                      publicRecordData: publicRecordDataAttribute)
 	}
 	
 	/// Parse data from User Info dictionary
-    private func parseAttributeNamesFromUserInfo() -> (scopes: [CKDatabase.Scope], recordName: String?, privateRecordID: String?, privateRecordData: String?, publicRecordID: String?, publicRecordData: String?) {
+    private func parseAttributeNamesFromUserInfo() -> (scopes: [CKDatabase.Scope], recordName: String?, privateRecordData: String?, publicRecordData: String?) {
         var scopes: [CKDatabase.Scope] = []
         var recordNameAttribute: String?
-        var privateRecordIDAttribute: String?
         var privateRecordDataAttribute: String?
-        var publicRecordIDAttribute: String?
         var publicRecordDataAttribute: String?
         
         func parse(_ attributeName: String, _ userInfo: [AnyHashable: Any]) {
@@ -107,9 +77,7 @@ extension NSEntityDescription {
                 if key == ServiceAttributeNames.keyType {
                     switch value {
                     case ServiceAttributeNames.valueRecordName: recordNameAttribute = attributeName
-                    case ServiceAttributeNames.valuePrivateRecordID: privateRecordIDAttribute = attributeName
                     case ServiceAttributeNames.valuePrivateRecordData: privateRecordDataAttribute = attributeName
-                    case ServiceAttributeNames.valuePublicRecordID: publicRecordIDAttribute = attributeName
                     case ServiceAttributeNames.valuePublicRecordData: publicRecordDataAttribute = attributeName
                     default: continue
                     }
@@ -139,7 +107,7 @@ extension NSEntityDescription {
 			parse(attributeName, userInfo)
 		}
 		
-		return (scopes, recordNameAttribute, privateRecordIDAttribute, privateRecordDataAttribute, publicRecordIDAttribute, publicRecordDataAttribute)
+		return (scopes, recordNameAttribute, privateRecordDataAttribute, publicRecordDataAttribute)
 	}
 	
 }

@@ -47,14 +47,12 @@ extension NSManagedObject {
         if scope == .public {
             let publicRecordID = CKRecord.ID(recordName: recordName!)
             let publicRecord = CKRecord(recordType: entityName, recordID:publicRecordID)
-            self.setValue(publicRecord.recordID.encodedString, forKey: serviceAttributeNames.publicRecordID)
             self.setValue(publicRecord.encdodedSystemFields, forKey: serviceAttributeNames.publicRecordData)
             
             aRecord = publicRecord
         } else {
             let privateRecordID = CKRecord.ID(recordName: recordName!, zoneID: CloudCore.config.zoneID)
             let privateRecord = CKRecord(recordType: entityName, recordID: privateRecordID)
-            self.setValue(privateRecord.recordID.encodedString, forKey: serviceAttributeNames.privateRecordID)
             self.setValue(privateRecord.encdodedSystemFields, forKey: serviceAttributeNames.privateRecordData)
             
             aRecord = privateRecord
