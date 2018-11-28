@@ -102,6 +102,7 @@ class RecordToCoreDataOperation: AsynchronousOperation {
 		
 		// Set system headers
         object.setValue(record.recordID.recordName, forKey: serviceAttributeNames.recordName)
+        object.setValue(record.recordID.zoneID.ownerName, forKey: serviceAttributeNames.ownerName)
         if record.recordID.zoneID == CloudCore.config.zoneID {
             object.setValue(record.encdodedSystemFields, forKey: serviceAttributeNames.privateRecordData)
         } else {

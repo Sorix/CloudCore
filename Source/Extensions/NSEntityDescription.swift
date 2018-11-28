@@ -29,6 +29,19 @@ extension NSEntityDescription {
             }
         }
         
+        // Owner Name
+        let ownerNameAttribute: String
+        if let ownerNameUserInfoName = attributeNamesFromUserInfo.ownerName {
+            ownerNameAttribute = ownerNameUserInfoName
+        } else {
+            // Last chance: try to find default attribute name in entity
+            if self.attributesByName.keys.contains(CloudCore.config.defaultAttributeNameOwnerName) {
+                ownerNameAttribute = CloudCore.config.defaultAttributeNameOwnerName
+            } else {
+                return nil
+            }
+        }
+        
         // Private Record Data
         let privateRecordDataAttribute: String
         if let recordDataUserInfoName = attributeNamesFromUserInfo.privateRecordData {
@@ -58,14 +71,16 @@ extension NSEntityDescription {
         return ServiceAttributeNames(entityName: entityName,
                                      scopes: attributeNamesFromUserInfo.scopes,
                                      recordName: recordNameAttribute,
+                                     ownerName: ownerNameAttribute,
                                      privateRecordData: privateRecordDataAttribute,
                                      publicRecordData: publicRecordDataAttribute)
 	}
 	
 	/// Parse data from User Info dictionary
-    private func parseAttributeNamesFromUserInfo() -> (scopes: [CKDatabase.Scope], recordName: String?, privateRecordData: String?, publicRecordData: String?) {
+    private func parseAttributeNamesFromUserInfo() -> (scopes: [CKDatabase.Scope], recordName: String?, ownerName: String?, privateRecordData: String?, publicRecordData: String?) {
         var scopes: [CKDatabase.Scope] = []
         var recordNameAttribute: String?
+        var ownerNameAttribute: String?
         var privateRecordDataAttribute: String?
         var publicRecordDataAttribute: String?
         
@@ -77,6 +92,7 @@ extension NSEntityDescription {
                 if key == ServiceAttributeNames.keyType {
                     switch value {
                     case ServiceAttributeNames.valueRecordName: recordNameAttribute = attributeName
+                    case ServiceAttributeNames.valueOwnerName: ownerNameAttribute = attributeName
                     case ServiceAttributeNames.valuePrivateRecordData: privateRecordDataAttribute = attributeName
                     case ServiceAttributeNames.valuePublicRecordData: publicRecordDataAttribute = attributeName
                     default: continue
@@ -107,7 +123,7 @@ extension NSEntityDescription {
 			parse(attributeName, userInfo)
 		}
 		
-		return (scopes, recordNameAttribute, privateRecordDataAttribute, publicRecordDataAttribute)
+		return (scopes, recordNameAttribute, ownerNameAttribute, privateRecordDataAttribute, publicRecordDataAttribute)
 	}
 	
 }

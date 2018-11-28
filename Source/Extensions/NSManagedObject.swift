@@ -58,6 +58,11 @@ extension NSManagedObject {
             aRecord = privateRecord
         }
         
+        let ownerName = self.value(forKey: serviceAttributeNames.ownerName) as? String
+        if ownerName == nil {
+            self.setValue(aRecord.recordID.zoneID.ownerName, forKey: serviceAttributeNames.ownerName)
+        }
+
 		return aRecord
 	}
 }
