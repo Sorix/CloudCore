@@ -71,6 +71,14 @@ class ObjectToRecordOperation: Operation {
             } else if let relationship = CoreDataRelationship(scope: scope, value: value, relationshipName: attributeName, entity: managedObject.entity) {
 				let references = try relationship.makeRecordValue()
 				record.setValue(references, forKey: attributeName)
+                
+                if let parentRef = references as? CKRecord.Reference,
+                    parentRef.recordID.zoneID == CloudCore.config.zoneID,
+                    let parentAttributeName = managedObject.entity.userInfo?[ServiceAttributeNames.keyParent] as? String,
+                    parentAttributeName == attributeName
+                {
+                    record.setParent(parentRef.recordID)
+                }
 			}
 		}
 	}

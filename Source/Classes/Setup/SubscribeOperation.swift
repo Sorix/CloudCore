@@ -22,33 +22,42 @@ class SubscribeOperation: AsynchronousOperation {
 
 		let container = CloudCore.config.container
 		
-		// Subscribe operation
 		let subcribeToPrivate = self.makeRecordZoneSubscriptionOperation(for: container.privateCloudDatabase, id: CloudCore.config.subscriptionIDForPrivateDB)
-		
-		// Fetch subscriptions and cancel subscription operation if subscription is already exists
-		let fetchPrivateSubscriptions = makeFetchSubscriptionOperation(for: container.privateCloudDatabase,
+		let fetchPrivateSubscription = makeFetchSubscriptionOperation(for: container.privateCloudDatabase,
 																	   searchForSubscriptionID: CloudCore.config.subscriptionIDForPrivateDB,
 																	   operationToCancelIfSubcriptionExists: subcribeToPrivate)
+		subcribeToPrivate.addDependency(fetchPrivateSubscription)
 		
-		subcribeToPrivate.addDependency(fetchPrivateSubscriptions)
-		
+        let subscribeToShared = self.makeRecordZoneSubscriptionOperation(for: container.sharedCloudDatabase, id: CloudCore.config.subscriptionIDForSharedDB)
+        let fetchSharedSubscription = makeFetchSubscriptionOperation(for: container.sharedCloudDatabase,
+                                                                       searchForSubscriptionID: CloudCore.config.subscriptionIDForSharedDB,
+                                                                       operationToCancelIfSubcriptionExists: subscribeToShared)
+        subscribeToShared.addDependency(fetchSharedSubscription)
+        
 		// Finish operation
 		let finishOperation = BlockOperation {
 			self.state = .finished
 		}
-		finishOperation.addDependency(subcribeToPrivate)
-		finishOperation.addDependency(fetchPrivateSubscriptions)
-		
-		queue.addOperations([subcribeToPrivate, fetchPrivateSubscriptions, finishOperation], waitUntilFinished: false)
+        finishOperation.addDependency(subcribeToPrivate)
+        finishOperation.addDependency(fetchPrivateSubscription)
+        finishOperation.addDependency(subscribeToShared)
+        finishOperation.addDependency(fetchSharedSubscription)
+
+		queue.addOperations([subcribeToPrivate,
+                             fetchPrivateSubscription,
+                             subscribeToShared,
+                             fetchSharedSubscription,
+                             finishOperation], waitUntilFinished: false)
 	}
 	
 	private func makeRecordZoneSubscriptionOperation(for database: CKDatabase, id: String) -> CKModifySubscriptionsOperation {
         let notificationInfo = CKSubscription.NotificationInfo()
 		notificationInfo.shouldSendContentAvailable = true
 		
-		let subscription = CKRecordZoneSubscription(zoneID: CloudCore.config.zoneID, subscriptionID: id)
-		subscription.notificationInfo = notificationInfo
-		
+        let subscription = (database == CloudCore.config.container.sharedCloudDatabase) ?CKDatabaseSubscription(subscriptionID: id) :
+            CKRecordZoneSubscription(zoneID: CloudCore.config.zoneID, subscriptionID: id)
+        subscription.notificationInfo = notificationInfo
+
 		let operation = CKModifySubscriptionsOperation(subscriptionsToSave: [subscription], subscriptionIDsToDelete: [])
 		operation.modifySubscriptionsCompletionBlock = {
 			if let error = $2 {

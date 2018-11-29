@@ -13,6 +13,7 @@ struct ServiceAttributeNames {
 	// User Info keys & values
 	static let keyType = "CloudCoreType"
 	static let keyScopes = "CloudCoreScopes"
+    static let keyParent = "CloudCoreParent"
 	
     static let valueRecordName = "recordName"
     static let valueOwnerName = "ownerName"
