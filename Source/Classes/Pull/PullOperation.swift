@@ -15,8 +15,8 @@ public class PullOperation: Operation {
 	/// Private cloud database for the CKContainer specified by CloudCoreConfig
 	public static let allDatabases = [
 //		CloudCore.config.container.publicCloudDatabase,
-		CloudCore.config.container.privateCloudDatabase
-//		CloudCore.config.container.sharedCloudDatabase
+		CloudCore.config.container.privateCloudDatabase,
+		CloudCore.config.container.sharedCloudDatabase
 	]
 	
 	public typealias NotificationUserInfo = [AnyHashable : Any]
@@ -54,7 +54,21 @@ public class PullOperation: Operation {
 		backgroundContext.name = CloudCore.config.pullContextName
 		
 		for database in self.databases {
-			self.addRecordZoneChangesOperation(recordZoneIDs: [CloudCore.config.zoneID], database: database, context: backgroundContext)
+            var changedZoneIDs = [CKRecordZone.ID]()
+            let databaseChangeToken = tokens.tokensByDatabaseScope[database.databaseScope]
+            let databaseChangeOp = CKFetchDatabaseChangesOperation(previousServerChangeToken: databaseChangeToken)
+            databaseChangeOp.database = database
+            databaseChangeOp.recordZoneWithIDChangedBlock = { (recordZoneID) in
+                changedZoneIDs.append(recordZoneID)
+            }
+            databaseChangeOp.fetchDatabaseChangesCompletionBlock = { (changeToken, moreComing, error) in
+                // TODO: error handling?
+                
+                self.addRecordZoneChangesOperation(recordZoneIDs: changedZoneIDs, database: database, context: backgroundContext)
+                
+                self.tokens.tokensByDatabaseScope[database.databaseScope] = changeToken
+            }
+            self.queue.addOperation(databaseChangeOp)
 		}
 		
 		self.queue.waitUntilAllOperationsAreFinished()

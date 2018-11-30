@@ -30,9 +30,11 @@ import CloudKit
 open class Tokens: NSObject, NSCoding {
 	
     var tokensByRecordZoneID = [CKRecordZone.ID: CKServerChangeToken]()
+    var tokensByDatabaseScope = [CKDatabase.Scope: CKServerChangeToken]()
 	
 	private struct ArchiverKey {
-		static let tokensByRecordZoneID = "tokensByRecordZoneID"
+        static let tokensByRecordZoneID = "tokensByRecordZoneID"
+        static let tokensByDatabaseScope = "tokensByDatabaseScope"
 	}
 	
 	/// Create fresh object without any Tokens inside. Can be used to fetch full data.
@@ -65,16 +67,18 @@ open class Tokens: NSObject, NSCoding {
 	
 	///	Returns an object initialized from data in a given unarchiver.
 	public required init?(coder aDecoder: NSCoder) {
-        if let decodedTokens = aDecoder.decodeObject(forKey: ArchiverKey.tokensByRecordZoneID) as? [CKRecordZone.ID: CKServerChangeToken] {
-			self.tokensByRecordZoneID = decodedTokens
-		} else {
-			return nil
+        if let decodedTokensByZone = aDecoder.decodeObject(forKey: ArchiverKey.tokensByRecordZoneID) as? [CKRecordZone.ID: CKServerChangeToken] {
+			self.tokensByRecordZoneID = decodedTokensByZone
 		}
+        if let decodedTokensByScope = aDecoder.decodeObject(forKey: ArchiverKey.tokensByDatabaseScope) as? [CKDatabase.Scope: CKServerChangeToken] {
+            self.tokensByDatabaseScope = decodedTokensByScope
+        }
 	}
 	
 	/// Encodes the receiver using a given archiver.
 	open func encode(with aCoder: NSCoder) {
-		aCoder.encode(tokensByRecordZoneID, forKey: ArchiverKey.tokensByRecordZoneID)
+        aCoder.encode(tokensByRecordZoneID, forKey: ArchiverKey.tokensByRecordZoneID)
+        aCoder.encode(tokensByDatabaseScope, forKey: ArchiverKey.tokensByDatabaseScope)
 	}
 	
 }

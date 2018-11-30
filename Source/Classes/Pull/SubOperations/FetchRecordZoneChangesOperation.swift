@@ -44,7 +44,7 @@ class FetchRecordZoneChangesOperation: Operation {
 		super.main()
 
 		let fetchOperation = self.makeFetchOperation(optionsByRecordZoneID: optionsByRecordZoneID)
-		self.fetchQueue.addOperation(fetchOperation)
+		fetchQueue.addOperation(fetchOperation)
 		
 		fetchQueue.waitUntilAllOperationsAreFinished()
 	}
@@ -52,7 +52,7 @@ class FetchRecordZoneChangesOperation: Operation {
     private func makeFetchOperation(optionsByRecordZoneID: [CKRecordZone.ID: CKFetchRecordZoneChangesOperation.ZoneOptions]) -> CKFetchRecordZoneChangesOperation {
 		// Init Fetch Operation
 		let fetchOperation = CKFetchRecordZoneChangesOperation(recordZoneIDs: recordZoneIDs, optionsByRecordZoneID: optionsByRecordZoneID)
-		
+		        
 		fetchOperation.recordChangedBlock = {
 			self.recordChangedBlock?($0)
 		}
