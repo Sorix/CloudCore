@@ -8,7 +8,7 @@
 
 import CloudKit
 
-extension CKRecord {
+public extension CKRecord {
 	convenience init?(archivedData: Data) {
 		let unarchiver = NSKeyedUnarchiver(forReadingWith: archivedData)
 		unarchiver.requiresSecureCoding = true

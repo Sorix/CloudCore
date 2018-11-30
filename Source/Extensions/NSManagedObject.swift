@@ -14,7 +14,7 @@ extension NSManagedObject {
 	///
 	/// - Returns: unacrhived `CKRecord` containing restored system fields (like RecordID, tokens, creationg date etc)
 	/// - Throws: `CloudCoreError.missingServiceAttributes` if names of CloudCore attributes are not specified in User Info
-    func restoreRecordWithSystemFields(for scope: CKDatabase.Scope) throws -> CKRecord? {
+    public func restoreRecordWithSystemFields(for scope: CKDatabase.Scope) throws -> CKRecord? {
 		guard let serviceAttributeNames = self.entity.serviceAttributeNames else {
 			throw CloudCoreError.missingServiceAttributes(entityName: self.entity.name)
 		}
