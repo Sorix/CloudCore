@@ -55,16 +55,21 @@ public class PullOperation: Operation {
 		
 		for database in self.databases {
             var changedZoneIDs = [CKRecordZone.ID]()
+            var deletedZoneIDs = [CKRecordZone.ID]()
             let databaseChangeToken = tokens.tokensByDatabaseScope[database.databaseScope]
             let databaseChangeOp = CKFetchDatabaseChangesOperation(previousServerChangeToken: databaseChangeToken)
             databaseChangeOp.database = database
             databaseChangeOp.recordZoneWithIDChangedBlock = { (recordZoneID) in
                 changedZoneIDs.append(recordZoneID)
             }
+            databaseChangeOp.recordZoneWithIDWasDeletedBlock = { (recordZoneID) in
+                deletedZoneIDs.append(recordZoneID)
+            }
             databaseChangeOp.fetchDatabaseChangesCompletionBlock = { (changeToken, moreComing, error) in
                 // TODO: error handling?
                 
                 self.addRecordZoneChangesOperation(recordZoneIDs: changedZoneIDs, database: database, context: backgroundContext)
+                self.deleteRecordsFromDeletedZones(recordZoneIDs: deletedZoneIDs)
                 
                 self.tokens.tokensByDatabaseScope[database.databaseScope] = changeToken
             }
@@ -150,6 +155,33 @@ public class PullOperation: Operation {
 		
 		queue.addOperation(recordZoneChangesOperation)
 	}
+    
+    private func deleteRecordsFromDeletedZones(recordZoneIDs: [CKRecordZone.ID]) {
+        persistentContainer.performBackgroundTask { (moc) in
+            for entity in self.persistentContainer.managedObjectModel.entities {
+                if let serviceAttributes = entity.serviceAttributeNames {
+                    for recordZoneID in recordZoneIDs {
+                        do {
+                            let request = NSFetchRequest<NSFetchRequestResult>(entityName: entity.name!)
+                            request.predicate = NSPredicate(format: "%K == %@", serviceAttributes.ownerName, recordZoneID.ownerName)
+                            let results = try moc.fetch(request) as! [NSManagedObject]
+                            for object in results {
+                                moc.delete(object)
+                            }
+                        } catch {
+                            print("Unexpected error: \(error).")
+                        }
+                    }
+                }
+            }
+            
+            do {
+                try moc.save()
+            } catch {
+                print("Unexpected error: \(error).")
+            }
+        }
+    }
 
     private func handle(recordZoneChangesError: Error, in zoneId: CKRecordZone.ID, database: CKDatabase, context: NSManagedObjectContext) {
 		guard let cloudError = recordZoneChangesError as? CKError else {
