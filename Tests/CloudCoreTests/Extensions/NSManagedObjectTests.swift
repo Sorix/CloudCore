@@ -13,12 +13,13 @@ import CloudKit
 @testable import CloudCore
 
 class NSManagedObjectTests: CoreDataTestCase {
+    
 	func testRestoreRecordWithSystemFields() {
 		let object = TestEntity(context: context)
 		do {
-			try object.setRecordInformation()
+            try object.setRecordInformation(for: .private)
 			
-			let record = try object.restoreRecordWithSystemFields()
+            let record = try object.restoreRecordWithSystemFields(for: .private)
 			XCTAssertEqual(record?.recordType, "TestEntity")
 			XCTAssertEqual(record?.recordID.zoneID, CloudCore.config.zoneID)
 		} catch {
@@ -30,7 +31,7 @@ class NSManagedObjectTests: CoreDataTestCase {
 	func testRestoreObjectWithoutData() {
 		let object = TestEntity(context: context)
 		do {
-			let record = try object.restoreRecordWithSystemFields()
+            let record = try object.restoreRecordWithSystemFields(for: .private)
 			XCTAssertNil(record)
 		} catch {
 			XCTFail("\(error)")
@@ -42,12 +43,12 @@ class NSManagedObjectTests: CoreDataTestCase {
 	func testSetRecordInformationThrow() {
 		let object = IncorrectEntity(context: context)
 		
-		XCTAssertThrowsSpecific(try object.setRecordInformation(), CloudCoreError.missingServiceAttributes(entityName: "IncorrectEntity"))
+        XCTAssertThrowsSpecific(try object.setRecordInformation(for: .private), CloudCoreError.missingServiceAttributes(entityName: "IncorrectEntity"))
 	}
 	
 	func testRestoreRecordThrow() {
 		let object = IncorrectEntity(context: context)
 		
-		XCTAssertThrowsSpecific(try object.restoreRecordWithSystemFields(), CloudCoreError.missingServiceAttributes(entityName: "IncorrectEntity"))
+        XCTAssertThrowsSpecific(try object.restoreRecordWithSystemFields(for: .private), CloudCoreError.missingServiceAttributes(entityName: "IncorrectEntity"))
 	}
 }

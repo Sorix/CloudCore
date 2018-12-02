@@ -16,7 +16,7 @@ class ObjectToRecordOperationTests: CoreDataTestCase {
 	
 	func createTestObject(in context: NSManagedObjectContext) -> (TestEntity, CKRecord) {
 		let managedObject = CorrectObject().insert(in: context)
-		let record = try! managedObject.setRecordInformation()
+        let record = try! managedObject.setRecordInformation(for: .private)
 		XCTAssertNil(record.value(forKey: "string"))
 		
 		return (managedObject, record)
@@ -24,7 +24,7 @@ class ObjectToRecordOperationTests: CoreDataTestCase {
 	
 	func testGoodOperation() {
 		let (managedObject, record) = createTestObject(in: context)
-		let operation = ObjectToRecordOperation(record: record, changedAttributes: nil, serviceAttributeNames: TestEntity.entity().serviceAttributeNames!)
+        let operation = ObjectToRecordOperation(scope: .private, record: record, changedAttributes: nil, serviceAttributeNames: TestEntity.entity().serviceAttributeNames!)
 		let conversionExpectation = expectation(description: "ConversionCompleted")
 		
 		operation.errorCompletionBlock = { XCTFail($0) }
@@ -40,7 +40,7 @@ class ObjectToRecordOperationTests: CoreDataTestCase {
 	
 	func testContextIsNotDefined() {
 		let record = createTestObject(in: context).1
-		let operation = ObjectToRecordOperation(record: record, changedAttributes: nil, serviceAttributeNames: TestEntity.entity().serviceAttributeNames!)
+        let operation = ObjectToRecordOperation(scope: .private, record: record, changedAttributes: nil, serviceAttributeNames: TestEntity.entity().serviceAttributeNames!)
 		let errorExpectation = expectation(description: "ErrorCalled")
 
 		operation.errorCompletionBlock = { error in
@@ -62,7 +62,7 @@ class ObjectToRecordOperationTests: CoreDataTestCase {
 		let record = CorrectObject().makeRecord()
 		let _ = TestEntity(context: context)
 		
-		let operation = ObjectToRecordOperation(record: record, changedAttributes: nil, serviceAttributeNames: TestEntity.entity().serviceAttributeNames!)
+        let operation = ObjectToRecordOperation(scope: .private, record: record, changedAttributes: nil, serviceAttributeNames: TestEntity.entity().serviceAttributeNames!)
 		operation.parentContext = self.context
 		let errorExpectation = expectation(description: "ErrorCalled")
 		
@@ -96,7 +96,7 @@ class ObjectToRecordOperationTests: CoreDataTestCase {
 			let queue = OperationQueue()
 			
 			for record in records {
-				let operation = ObjectToRecordOperation(record: record, changedAttributes: nil, serviceAttributeNames: TestEntity.entity().serviceAttributeNames!)
+                let operation = ObjectToRecordOperation(scope: .private, record: record, changedAttributes: nil, serviceAttributeNames: TestEntity.entity().serviceAttributeNames!)
 				operation.errorCompletionBlock = { XCTFail($0) }
 				operation.parentContext = backgroundContext
 				queue.addOperation(operation)

@@ -19,10 +19,10 @@ class DeleteFromCoreDataOperationTests: CoreDataTestCase {
 	func testOperation() {
 		let remainingObject = TestEntity(context: context)
 		do {
-			try remainingObject.setRecordInformation()
+            try remainingObject.setRecordInformation(for: .private)
 			
 			let objectToDelete = TestEntity(context: context)
-			let record = try objectToDelete.setRecordInformation()
+            let record = try objectToDelete.setRecordInformation(for: .private)
 			
 			try context.save()
 			
@@ -65,7 +65,7 @@ class DeleteFromCoreDataOperationTests: CoreDataTestCase {
 		for _ in 1...300 {
 			let objectToDelete = TestEntity(context: context)
 			do {
-				let record = try objectToDelete.setRecordInformation()
+                let record = try objectToDelete.setRecordInformation(for: .private)
 				recordsToDelete.append(record)
 			} catch {
 				XCTFail(error)

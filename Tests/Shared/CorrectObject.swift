@@ -38,7 +38,7 @@ struct CorrectObject {
 		let managedObject = TestEntity(context: context)
 		
 		// Header
-		managedObject.recordData = self.recordData as Data
+		managedObject.privateRecordData = self.recordData as Data
 		
 		// Binary
 		managedObject.binary = binary as Data
@@ -100,7 +100,7 @@ struct CorrectObject {
 
 func assertEqualAttributes(_ managedObject: TestEntity, _ record: CKRecord) {
 	// Headers
-	if let encodedRecordData = managedObject.recordData as Data? {
+	if let encodedRecordData = managedObject.privateRecordData as Data? {
 		let recordFromObject = CKRecord(archivedData: encodedRecordData)
 		
 		XCTAssertEqual(recordFromObject?.recordID, record.recordID)

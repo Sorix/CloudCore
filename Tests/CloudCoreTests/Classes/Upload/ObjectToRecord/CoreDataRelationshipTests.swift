@@ -14,23 +14,23 @@ import CloudKit
 
 class CoreDataRelationshipTests: CoreDataTestCase {
 	func testInitWithAttribute() {
-		let relationship = CoreDataRelationship(value: "attribute", relationshipName: "string", entity: TestEntity.entity())
+        let relationship = CoreDataRelationship(scope: .private, value: "attribute", relationshipName: "string", entity: TestEntity.entity())
 		XCTAssertNil(relationship, "Expected nil because it is attribute, not relationship")
 	}
 	
 	func testMakeRecordValues() {
 		// Generate test model
 		let object = TestEntity(context: context)
-		try! object.setRecordInformation()
-		let filledObjectRecord = try! object.restoreRecordWithSystemFields()!
+        try! object.setRecordInformation(for: .private)
+        let filledObjectRecord = try! object.restoreRecordWithSystemFields(for: .private)!
 		
 		var manyUsers = [UserEntity]()
 		var manyUsersRecordsIDs = [CKRecordID]()
 		for _ in 0...2 {
 			let user = UserEntity(context: context)
-			try! user.setRecordInformation()
-			let userRecord = try! user.restoreRecordWithSystemFields()!
-			user.recordData = userRecord.encdodedSystemFields
+            try! user.setRecordInformation(for: .private)
+            let userRecord = try! user.restoreRecordWithSystemFields(for: .private)!
+			user.privateRecordData = userRecord.encdodedSystemFields
 			
 			manyUsers.append(user)
 			manyUsersRecordsIDs.append(userRecord.recordID)
@@ -42,7 +42,7 @@ class CoreDataRelationshipTests: CoreDataTestCase {
 		// Fill testable CKRecord
 		for name in object.entity.relationshipsByName.keys {
 			let managedObjectValue = object.value(forKey: name)!
-			guard let relationship = CoreDataRelationship(value: managedObjectValue, relationshipName: name, entity: object.entity) else {
+            guard let relationship = CoreDataRelationship(scope: .private, value: managedObjectValue, relationshipName: name, entity: object.entity) else {
 				XCTFail("Failed to initialize CoreDataRelationship with attribute: \(name)")
 				continue
 			}
