@@ -253,11 +253,11 @@ class CoreDataObserver {
                     if let history = historyResult.result as? [NSPersistentHistoryTransaction] {
                         for transaction in history {
                             if process(transaction, in: moc) {
-                                let data = NSKeyedArchiver.archivedData(withRootObject: transaction.token)
-                                settings.set(data, forKey: key)
-                                
                                 let deleteRequest = NSPersistentHistoryChangeRequest.deleteHistory(before: transaction)
                                 try moc.execute(deleteRequest)
+                                
+                                let data = NSKeyedArchiver.archivedData(withRootObject: transaction.token)
+                                settings.set(data, forKey: key)
                             } else {
                                 break
                             }
@@ -265,7 +265,12 @@ class CoreDataObserver {
                     }
                 } catch {
                     let nserror = error as NSError
-                    fatalError("Unresolved error \(nserror), \(nserror.userInfo)")
+                    switch nserror.code {
+                    case NSPersistentHistoryTokenExpiredError:
+                        settings.set(nil, forKey: key)
+                    default:
+                        fatalError("Unresolved error \(nserror), \(nserror.userInfo)")
+                    }
                 }
             }
         }
