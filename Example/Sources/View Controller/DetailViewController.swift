@@ -8,6 +8,7 @@
 
 import UIKit
 import CoreData
+import CloudCore
 
 class DetailViewController: UITableViewController {
 
@@ -27,36 +28,35 @@ class DetailViewController: UITableViewController {
 		tableDataSource = DetailTableDataSource(fetchRequest: fetchRequest, context: context, sectionNameKeyPath: nil, delegate: self, tableView: tableView)
 		tableView.dataSource = tableDataSource
 		try! tableDataSource.performFetch()
-		
-		navigationItem.rightBarButtonItem = editButtonItem
+        
+        let addButton = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(add(_:)))
+        let renameButton = UIBarButtonItem(title: "Rename", style: .plain, target: self, action: #selector(rename(_:)))
+        navigationItem.setRightBarButtonItems([addButton, renameButton], animated: false)
+	}
+    
+	@objc private func add(_ sender: UIBarButtonItem) {
+        persistentContainer.performBackgroundTask { (moc) in
+            moc.name = CloudCore.config.pushContextName
+
+            let employee = ModelFactory.insertEmployee(context: moc)
+            let organization = try? moc.existingObject(with: self.organizationID) as! Organization
+            employee.organization = organization
+            
+            try? moc.save()
+        }
 	}
 	
-	override func setEditing(_ editing: Bool, animated: Bool) {
-		super.setEditing(editing, animated: animated)
-		
-		if editing {
-			let addButton = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(navAddButtonDidTap(_:)))
-			navigationItem.setLeftBarButton(addButton, animated: animated)
-			
-			let renameButton = UIBarButtonItem(title: "Rename", style: .plain, target: self, action: #selector(navRenameButtonDidTap(_:)))
-			navigationItem.setRightBarButtonItems([editButtonItem, renameButton], animated: animated)
-		} else {
-			navigationItem.setLeftBarButton(nil, animated: animated)
-			navigationItem.setRightBarButtonItems([editButtonItem], animated: animated)
-			try! context.save()
-		}
-	}
-	
-	@objc private func navAddButtonDidTap(_ sender: UIBarButtonItem) {
-		let employee = ModelFactory.insertEmployee(context: context)
-		let organization = context.object(with: organizationID) as! Organization
-		employee.organization = organization
-	}
-	
-	@objc private func navRenameButtonDidTap(_ sender: UIBarButtonItem) {
-		let organization = context.object(with: organizationID) as! Organization
-		organization.name = ModelFactory.newCompanyName()
-		self.title = organization.name
+	@objc private func rename(_ sender: UIBarButtonItem) {
+        let newTitle = ModelFactory.newCompanyName()
+        persistentContainer.performBackgroundTask { (moc) in
+            moc.name = CloudCore.config.pushContextName
+
+            let organization = try? moc.existingObject(with: self.organizationID) as! Organization
+            organization?.name = newTitle
+            
+            try? moc.save()
+        }
+        self.title = newTitle
 	}
 
 }
@@ -93,15 +93,34 @@ extension DetailViewController: FRCTableViewDelegate {
 	
 }
 
+extension DetailViewController {
+    
+    @available(iOS 11.0, *)
+    override func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
+        let deleteTitle = NSLocalizedString("Delete", comment: "Delete action")
+        let deleteAction = UIContextualAction(style: .destructive, title: deleteTitle,
+                                              handler: { [weak self] action, view, completionHandler in
+                                                
+                                                let anObject = self?.tableDataSource.object(at: indexPath)
+                                                let objectID = anObject?.objectID
+                                                
+                                                persistentContainer.performBackgroundTask { (moc) in
+                                                    moc.name = CloudCore.config.pushContextName
+                                                    if let objectToDelete = try? moc.existingObject(with: objectID!) {
+                                                        moc.delete(objectToDelete)
+                                                        try? moc.save()
+                                                    }
+                                                }
+                                                
+                                                completionHandler(true)
+        })
+        
+        let configuration = UISwipeActionsConfiguration(actions: [deleteAction])
+        return configuration
+    }
+    
+}
+
 fileprivate class DetailTableDataSource: FRCTableViewDataSource<Employee> {
-	
-	override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCellEditingStyle, forRowAt indexPath: IndexPath) {
-		let context = frc.managedObjectContext
-		
-		switch editingStyle {
-		case .delete: context.delete(object(at: indexPath))
-		default: return
-		}
-	}
-	
+    
 }

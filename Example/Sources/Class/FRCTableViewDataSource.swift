@@ -95,7 +95,6 @@ class FRCTableViewDataSource<FetchRequestResult: NSFetchRequestResult>: NSObject
 		tableView?.endUpdates()
 	}
 	
-	func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCellEditingStyle, forRowAt indexPath: IndexPath) {}
 	func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? { return nil }
 
 }
