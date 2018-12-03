@@ -197,8 +197,6 @@ CloudKit objects can't be mocked up, that's why I create 2 different types of te
 Vasily Ulianov, [va...@me.com](http://www.google.com/recaptcha/mailhide/d?k=01eFEpy-HM-qd0Vf6QGABTjw==&c=JrKKY2bjm0Bp58w7zTvPiQ==)
 Open for hire / relocation.
 
-Ludovic Landry
-
 Oleg Müller
 
 deeje cooley, [deeje.com](http://www.deeje.com/) 
