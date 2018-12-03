@@ -6,24 +6,29 @@
 ![Status](https://img.shields.io/badge/status-beta-orange.svg)
 ![Swift](https://img.shields.io/badge/swift-4-orange.svg)
 
-**CloudCore** is a framework that manages syncing between iCloud (CloudKit) and Core Data written on native Swift. It maybe used are CloudKit caching.
+**CloudCore** is a framework that manages syncing between iCloud (CloudKit) and Core Data written on native Swift.
 
 #### Features
-* Sync manually or on **push notifications**.
-* **Differential sync**, only changed object and values are uploaded and downloaded. CloudCore even differs changed and not changed values inside objects.
+* Leveraging **NSPersistentHistory**, local changes are pushed to CloudKit when online
+* Pull manually or on CloudKit **remote notifications**.
+* **Differential sync**, only changed object and values are uploaded and downloaded.
+* Core Data relationships are preserved
+* **private database** and **shared database** push and pull is supported.
+* **public database** push is supported
+* Parent-Child relationships can be defined for CloudKit Sharing
 * Respects of Core Data options (cascade deletions, external storage).
 * Knows and manages with CloudKit errors like `userDeletedZone`, `zoneNotFound`, `changeTokenExpired`, `isMore`.
 * Covered with Unit and CloudKit online **tests**.
 * All public methods are **[100% documented](https://sorix.github.io/CloudCore/)**.
-* Currently only **private database** is supported.
 
 ## How it works?
 CloudCore is built using "black box" architecture, so it works invisibly for your application, you just need to add several lines to `AppDelegate` to enable it. Synchronization and error resolving is managed automatically.
 
 1. CloudCore stores *change tokens* from CloudKit, so only changed data is downloaded.
-2. When CloudCore is enabled (`CloudCore.enable`) it fetches changed data from CloudKit and subscribes to CloudKit push notifications about new changes.
-3. When `CloudCore.pull` is called manually or by push notification, CloudCore fetches and saves changed data to Core Data.
-4. When data is written to persistent container (parent context is saved) CloudCore founds locally changed data and uploads it to CloudKit.
+2. When CloudCore is enabled (`CloudCore.enable`) it pulls changed data from CloudKit and subscribes to CloudKit push notifications about new changes.
+3. When `CloudCore.pull` is called manually or by push notification, CloudCore pulls and saves changed data to Core Data.
+4. When data is written to persistent container (parent context is saved) CloudCore founds locally changed data and pushed to CloudKit.
+5. when leveraging NSPersistentHistory, changes are pushed only when online.
 
 ## Installation
 
@@ -46,11 +51,21 @@ HTML-generated version of that documentation is [**available here**](https://sor
 1. Enable CloudKit capability for you application:
 ![CloudKit capability](https://cloud.githubusercontent.com/assets/5610904/25092841/28305bc0-2398-11e7-9fbf-f94c619c264f.png)
 
-2. Add 2 service attributes to each entity in CoreData model you want to sync:
-  * `recordData` attribute with `Binary` type
-  * `recordID` attribute with `String` type
+2. For each entity type you want to sync, add this key: value pair to the UserInfo record of the entity:
 
-3. Make changes in your **AppDelegate.swift** file:
+  * `CloudCoreScopes`: `private`
+
+3. Also add 4 attributes to each entity:
+  * `privateRecordData` attribute with `Binary` type
+  * `publicRecordData` attribute with `Binary` type
+  * `recordName` attribute with `String` type
+  * `ownerName` attribute with `String` type
+
+4. And enable 'Preserve After Deletion' for the following attributes
+  * `privateRecordData` 
+  * `publicRecordData`
+
+4. Make changes in your **AppDelegate.swift** file:
 
 ```swift
 func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
@@ -80,31 +95,67 @@ func applicationWillTerminate(_ application: UIApplication) {
 }
 ```
 
-4. Make first run of your application in a development environment, fill an example data in Core Data and wait until sync completes. CloudCore create needed CloudKit schemes automatically.
+5. If you want to enable offline support, **enable NSPersistentHistoryTracking** when you initialize your Core Data stack
+
+```swift
+lazy var persistentContainer: NSPersistentContainer = {
+	let container = NSPersistentContainer(name: "YourApp")
+
+	let storeDescription = container.persistentStoreDescriptions.first
+	storeDescription?.setOption(true as NSNumber, forKey: NSPersistentHistoryTrackingKey)
+
+	container.loadPersistentStores { storeDescription, error in
+		if let error = error as NSError? {
+			// Replace this implementation with code to handle the error appropriately.                
+		}
+	}
+	return container
+}()
+```
+
+6. To identify changes from your app that should be pushed, **save** from a background ManagedObjectContexts named `CloudCorePushContext` 
+
+```swift
+persistentContainer.performBackgroundTask { moc in
+	moc.name = CloudCore.config.pushContextName
+	// make changes to objects, properties, and relationships you want pushed via CloudCore
+	try? context.save()
+}
+```
+
+7. Make first run of your application in a development environment, fill an example data in Core Data and wait until sync completes. CloudKit will create needed schemas automatically.
 
 ## Service attributes
-CloudCore stores service CloudKit information in managed objects, you need to add that attributes to your Core Data model. If required attributes are not found in entity that entity won't be synced.
+CloudCore stores CloudKit information inside your managed objects, so you need to add attributes to your Core Data model for that. If required attributes are not found in an entity, that entity won't be synced.
 
 Required attributes for each synced entity:
-1. *Record Data* attribute with `Binary` type
-2. *Record ID* attribute with `String` type
+1. *Private Record Data* attribute with `Binary` type
+2. *Public Record Data* attribute with `Binary` type
+3. *Record Name* attribute with `String` type
+4. *Owner Name* attribute with `String` type
 
-You may specify attributes' names in 2 ways (you may combine that ways in different entities).
+You may specify attributes' names in one of two 2 ways (you may combine that ways in different entities).
 
-### User Info
-First off CloudCore try to search attributes by looking up User Info at your model, you may specify User Info key `CloudCoreType` for attribute to mark one as service one. Values are:
-* *Record Data* value is `recordData`.
-* *Record ID* value is `recordID`.
+### Default names
+The most simple way is to name attributes with default names because you don't need to map them in UserInfo.
+
+### Mapping via UserInfo
+You can map your own attributes to the required service attributes.  For each attribute you want to map, add an item to the attribute's UserInfo, using the key `CloudCoreType` and following values:
+* *Private Record Data* value is `privateRecordData`.
+* *Public Record Data* value is `publicRecordData`.
+* *Record Name* value is `recordName`.
+* *Owner Name* value is `ownerName`.
 
 ![Model editor User Info](https://cloud.githubusercontent.com/assets/5610904/24004400/52e0ff94-0a77-11e7-9dd9-e1e24a86add5.png)
 
-### Default names
-The most simple way is to name attributes with default names because you don't need to specify any User Info.
-
 ### 💡 Tips
-* You can name attribute as you want, value of User Info is not changed (you can create attribute `myid` with User Info: `CloudCoreType: recordID`)
-* I recommend to mark *Record ID* attribute as `Indexed`, that can speed up updates in big databases.
-* *Record Data* attribute is used to store archived version of `CKRecord` with system fields only (like timestamps, tokens), so don't worry about size, no real data will be stored here.
+* I recommend to set the *Record Name* attribute as `Indexed`, to speed up updates in big databases.
+* *Record Data* attributes are used to store archived version of `CKRecord` with system fields only (like timestamps, tokens), so don't worry about size, no real data will be stored here.
+
+## CloudKit Sharing
+To enable CloudKit Sharing when your entities have relationships, CloudCore will look for the following key:value pair in the UserInfo of your entities:
+
+`CloudCoreParent`: name of the to-one relationship property in your entity
 
 ## Example application
 You can find example application at [Example](/Example/) directory.
@@ -141,7 +192,13 @@ CloudKit objects can't be mocked up, that's why I create 2 different types of te
 - [ ] Add methods to clear local cache and remote database
 - [ ] Add error resolving for `limitExceeded` error (split saves by relationships).
 
-## Author
+## Authors
 
-Open for hire / relocation.
 Vasily Ulianov, [va...@me.com](http://www.google.com/recaptcha/mailhide/d?k=01eFEpy-HM-qd0Vf6QGABTjw==&c=JrKKY2bjm0Bp58w7zTvPiQ==)
+Open for hire / relocation.
+
+Ludovic Landry
+
+Oleg Müller
+
+deeje cooley, [deeje.com](http://www.deeje.com/) 
