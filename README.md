@@ -1,10 +1,8 @@
 # CloudCore
 
-[![Documentation](https://sorix.github.io/CloudCore/badge.svg)](https://sorix.github.io/CloudCore/)
-[![Version](https://img.shields.io/cocoapods/v/CloudCore.svg?style=flat)](https://cocoapods.org/pods/CloudCore)
 ![Platform](https://img.shields.io/cocoapods/p/CloudCore.svg?style=flat)
 ![Status](https://img.shields.io/badge/status-beta-orange.svg)
-![Swift](https://img.shields.io/badge/swift-4-orange.svg)
+![Swift](https://img.shields.io/badge/swift-4.2-orange.svg)
 
 **CloudCore** is a framework that manages syncing between iCloud (CloudKit) and Core Data written on native Swift.
 
@@ -18,8 +16,6 @@
 * Parent-Child relationships can be defined for CloudKit Sharing
 * Respects of Core Data options (cascade deletions, external storage).
 * Knows and manages with CloudKit errors like `userDeletedZone`, `zoneNotFound`, `changeTokenExpired`, `isMore`.
-* Covered with Unit and CloudKit online **tests**.
-* All public methods are **[100% documented](https://sorix.github.io/CloudCore/)**.
 
 ## How it works?
 CloudCore is built using "black box" architecture, so it works invisibly for your application, you just need to add several lines to `AppDelegate` to enable it. Synchronization and error resolving is managed automatically.
@@ -37,15 +33,11 @@ CloudCore is built using "black box" architecture, so it works invisibly for you
 it, simply add the following line to your Podfile:
 
 ```ruby
-pod 'CloudCore', '~> 2.0'
+pod 'CloudCore', :git => 'https://github.com/deeje/CloudCore.git'
 ```
 
 ## How to help?
-Current version of framework hasn't been deeply tested and may contain errors. If you can test framework, I will be very glad. If you found an error, please post [an issue](https://github.com/Sorix/CloudCore/issues).
-
-## Documentation
-All public methods are documented using [XCode Markup](https://developer.apple.com/library/content/documentation/Xcode/Reference/xcode_markup_formatting_ref/) and available inside XCode.
-HTML-generated version of that documentation is [**available here**](https://sorix.github.io/CloudCore/).
+Current version of framework hasn't been deeply tested and may contain errors. If you can test framework, I will be very glad. If you found an error, please post [an issue](https://github.com/deeje/CloudCore/issues).
 
 ## Quick start
 1. Enable CloudKit capability for you application:
@@ -187,16 +179,20 @@ CloudKit objects can't be mocked up, that's why I create 2 different types of te
 
 ## Roadmap
 
-- [x] Move from alpha to beta status.
+- [ ] Properly push only changed fields from NSPersistenHistory
+- [ ] Move beta to release status
 - [ ] Add `CloudCore.disable` method
 - [ ] Add methods to clear local cache and remote database
 - [ ] Add error resolving for `limitExceeded` error (split saves by relationships).
 
 ## Authors
 
+deeje cooley, [deeje.com](http://www.deeje.com/)
+- added NSPersistentHistory and CloudKit Sharing Support
+
 Vasily Ulianov, [va...@me.com](http://www.google.com/recaptcha/mailhide/d?k=01eFEpy-HM-qd0Vf6QGABTjw==&c=JrKKY2bjm0Bp58w7zTvPiQ==)
 Open for hire / relocation.
+- implemented version 1 and 2, with dynamic mapping between CoreData and CloudKit
 
 Oleg Müller
-
-deeje cooley, [deeje.com](http://www.deeje.com/) 
+- added full support for CoreData relationships
