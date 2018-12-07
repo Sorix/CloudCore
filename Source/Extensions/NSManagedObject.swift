@@ -65,4 +65,20 @@ extension NSManagedObject {
 
 		return aRecord
 	}
+    
+}
+
+extension NSManagedObject {
+    
+    static var updatedPropertyNamesKey = "NSManagedObject_updatedPropertyNamesKey"
+
+    var updatedPropertyNames: [String]? {
+        get {
+            return objc_getAssociatedObject(self, &NSManagedObject.updatedPropertyNamesKey) as? [String]
+        }
+        set {
+            objc_setAssociatedObject(self, &NSManagedObject.updatedPropertyNamesKey, newValue, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
+        }
+    }
+
 }

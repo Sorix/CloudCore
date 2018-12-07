@@ -64,7 +64,13 @@ class ObjectToRecordConverter {
                     var changedAttributes: [String]?
                     
                     // Save changes keys only for updated object, for inserted objects full sync will be used
-                    if case .updated = changeType { changedAttributes = Array(object.changedValues().keys) }
+                    if case .updated = changeType {
+                        changedAttributes = Array(object.changedValues().keys)
+                        
+                        if changedAttributes?.count == 0 {
+                            changedAttributes = object.updatedPropertyNames
+                        }
+                    }
                     
                     let convertOperation = ObjectToRecordOperation(scope: scope,
                                                                    record: recordWithSystemFields,

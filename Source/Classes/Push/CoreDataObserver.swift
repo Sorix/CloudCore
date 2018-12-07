@@ -205,7 +205,12 @@ class CoreDataObserver {
                             
                         case .update:
                             if let inserted = try? moc.existingObject(with: change.changedObjectID) {
-                                // TODO: optimize by using change.updatedProperties
+                                if let updatedProperties = change.updatedProperties {
+                                    let updatedPropertyNames: [String] = updatedProperties.map { (propertyDescription) in
+                                        return propertyDescription.name
+                                    }
+                                    inserted.updatedPropertyNames = updatedPropertyNames
+                                }
                                 updatedObject.insert(inserted)
                             }
                             
