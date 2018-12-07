@@ -19,6 +19,8 @@ class CloudKitTests: CoreDataTestCase {
         super.setUp()
 		configureCloudKitIfNeeded()
 		CloudKitTests.deleteAllRecordsFromCloudKit()
+        
+        context.name = CloudCore.config.pushContextName
     }
     
     override class func tearDown() {

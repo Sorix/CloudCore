@@ -22,6 +22,7 @@ class CoreDataTestCase: XCTestCase {
 		let container = NSPersistentContainer(name: "model", managedObjectModel: model)
 		let description = NSPersistentStoreDescription()
 		description.type = NSInMemoryStoreType
+        description.setOption(true as NSNumber, forKey: NSPersistentHistoryTrackingKey)
 		container.persistentStoreDescriptions = [description]
 		
 		let expect = expectation(description: "CoreDataStackInitialize")

@@ -29,6 +29,9 @@
         <attribute name="transformable" optional="YES" attributeType="Transformable" syncable="YES"/>
         <relationship name="manyRelationship" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="UserEntity" inverseName="tests" inverseEntity="UserEntity" syncable="YES"/>
         <relationship name="singleRelationship" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="UserEntity" inverseName="test" inverseEntity="UserEntity" syncable="YES"/>
+        <userInfo>
+            <entry key="CloudCoreScopes" value="private"/>
+        </userInfo>
     </entity>
     <entity name="UserEntity" representedClassName="UserEntity" syncable="YES" codeGenerationType="class">
         <attribute name="name" optional="YES" attributeType="String" syncable="YES"/>
@@ -46,6 +49,9 @@
         </attribute>
         <relationship name="test" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="TestEntity" inverseName="singleRelationship" inverseEntity="TestEntity" syncable="YES"/>
         <relationship name="tests" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="TestEntity" inverseName="manyRelationship" inverseEntity="TestEntity" syncable="YES"/>
+        <userInfo>
+            <entry key="CloudCoreScopes" value="private"/>
+        </userInfo>
     </entity>
     <elements>
         <element name="IncorrectEntity" positionX="-36" positionY="36" width="128" height="45"/>

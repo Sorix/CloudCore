@@ -35,14 +35,14 @@ extension CoreDataTestCase {
 		
 		wait(for: [didSyncExpectation], timeout: 10)
 		
-		let fetchAndSaveExpectation = expectation(description: "fetchAndSave")
+		let pullExpectation = expectation(description: "pull")
 		CloudCore.pull(to: persistentContainer, error: { (error) in
-			XCTFail("fetchAndSave error: \(error)")
+			XCTFail("pull error: \(error)")
 		}) {
-			fetchAndSaveExpectation.fulfill()
+			pullExpectation.fulfill()
 		}
 		
-		wait(for: [fetchAndSaveExpectation], timeout: 10)
+		wait(for: [pullExpectation], timeout: 10)
 		UserDefaults.standard.set(true, forKey: "isCloudKitConfigured")
 		
 		delegateListener.didSyncToCloudBlock = nil
