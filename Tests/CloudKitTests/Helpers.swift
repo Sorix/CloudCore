@@ -36,7 +36,7 @@ extension CoreDataTestCase {
 		wait(for: [didSyncExpectation], timeout: 10)
 		
 		let fetchAndSaveExpectation = expectation(description: "fetchAndSave")
-		CloudCore.fetchAndSave(to: persistentContainer, error: { (error) in
+		CloudCore.pull(to: persistentContainer, error: { (error) in
 			XCTFail("fetchAndSave error: \(error)")
 		}) {
 			fetchAndSaveExpectation.fulfill()

@@ -50,7 +50,7 @@ class CloudKitTests: CoreDataTestCase {
 		
 		// Fetch data from CloudKit
 		let fetchExpectation = expectation(description: "fetchExpectation")
-		CloudCore.fetchAndSave(to: freshPersistentContainer, error: { (error) in
+		CloudCore.pull(to: freshPersistentContainer, error: { (error) in
 			XCTFail("Error while trying to fetch from CloudKit: \(error)")
 		}) {
 			fetchExpectation.fulfill()
