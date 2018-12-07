@@ -8,7 +8,7 @@ branches:
 
 env:
   - DESTINATION='platform=OS X' POD_LINT="YES"
-  - DESTINATION='platform=iOS Simulator,name=iPhone XS' BUILD_EXAMPLE="YES"
+  - DESTINATION='platform=iOS Simulator,name=iPhone XS' #BUILD_EXAMPLE="YES"
   - DESTINATION='platform=watchOS Simulator,name=Apple Watch - 38mm' SKIP_TEST="YES"
   - DESTINATION='platform=tvOS Simulator,name=Apple TV 4K'
 
@@ -23,9 +23,9 @@ script:
     fi
 
   # Example
-  - if [ "$BUILD_EXAMPLE" = "YES" ]; then
-      xcodebuild -workspace "Example/CloudCoreExample.xcworkspace" -scheme "CloudCoreExample" -destination "$DESTINATION" build | xcpretty -f `xcpretty-travis-formatter`;
-    fi
+  #- if [ "$BUILD_EXAMPLE" = "YES" ]; then
+  #    xcodebuild -workspace "Example/CloudCoreExample.xcworkspace" -scheme "CloudCoreExample" -destination "$DESTINATION" build | xcpretty -f `xcpretty-travis-formatter`;
+  #  fi
 
   - if [ "$POD_LINT" = "YES" ]; then
      pod lib lint --allow-warnings;
