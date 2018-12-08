@@ -17,9 +17,9 @@ before_install:
 
 script:
   - set -o pipefail
-  - xcodebuild -workspace "CloudCore.xcworkspace" -scheme CloudCore -destination "$DESTINATION" build | xcpretty -f `xcpretty-travis-formatter`
+  - xcodebuild -scheme CloudCore -destination "$DESTINATION" build | xcpretty -f `xcpretty-travis-formatter`
   - if [ "$SKIP_TEST" != "YES" ]; then
-      xcodebuild -workspace "CloudCore.xcworkspace" -scheme CloudCore -destination "$DESTINATION" test | xcpretty -f `xcpretty-travis-formatter`;
+      xcodebuild -scheme CloudCore -destination "$DESTINATION" test | xcpretty -f `xcpretty-travis-formatter`;
     fi
 
   # Example
