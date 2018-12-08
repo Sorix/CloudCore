@@ -52,7 +52,15 @@ open class CloudCore {
 	// MARK: - Properties
 	
 	private(set) static var coreDataObserver: CoreDataObserver?
-	
+    public static var isOnline: Bool {
+        get {
+            return coreDataObserver?.isOnline ?? false
+        }
+        set {
+            coreDataObserver?.isOnline = newValue
+        }
+    }
+    
 	/// CloudCore configuration, it's recommended to set up before calling any of CloudCore methods. You can read more at `CloudCoreConfig` struct description
 	public static var config = CloudCoreConfig()
 	

@@ -9,4 +9,5 @@ target 'CloudCoreExample' do
   
   # Pods for CloudCoreExample
   pod 'Fakery', '~> 3.3.0'
+  pod 'ReachabilitySwift'
 end

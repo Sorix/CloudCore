@@ -9,6 +9,7 @@
 import UIKit
 import CoreData
 import CloudCore
+import Reachability
 
 let persistentContainer = (UIApplication.shared.delegate as! AppDelegate).persistentContainer
 
@@ -16,7 +17,9 @@ let persistentContainer = (UIApplication.shared.delegate as! AppDelegate).persis
 class AppDelegate: UIResponder, UIApplicationDelegate, UISplitViewControllerDelegate {
 	
 	let delegateHandler = CloudCoreDelegateHandler()
-
+    
+    var reachability: Reachability?
+    
 	func application(_ application: UIApplication, willFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
 		// Register for push notifications about changes
 		application.registerForRemoteNotifications()
@@ -25,9 +28,23 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UISplitViewControllerDele
 		CloudCore.delegate = delegateHandler
 		CloudCore.enable(persistentContainer: persistentContainer)
 		
+        NotificationCenter.default.addObserver(self,
+                                               selector: #selector(reachabilityChanged(notification:)),
+                                               name: .reachabilityChanged,
+                                               object: reachability)
+        
+        reachability = Reachability(hostname: "icloud.com")
+        try? reachability?.startNotifier()
+        
 		return true
 	}
 	
+    @objc private func reachabilityChanged(notification: Notification) {
+        let reachability = notification.object as! Reachability
+        
+        CloudCore.isOnline = reachability.connection != .none
+    }
+    
 	// Notification from CloudKit about changes in remote database
 	func application(_ application: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable : Any], fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {
 		// Check if it CloudKit's and CloudCore notification

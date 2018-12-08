@@ -1,10 +1,10 @@
 Pod::Spec.new do |s|
   s.name             = "CloudCore"
-  s.summary          = "Framework that enables synchronization between CloudKit (iCloud) and Core Data. Can be used as CloudKit caching mechanism."
-  s.version          = "2.0.1"
+  s.summary          = "Framework that enables synchronization between CloudKit (iCloud) and Core Data."
+  s.version          = "3.0"
   s.homepage         = "https://github.com/sorix/CloudCore"
   s.license          = 'MIT'
-  s.author           = { "Vasily Ulianov" => "vasily@me.com" }
+  s.author           = { "Vasily Ulianov" => "vasily@me.com", "deeje" => "deeje@mac.com" }
   s.source           = {
     :git => "https://github.com/sorix/CloudCore.git",
     :tag => s.version.to_s
@@ -20,8 +20,6 @@ Pod::Spec.new do |s|
   s.ios.frameworks = 'Foundation', 'CloudKit', 'CoreData'
   s.osx.frameworks = 'Foundation', 'CloudKit', 'CoreData'
 
-  s.ios.dependency 'ReachabilitySwift'
-
-  s.pod_target_xcconfig = { 'SWIFT_VERSION' => '4.0' }
+  s.pod_target_xcconfig = { 'SWIFT_VERSION' => '4.2' }
   s.documentation_url = 'http://cocoadocs.org/docsets/CloudCore/'
 end
