@@ -2,11 +2,11 @@ Pod::Spec.new do |s|
   s.name             = "CloudCore"
   s.summary          = "Framework that enables synchronization between CloudKit (iCloud) and Core Data."
   s.version          = "3.0"
-  s.homepage         = "https://github.com/sorix/CloudCore"
+  s.homepage         = "https://github.com/deeje/CloudCore"
   s.license          = 'MIT'
   s.author           = { "Vasily Ulianov" => "vasily@me.com", "deeje" => "deeje@mac.com" }
   s.source           = {
-    :git => "https://github.com/sorix/CloudCore.git",
+    :git => "https://github.com/deeje/CloudCore.git",
     :tag => s.version.to_s
   }
 
