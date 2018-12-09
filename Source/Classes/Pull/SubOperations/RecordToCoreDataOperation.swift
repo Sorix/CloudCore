@@ -81,22 +81,26 @@ class RecordToCoreDataOperation: AsynchronousOperation {
 		for key in record.allKeys() {
 			let recordValue = record.value(forKey: key)
 			
-			let attribute = CloudKitAttribute(value: recordValue, fieldName: key, entityName: entityName, serviceAttributes: serviceAttributeNames, context: context)
-			let coreDataValue = try attribute.makeCoreDataValue()
+			let ckAttribute = CloudKitAttribute(value: recordValue, fieldName: key, entityName: entityName, serviceAttributes: serviceAttributeNames, context: context)
+			let coreDataValue = try ckAttribute.makeCoreDataValue()
             
-            if let attribute = object.entity.attributesByName[key], attribute.attributeType == .transformableAttributeType,
-                let data = coreDataValue as? Data {
-                if let name = attribute.valueTransformerName, let transformer = ValueTransformer(forName: NSValueTransformerName(rawValue: name)) {
-                    let value = transformer.transformedValue(coreDataValue)
-                    object.setValue(value, forKey: key)
-                } else if let unarchivedObject = NSKeyedUnarchiver.unarchiveObject(with: data) {
-                    object.setValue(unarchivedObject, forKey: key)
+            if let cdAttribute = object.entity.attributesByName[key] {
+                if cdAttribute.attributeType == .transformableAttributeType,
+                    let data = coreDataValue as? Data {
+                    if let name = cdAttribute.valueTransformerName, let transformer = ValueTransformer(forName: NSValueTransformerName(rawValue: name)) {
+                        let value = transformer.transformedValue(coreDataValue)
+                        object.setValue(value, forKey: key)
+                    } else if let unarchivedObject = NSKeyedUnarchiver.unarchiveObject(with: data) {
+                        object.setValue(unarchivedObject, forKey: key)
+                    } else {
+                        object.setValue(coreDataValue, forKey: key)
+                    }
                 } else {
                     object.setValue(coreDataValue, forKey: key)
+                    missingObjectsPerEntities[object] = ckAttribute.notFoundRecordNamesForAttribute
                 }
             } else {
-                object.setValue(coreDataValue, forKey: key)
-                missingObjectsPerEntities[object] = attribute.notFoundRecordNamesForAttribute
+                // skipping unkown record values from server, probably newer schema
             }
 		}
 		
