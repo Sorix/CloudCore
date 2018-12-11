@@ -84,23 +84,21 @@ class RecordToCoreDataOperation: AsynchronousOperation {
 			let ckAttribute = CloudKitAttribute(value: recordValue, fieldName: key, entityName: entityName, serviceAttributes: serviceAttributeNames, context: context)
 			let coreDataValue = try ckAttribute.makeCoreDataValue()
             
-            if let cdAttribute = object.entity.attributesByName[key] {
-                if cdAttribute.attributeType == .transformableAttributeType,
-                    let data = coreDataValue as? Data {
-                    if let name = cdAttribute.valueTransformerName, let transformer = ValueTransformer(forName: NSValueTransformerName(rawValue: name)) {
-                        let value = transformer.transformedValue(coreDataValue)
-                        object.setValue(value, forKey: key)
-                    } else if let unarchivedObject = NSKeyedUnarchiver.unarchiveObject(with: data) {
-                        object.setValue(unarchivedObject, forKey: key)
-                    } else {
-                        object.setValue(coreDataValue, forKey: key)
-                    }
+            if let cdAttribute = object.entity.attributesByName[key], cdAttribute.attributeType == .transformableAttributeType,
+                let data = coreDataValue as? Data {
+                if let name = cdAttribute.valueTransformerName, let transformer = ValueTransformer(forName: NSValueTransformerName(rawValue: name)) {
+                    let value = transformer.transformedValue(coreDataValue)
+                    object.setValue(value, forKey: key)
+                } else if let unarchivedObject = NSKeyedUnarchiver.unarchiveObject(with: data) {
+                    object.setValue(unarchivedObject, forKey: key)
                 } else {
                     object.setValue(coreDataValue, forKey: key)
-                    missingObjectsPerEntities[object] = ckAttribute.notFoundRecordNamesForAttribute
                 }
             } else {
-                // skipping unkown record values from server, probably newer schema
+                if object.entity.attributesByName[key] != nil || object.entity.relationshipsByName[key] != nil {
+                    object.setValue(coreDataValue, forKey: key)
+                }
+                missingObjectsPerEntities[object] = ckAttribute.notFoundRecordNamesForAttribute
             }
 		}
 		
