@@ -1,3 +1,9 @@
+# Archived
+
+Nowdays repository is not actively maintained, so I put that repo in an archived state because I can't provide high-quality support and actual updates for that project. Maybe a little later I could take control of that and push a new version of CloudCore.
+
+I recommend looking at [Deeje's pull request](https://github.com/Sorix/CloudCore/pull/51), he has implemented a lot of fixes and new features, but it's not my code so I couldn't guarantee anything.
+
 # CloudCore
 
 [![Documentation](https://sorix.github.io/CloudCore/badge.svg)](https://sorix.github.io/CloudCore/)
