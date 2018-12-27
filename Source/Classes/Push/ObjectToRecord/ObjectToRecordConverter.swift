@@ -84,7 +84,8 @@ class ObjectToRecordConverter {
                     convertOperation.conversionCompletionBlock = { [weak self] record in
                         guard let me = self else { return }
                         
-                        let cloudDatabase = me.database(for: scope)
+                        let targetScope = me.targetScope(for: scope, and: object)
+                        let cloudDatabase = me.database(for: targetScope)
                         let recordWithDB = RecordWithDatabase(record, cloudDatabase)
                         me.convertedRecords.append(recordWithDB)
                     }
@@ -108,7 +109,8 @@ class ObjectToRecordConverter {
             for scope in serviceAttributeNames.scopes {
                 if let triedRestoredRecord = try? object.restoreRecordWithSystemFields(for: scope),
                     let restoredRecord = triedRestoredRecord {
-                    let database = self.database(for: scope)
+                    let targetScope = self.targetScope(for: scope, and: object)
+                    let database = self.database(for: targetScope)
                     let recordIDWithDB = RecordIDWithDatabase(restoredRecord.recordID, database)
                     recordIDs.append(recordIDWithDB)
                 }
@@ -143,4 +145,16 @@ class ObjectToRecordConverter {
     private func database(for scope: CKDatabase.Scope) -> CKDatabase {
         return CloudCore.config.container.database(with: scope)
 	}
+    
+    private func targetScope(for scope: CKDatabase.Scope, and object: NSManagedObject) -> CKDatabase.Scope {
+        var target = scope
+        if scope == .private
+        {
+            if object.sharingOwnerName != CKCurrentUserDefaultName {
+                target = .shared
+            }
+        }
+        
+        return target
+    }
 }

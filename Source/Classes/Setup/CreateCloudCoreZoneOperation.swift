@@ -17,7 +17,7 @@ class CreateCloudCoreZoneOperation: AsynchronousOperation {
 	override func main() {
 		super.main()
 
-		let cloudCoreZone = CKRecordZone(zoneName: CloudCore.config.zoneID.zoneName)
+		let cloudCoreZone = CKRecordZone(zoneName: CloudCore.config.zoneName)
 		let recordZoneOperation = CKModifyRecordZonesOperation(recordZonesToSave: [cloudCoreZone], recordZoneIDsToDelete: nil)
 		recordZoneOperation.modifyRecordZonesCompletionBlock = {
 			if let error = $2 {

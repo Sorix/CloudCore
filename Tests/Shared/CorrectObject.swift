@@ -76,7 +76,7 @@ struct CorrectObject {
 	}
 	
 	func makeRecord() -> CKRecord {
-		let record = CKRecord(recordType: "TestEntity", zoneID: CloudCore.config.zoneID)
+		let record = CKRecord(recordType: "TestEntity", zoneID: CloudCore.config.privateZoneID())
 		
 		let asset = try? CoreDataAttribute.createAsset(for: externalBinary)
 		XCTAssertNotNil(asset)

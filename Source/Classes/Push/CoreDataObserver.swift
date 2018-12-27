@@ -186,7 +186,8 @@ class CoreDataObserver {
                             if change.tombstone != nil {
                                 if let privateRecordData = change.tombstone!["privateRecordData"] as? Data {
                                     let ckRecord = CKRecord(archivedData: privateRecordData)
-                                    let recordIDWithDatabase = RecordIDWithDatabase((ckRecord?.recordID)!, CloudCore.config.container.privateCloudDatabase)
+                                    let database = ckRecord?.recordID.zoneID.ownerName == CKCurrentUserDefaultName ? CloudCore.config.container.privateCloudDatabase : CloudCore.config.container.sharedCloudDatabase
+                                    let recordIDWithDatabase = RecordIDWithDatabase((ckRecord?.recordID)!, database)
                                     deletedRecordIDs.append(recordIDWithDatabase)
                                 }
                                 if let publicRecordData = change.tombstone!["publicRecordData"] as? Data {

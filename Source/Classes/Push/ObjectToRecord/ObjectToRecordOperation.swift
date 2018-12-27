@@ -73,8 +73,8 @@ class ObjectToRecordOperation: Operation {
 				record.setValue(references, forKey: attributeName)
                 
                 if let parentRef = references as? CKRecord.Reference,
-                    parentRef.recordID.zoneID == CloudCore.config.zoneID,
-                    let parentAttributeName = managedObject.entity.userInfo?[ServiceAttributeNames.keyParent] as? String,
+                    parentRef.recordID.zoneID.ownerName == managedObject.sharingOwnerName,
+                    let parentAttributeName = managedObject.parentAttributeName,
                     parentAttributeName == attributeName
                 {
                     record.setParent(parentRef.recordID)

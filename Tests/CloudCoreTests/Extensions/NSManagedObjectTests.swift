@@ -21,7 +21,7 @@ class NSManagedObjectTests: CoreDataTestCase {
 			
             let record = try object.restoreRecordWithSystemFields(for: .private)
 			XCTAssertEqual(record?.recordType, "TestEntity")
-			XCTAssertEqual(record?.recordID.zoneID, CloudCore.config.zoneID)
+			XCTAssertEqual(record?.recordID.zoneID, CloudCore.config.privateZoneID())
 		} catch {
 			XCTFail("\(error)")
 		}

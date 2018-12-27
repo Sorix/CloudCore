@@ -55,7 +55,7 @@ class SubscribeOperation: AsynchronousOperation {
 		notificationInfo.shouldSendContentAvailable = true
 		
         let subscription = (database == CloudCore.config.container.sharedCloudDatabase) ?CKDatabaseSubscription(subscriptionID: id) :
-            CKRecordZoneSubscription(zoneID: CloudCore.config.zoneID, subscriptionID: id)
+            CKRecordZoneSubscription(zoneID: CloudCore.config.privateZoneID(), subscriptionID: id)
         subscription.notificationInfo = notificationInfo
 
 		let operation = CKModifySubscriptionsOperation(subscriptionsToSave: [subscription], subscriptionIDsToDelete: [])

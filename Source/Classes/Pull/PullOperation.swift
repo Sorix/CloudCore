@@ -201,7 +201,7 @@ public class PullOperation: Operation {
 		// Our token is expired, we need to refetch everything again
 		case .changeTokenExpired:
 			tokens.tokensByRecordZoneID[zoneId] = nil
-			self.addRecordZoneChangesOperation(recordZoneIDs: [CloudCore.config.zoneID], database: database, context: context)
+			self.addRecordZoneChangesOperation(recordZoneIDs: [zoneId], database: database, context: context)
 		default: errorBlock?(cloudError)
 		}
 	}

@@ -51,7 +51,8 @@ extension NSManagedObject {
             
             aRecord = publicRecord
         } else {
-            let privateRecordID = CKRecord.ID(recordName: recordName!, zoneID: CloudCore.config.zoneID)
+            let zoneID = CKRecordZone.ID(zoneName: CloudCore.config.zoneName, ownerName: self.sharingOwnerName)
+            let privateRecordID = CKRecord.ID(recordName: recordName!, zoneID: zoneID)
             let privateRecord = CKRecord(recordType: entityName, recordID: privateRecordID)
             self.setValue(privateRecord.encdodedSystemFields, forKey: serviceAttributeNames.privateRecordData)
             
@@ -65,6 +66,30 @@ extension NSManagedObject {
 
 		return aRecord
 	}
+    
+    var parentAttributeName: String? {
+        get {
+            return entity.userInfo?[ServiceAttributeNames.keyParent] as? String
+        }
+    }
+    
+    var sharingOwnerName: String {
+        get {
+            if let parentAttributeName = parentAttributeName,
+                let parent: NSManagedObject = value(forKey: parentAttributeName) as? NSManagedObject,
+                let serviceAttributes = parent.entity.serviceAttributeNames,
+                let parentOwnerName: String = parent.value(forKey: serviceAttributes.ownerName) as? String
+            {
+                return parentOwnerName
+            } else if let serviceAttributes = entity.serviceAttributeNames,
+                let ownerName: String = value(forKey: serviceAttributes.ownerName) as? String
+            {
+                return ownerName
+            }
+            
+            return CKCurrentUserDefaultName
+        }
+    }
     
 }
 
