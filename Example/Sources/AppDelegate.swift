@@ -57,12 +57,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UISplitViewControllerDele
 			})
 		}
 	}
-	
-	func applicationWillTerminate(_ application: UIApplication) {
-		// Save tokens on exit used to differential sync
-		CloudCore.tokens.saveToUserDefaults()
-	}
-	
+		
 	// MARK: - Default Apple initialization, you can skip that
 	
 	var window: UIWindow?
