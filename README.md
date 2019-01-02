@@ -81,10 +81,6 @@ func application(_ application: UIApplication, didReceiveRemoteNotification user
   }
 }
 
-func applicationWillTerminate(_ application: UIApplication) {
-	// Save tokens on exit used to differential sync
-	CloudCore.tokens.saveToUserDefaults()
-}
 ```
 
 5. If you want to enable offline support, **enable NSPersistentHistoryTracking** when you initialize your Core Data stack

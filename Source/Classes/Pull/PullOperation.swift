@@ -56,7 +56,7 @@ public class PullOperation: Operation {
 		for database in self.databases {
             var changedZoneIDs = [CKRecordZone.ID]()
             var deletedZoneIDs = [CKRecordZone.ID]()
-            let databaseChangeToken = tokens.tokensByDatabaseScope[database.databaseScope]
+            let databaseChangeToken = tokens.tokensByDatabaseScope[database.databaseScope.rawValue]
             let databaseChangeOp = CKFetchDatabaseChangesOperation(previousServerChangeToken: databaseChangeToken)
             databaseChangeOp.database = database
             databaseChangeOp.recordZoneWithIDChangedBlock = { (recordZoneID) in
@@ -68,10 +68,14 @@ public class PullOperation: Operation {
             databaseChangeOp.fetchDatabaseChangesCompletionBlock = { (changeToken, moreComing, error) in
                 // TODO: error handling?
                 
-                self.addRecordZoneChangesOperation(recordZoneIDs: changedZoneIDs, database: database, context: backgroundContext)
-                self.deleteRecordsFromDeletedZones(recordZoneIDs: deletedZoneIDs)
+                if changedZoneIDs.count > 0 {
+                    self.addRecordZoneChangesOperation(recordZoneIDs: changedZoneIDs, database: database, context: backgroundContext)
+                }
+                if deletedZoneIDs.count > 0 {
+                    self.deleteRecordsFromDeletedZones(recordZoneIDs: deletedZoneIDs)
+                }
                 
-                self.tokens.tokensByDatabaseScope[database.databaseScope] = changeToken
+                self.tokens.tokensByDatabaseScope[database.databaseScope.rawValue] = changeToken
             }
             self.queue.addOperation(databaseChangeOp)
 		}
@@ -84,6 +88,8 @@ public class PullOperation: Operation {
 			errorBlock?(error)
 		}
 		
+        tokens.saveToUserDefaults()
+        
 		CloudCore.delegate?.didSyncFromCloud()
 	}
 	
