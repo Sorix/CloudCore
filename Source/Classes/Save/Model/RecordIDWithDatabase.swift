@@ -9,10 +9,10 @@
 import CloudKit
 
 class RecordIDWithDatabase {
-	let recordID: CKRecordID
+    let recordID: CKRecord.ID
 	let database: CKDatabase
 	
-	init(_ recordID: CKRecordID, _ database: CKDatabase) {
+    init(_ recordID: CKRecord.ID, _ database: CKDatabase) {
 		self.recordID = recordID
 		self.database = database
 	}

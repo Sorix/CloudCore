@@ -43,7 +43,7 @@ class SubscribeOperation: AsynchronousOperation {
 	}
 	
 	private func makeRecordZoneSubscriptionOperation(for database: CKDatabase, id: String) -> CKModifySubscriptionsOperation {
-		let notificationInfo = CKNotificationInfo()
+        let notificationInfo = CKSubscription.NotificationInfo()
 		notificationInfo.shouldSendContentAvailable = true
 		
 		let subscription = CKRecordZoneSubscription(zoneID: CloudCore.config.zoneID, subscriptionID: id)

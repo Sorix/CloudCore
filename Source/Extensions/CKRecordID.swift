@@ -8,17 +8,17 @@
 
 import CloudKit
 
-extension CKRecordID {
+extension CKRecord.ID {
 	private static let separator = "|"
 	
 	/// Init from encoded string
 	///
 	/// - Parameter encodedString: format: `recordName|ownerName`
 	convenience init?(encodedString: String) {
-		let separated = encodedString.components(separatedBy: CKRecordID.separator)
+        let separated = encodedString.components(separatedBy: CKRecord.ID.separator)
 		
 		if separated.count == 2 {
-			let zoneID = CKRecordZoneID(zoneName: CloudCore.config.zoneID.zoneName, ownerName: separated[1])
+            let zoneID = CKRecordZone.ID(zoneName: CloudCore.config.zoneID.zoneName, ownerName: separated[1])
 			self.init(recordName: separated[0], zoneID: zoneID)
 		} else {
 			return nil
@@ -27,6 +27,6 @@ extension CKRecordID {
 	
 	/// Encoded string in format: `recordName|ownerName`
 	var encodedString: String {
-		return recordName + CKRecordID.separator + zoneID.ownerName
+        return recordName + CKRecord.ID.separator + zoneID.ownerName
 	}
 }

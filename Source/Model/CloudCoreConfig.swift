@@ -25,6 +25,10 @@ import CloudKit
 */
 public struct CloudCoreConfig {
 	
+    // MARK: - Init
+    
+    public init() { }
+    
 	// MARK: CloudKit
 	
     /// The CKContainer to store CoreData. Set this to a custom container to
@@ -37,15 +41,15 @@ public struct CloudCoreConfig {
 	/// RecordZone inside private database to store CoreData.
 	///
 	/// Default value is `CloudCore`
-	public var zoneID = CKRecordZoneID(zoneName: "CloudCore", ownerName: CKCurrentUserDefaultName)
-	let subscriptionIDForPrivateDB = "CloudCorePrivate"
-	let subscriptionIDForSharedDB = "CloudCoreShared"
+    public var zoneID = CKRecordZone.ID(zoneName: "CloudCore", ownerName: CKCurrentUserDefaultName)
+	public var subscriptionIDForPrivateDB = "CloudCorePrivate"
+	public var subscriptionIDForSharedDB = "CloudCoreShared"
 	
 	/// subscriptionID's prefix for custom CKSubscription in public databases
-	var publicSubscriptionIDPrefix = "CloudCore-"
+	public var publicSubscriptionIDPrefix = "CloudCore-"
 	
 	// MARK: Core Data
-	let contextName = "CloudCoreFetchAndSave"
+	public var contextName = "CloudCoreFetchAndSave"
 	
 	/// Default entity's attribute name for *Record ID* if User Info is not specified.
 	///
