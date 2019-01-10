@@ -42,6 +42,7 @@ public class PullOperation: Operation {
 		self.persistentContainer = persistentContainer
 		
 		queue.name = "PullQueue"
+        queue.maxConcurrentOperationCount = 1
 	}
 	
 	/// Performs the receiver’s non-concurrent task.

@@ -35,7 +35,7 @@ class RecordToCoreDataOperation: AsynchronousOperation {
 	override func main() {
 		if self.isCancelled { return }
 
-        parentContext.perform {
+        parentContext.performAndWait {
             do {
                 try self.setManagedObject(in: self.parentContext)
             } catch {
