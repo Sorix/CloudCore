@@ -43,6 +43,10 @@ class CoreDataObserver {
             {
                 usePersistentHistoryForPush = persistentHistoryNumber.boolValue
             }
+            
+            if usePersistentHistoryForPush {
+                processPersistentHistory()
+            }
         }
 	}
 	
