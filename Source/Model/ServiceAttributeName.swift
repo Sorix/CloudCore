@@ -15,6 +15,7 @@ struct ServiceAttributeNames {
 	
 	static let valueRecordData = "recordData"
 	static let valueRecordID = "recordID"
+    static let recordVersion: String = "recordVersion"
 	
 	let entityName: String
 	let recordData: String

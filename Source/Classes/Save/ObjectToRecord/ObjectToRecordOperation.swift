@@ -56,7 +56,7 @@ class ObjectToRecordOperation: Operation {
 			throw CloudCoreError.coreData("Unable to find managed object for record: \(record)")
 		}
 		
-		let changedValues = managedObject.committedValues(forKeys: changedAttributes)
+		let changedValues = managedObject.committedValues(forKeys: nil)
 		
 		for (attributeName, value) in changedValues {
 			if attributeName == serviceAttributeNames.recordData || attributeName == serviceAttributeNames.recordID { continue }

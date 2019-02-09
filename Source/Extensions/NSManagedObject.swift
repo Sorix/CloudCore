@@ -39,6 +39,7 @@ extension NSManagedObject {
 		let record = CKRecord(recordType: entityName, zoneID: CloudCore.config.zoneID)
 		self.setValue(record.encdodedSystemFields, forKey: serviceAttributeNames.recordData)
 		self.setValue(record.recordID.encodedString, forKey: serviceAttributeNames.recordID)
+        self.setValue(CloudCore.config.databaseVersion, forKey: ServiceAttributeNames.recordVersion)
 		
 		return record
 	}

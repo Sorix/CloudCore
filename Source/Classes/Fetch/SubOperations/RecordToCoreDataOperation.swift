@@ -53,7 +53,12 @@ class RecordToCoreDataOperation: AsynchronousOperation {
 		guard let serviceAttributes = NSEntityDescription.entity(forEntityName: entityName, in: context)?.serviceAttributeNames else {
 			throw CloudCoreError.missingServiceAttributes(entityName: entityName)
 		}
-		
+        if let recordVersion = record.value(forKey: ServiceAttributeNames.recordVersion) as? Int {
+            guard recordVersion <= CloudCore.config.databaseVersion else {
+                throw CloudCoreError.incompatibleVersion
+            }
+        }
+
 		// Try to find existing objects
 		let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: entityName)
 		fetchRequest.predicate = NSPredicate(format: serviceAttributes.recordID + " == %@", record.recordID.encodedString)
@@ -74,11 +79,13 @@ class RecordToCoreDataOperation: AsynchronousOperation {
 	///   - recordDataAttributeName: attribute name containing recordData
 	private func fill(object: NSManagedObject, entityName: String, serviceAttributeNames: ServiceAttributeNames, context: NSManagedObjectContext) throws {
 		for key in record.allKeys() {
-			let recordValue = record.value(forKey: key)
-			
-			let attribute = CloudKitAttribute(value: recordValue, fieldName: key, entityName: entityName, serviceAttributes: serviceAttributeNames, context: context)
-			let coreDataValue = try attribute.makeCoreDataValue()
-			object.setValue(coreDataValue, forKey: key)
+            if key != ServiceAttributeNames.recordVersion {
+                let recordValue = record.value(forKey: key)
+
+                let attribute = CloudKitAttribute(value: recordValue, fieldName: key, entityName: entityName, serviceAttributes: serviceAttributeNames, context: context)
+                let coreDataValue = try attribute.makeCoreDataValue()
+                object.setValue(coreDataValue, forKey: key)
+            }
 		}
 		
 		// Set system headers
