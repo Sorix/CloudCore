@@ -43,6 +43,11 @@ public struct CloudCoreConfig {
 	
 	/// subscriptionID's prefix for custom CKSubscription in public databases
 	var publicSubscriptionIDPrefix = "CloudCore-"
+
+    /// Database version to handle incompatible record version
+    ///
+    /// Default value is 1
+    public var databaseVersion = 1
 	
 	// MARK: Core Data
 	let contextName = "CloudCoreFetchAndSave"
