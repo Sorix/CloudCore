@@ -112,6 +112,11 @@ open class CloudCore: NSObject {
 		
 		// FIXME: unsubscribe
 	}
+
+    /// Set Database Version
+    public static func setDatabaseVersion(_ version: Int) {
+        config.databaseVersion = version
+    }
 	
 	// MARK: Fetchers
 	
