@@ -64,6 +64,7 @@ class CloudSaveOperationQueue: OperationQueue {
 		}
 		
 		modifyOperation.database = database
+        modifyOperation.qualityOfService = .userInitiated
 
 		self.addOperation(modifyOperation)
 	}

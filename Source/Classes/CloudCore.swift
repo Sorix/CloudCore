@@ -134,9 +134,7 @@ open class CloudCore: NSObject {
 		DispatchQueue.global(qos: .utility).async {
 			let errorProxy = ErrorBlockProxy(destination: error)
 			let operation = FetchAndSaveOperation(from: [cloudDatabase], persistentContainer: container)
-			operation.errorBlock = {
-                errorProxy.send(error: $0)
-            }
+			operation.errorBlock = { errorProxy.send(error: $0) }
 			operation.start()
 			
 			if errorProxy.wasError {

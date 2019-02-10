@@ -73,7 +73,7 @@ class FetchRecordZoneChangesOperation: Operation {
 			}
 		}
 		
-		fetchOperation.qualityOfService = self.qualityOfService
+		fetchOperation.qualityOfService = .userInitiated
 		fetchOperation.database = self.database
 		
 		return fetchOperation
