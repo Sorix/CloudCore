@@ -56,7 +56,7 @@ class RecordToCoreDataOperation: AsynchronousOperation {
         if let recordVersion = record.value(forKey: ServiceAttributeNames.recordVersion) as? Int {
             guard recordVersion <= CloudCore.config.databaseVersion else {
                 CloudCore.tokens.canSaveToken = false
-                throw CloudCoreError.incompatibleVersion
+                throw CloudCoreError.incompatibleVersion(recordVersion)
             }
         }
 
