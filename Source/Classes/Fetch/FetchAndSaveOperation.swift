@@ -73,10 +73,14 @@ public class FetchAndSaveOperation: Operation {
 		
 		let recordZoneChangesOperation = FetchRecordZoneChangesOperation(from: database, recordZoneIDs: recordZoneIDs, tokens: tokens)
 		
+        var objectsWithMissingReferences = [MissingReferences]()
 		recordZoneChangesOperation.recordChangedBlock = {
 			// Convert and write CKRecord To NSManagedObject Operation
 			let convertOperation = RecordToCoreDataOperation(parentContext: context, record: $0)
 			convertOperation.errorBlock = { self.errorBlock?($0) }
+            convertOperation.completionBlock = {
+                objectsWithMissingReferences.append(convertOperation.missingObjectsPerEntities)
+            }
 			self.queue.addOperation(convertOperation)
 		}
 		
@@ -90,6 +94,44 @@ public class FetchAndSaveOperation: Operation {
 		recordZoneChangesOperation.errorBlock = { zoneID, error in
 			self.handle(recordZoneChangesError: error, in: zoneID, database: database, context: context)
 		}
+        
+        recordZoneChangesOperation.completionBlock = {
+            // iterate over all missing references and fix them, now are all NSManagedObjects created
+            for missingReferences in objectsWithMissingReferences {
+                for (object, references) in missingReferences {
+                    guard let serviceAttributes = object.entity.serviceAttributeNames else { continue }
+                    
+                    for (attributeName, recordIDs) in references {
+                        for recordId in recordIDs {
+                            guard let relationship = object.entity.relationshipsByName[attributeName], let targetEntityName = relationship.destinationEntity?.name else { continue }
+                            
+                            let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: targetEntityName)
+                            fetchRequest.predicate = NSPredicate(format: serviceAttributes.recordID + " == %@" , recordId)
+                            fetchRequest.fetchLimit = 1
+                            fetchRequest.includesPropertyValues = false
+                            
+                            do {
+                                let foundObject = try context.fetch(fetchRequest).first as? NSManagedObject
+                                
+                                if let foundObject = foundObject {
+                                    if relationship.isToMany {
+                                        let set = object.value(forKey: attributeName) as? NSMutableSet ?? NSMutableSet()
+                                        set.add(foundObject)
+                                        object.setValue(set, forKey: attributeName)
+                                    } else {
+                                        object.setValue(foundObject, forKey: attributeName)
+                                    }
+                                } else {
+                                    print("warning: object not found " + recordId)
+                                }
+                            } catch {
+                                self.errorBlock?(error)
+                            }
+                        }
+                    }
+                }
+            }
+        }
 		
 		queue.addOperation(recordZoneChangesOperation)
 	}
