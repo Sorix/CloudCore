@@ -14,33 +14,37 @@ public class PullOperation: Operation {
 	
 	/// Private cloud database for the CKContainer specified by CloudCoreConfig
 	public static let allDatabases = [
-//		CloudCore.config.container.publicCloudDatabase,
+		CloudCore.config.container.publicCloudDatabase,
 		CloudCore.config.container.privateCloudDatabase,
 		CloudCore.config.container.sharedCloudDatabase
 	]
 	
 	public typealias NotificationUserInfo = [AnyHashable : Any]
 	
-	private let tokens: Tokens
 	private let databases: [CKDatabase]
 	private let persistentContainer: NSPersistentContainer
-	
+    private let tokens: Tokens
+
 	/// Called every time if error occurs
 	public var errorBlock: ErrorBlock?
 	
 	private let queue = OperationQueue()
 	
+    private var objectsWithMissingReferences = [MissingReferences]()
+
 	/// Initialize operation, it's recommended to set `errorBlock`
 	///
 	/// - Parameters:
 	///   - databases: list of databases to fetch data from (only private is supported now)
 	///   - persistentContainer: `NSPersistentContainer` that will be used to save data
 	///   - tokens: previously saved `Tokens`, you can generate new ones if you want to fetch all data
-	public init(from databases: [CKDatabase] = PullOperation.allDatabases, persistentContainer: NSPersistentContainer, tokens: Tokens = CloudCore.tokens) {
-		self.tokens = tokens
+	public init(from databases: [CKDatabase] = PullOperation.allDatabases,
+                persistentContainer: NSPersistentContainer,
+                tokens: Tokens = CloudCore.tokens) {
 		self.databases = databases
 		self.persistentContainer = persistentContainer
-		
+        self.tokens = tokens
+
 		queue.name = "PullQueue"
         queue.maxConcurrentOperationCount = 1
 	}
@@ -53,34 +57,73 @@ public class PullOperation: Operation {
 		
 		let backgroundContext = persistentContainer.newBackgroundContext()
 		backgroundContext.name = CloudCore.config.pullContextName
-		
-		for database in self.databases {
-            var changedZoneIDs = [CKRecordZone.ID]()
-            var deletedZoneIDs = [CKRecordZone.ID]()
-            let databaseChangeToken = tokens.tokensByDatabaseScope[database.databaseScope.rawValue]
-            let databaseChangeOp = CKFetchDatabaseChangesOperation(previousServerChangeToken: databaseChangeToken)
-            databaseChangeOp.database = database
-            databaseChangeOp.recordZoneWithIDChangedBlock = { (recordZoneID) in
-                changedZoneIDs.append(recordZoneID)
-            }
-            databaseChangeOp.recordZoneWithIDWasDeletedBlock = { (recordZoneID) in
-                deletedZoneIDs.append(recordZoneID)
-            }
-            databaseChangeOp.fetchDatabaseChangesCompletionBlock = { (changeToken, moreComing, error) in
-                // TODO: error handling?
-                
-                if changedZoneIDs.count > 0 {
-                    self.addRecordZoneChangesOperation(recordZoneIDs: changedZoneIDs, database: database, context: backgroundContext)
+        
+        for database in self.databases {
+            if database.databaseScope == .public {
+                let changedRecordIDs: NSMutableSet = []
+                let deletedRecordIDs: NSMutableSet = []
+                let previousToken = self.tokens.tokensByDatabaseScope[database.databaseScope.rawValue]
+                let notesOp = CKFetchNotificationChangesOperation(previousServerChangeToken: previousToken)
+                notesOp.notificationChangedBlock = { (innerNotification) in
+                    if let innerQueryNotification = innerNotification as? CKQueryNotification {
+                        if innerQueryNotification.queryNotificationReason == .recordDeleted {
+                            deletedRecordIDs.add(innerQueryNotification.recordID!)
+                        } else {
+                            changedRecordIDs.add(innerQueryNotification.recordID!)
+                        }
+                    }
                 }
-                if deletedZoneIDs.count > 0 {
-                    self.deleteRecordsFromDeletedZones(recordZoneIDs: deletedZoneIDs)
+                notesOp.fetchNotificationChangesCompletionBlock = { (changeToken, error) in
+                    let allChangedRecordIDs = changedRecordIDs.allObjects as! [CKRecord.ID]
+                    let fetch = CKFetchRecordsOperation(recordIDs: allChangedRecordIDs)
+                    fetch.database = CloudCore.config.container.publicCloudDatabase
+                    fetch.perRecordCompletionBlock = { (record, recordID, error) in
+                        if error == nil {
+                            self.addConvertRecordOperation(record: record!, context: backgroundContext)
+                        }
+                    }
+                    fetch.fetchRecordsCompletionBlock = { (_, error) in
+                        self.processMissingReferences(context: backgroundContext)
+                    }
+                    self.queue.addOperation(fetch)
+                    
+                    let allDeletedRecordIDs = changedRecordIDs.allObjects as! [CKRecord.ID]
+                    for recordID in allDeletedRecordIDs {
+                        self.addDeleteRecordOperation(recordID: recordID, context: backgroundContext)
+                    }
+                    
+                    self.tokens.tokensByDatabaseScope[database.databaseScope.rawValue] = changeToken
                 }
+                self.queue.addOperation(notesOp)
+            } else {
+                var changedZoneIDs = [CKRecordZone.ID]()
+                var deletedZoneIDs = [CKRecordZone.ID]()
                 
-                self.tokens.tokensByDatabaseScope[database.databaseScope.rawValue] = changeToken
+                let databaseChangeToken = tokens.tokensByDatabaseScope[database.databaseScope.rawValue]
+                let databaseChangeOp = CKFetchDatabaseChangesOperation(previousServerChangeToken: databaseChangeToken)
+                databaseChangeOp.database = database
+                databaseChangeOp.recordZoneWithIDChangedBlock = { (recordZoneID) in
+                    changedZoneIDs.append(recordZoneID)
+                }
+                databaseChangeOp.recordZoneWithIDWasDeletedBlock = { (recordZoneID) in
+                    deletedZoneIDs.append(recordZoneID)
+                }
+                databaseChangeOp.fetchDatabaseChangesCompletionBlock = { (changeToken, moreComing, error) in
+                    // TODO: error handling?
+                    
+                    if changedZoneIDs.count > 0 {
+                        self.addRecordZoneChangesOperation(recordZoneIDs: changedZoneIDs, database: database, context: backgroundContext)
+                    }
+                    if deletedZoneIDs.count > 0 {
+                        self.deleteRecordsFromDeletedZones(recordZoneIDs: deletedZoneIDs)
+                    }
+                    
+                    self.tokens.tokensByDatabaseScope[database.databaseScope.rawValue] = changeToken
+                }
+                self.queue.addOperation(databaseChangeOp)
             }
-            self.queue.addOperation(databaseChangeOp)
-		}
-		
+        }
+        
 		self.queue.waitUntilAllOperationsAreFinished()
 
 		do {
@@ -94,27 +137,34 @@ public class PullOperation: Operation {
 		CloudCore.delegate?.didSyncFromCloud()
 	}
 	
+    private func addConvertRecordOperation(record: CKRecord, context: NSManagedObjectContext) {
+        // Convert and write CKRecord To NSManagedObject Operation
+        let convertOperation = RecordToCoreDataOperation(parentContext: context, record: record)
+        convertOperation.errorBlock = { self.errorBlock?($0) }
+        convertOperation.completionBlock = {
+            self.objectsWithMissingReferences.append(convertOperation.missingObjectsPerEntities)
+        }
+        self.queue.addOperation(convertOperation)
+    }
+    
+    private func addDeleteRecordOperation(recordID: CKRecord.ID, context: NSManagedObjectContext) {
+        // Delete NSManagedObject with specified recordID Operation
+        let deleteOperation = DeleteFromCoreDataOperation(parentContext: context, recordID: recordID)
+        deleteOperation.errorBlock = { self.errorBlock?($0) }
+        self.queue.addOperation(deleteOperation)
+    }
+    
     private func addRecordZoneChangesOperation(recordZoneIDs: [CKRecordZone.ID], database: CKDatabase, context: NSManagedObjectContext) {
 		if recordZoneIDs.isEmpty { return }
 		
 		let recordZoneChangesOperation = FetchRecordZoneChangesOperation(from: database, recordZoneIDs: recordZoneIDs, tokens: tokens)
 		
-        var objectsWithMissingReferences = [MissingReferences]()
 		recordZoneChangesOperation.recordChangedBlock = {
-			// Convert and write CKRecord To NSManagedObject Operation
-			let convertOperation = RecordToCoreDataOperation(parentContext: context, record: $0)
-			convertOperation.errorBlock = { self.errorBlock?($0) }
-            convertOperation.completionBlock = {
-                objectsWithMissingReferences.append(convertOperation.missingObjectsPerEntities)
-            }
-			self.queue.addOperation(convertOperation)
+            self.addConvertRecordOperation(record: $0, context: context)
 		}
 		
 		recordZoneChangesOperation.recordWithIDWasDeletedBlock = {
-			// Delete NSManagedObject with specified recordID Operation
-			let deleteOperation = DeleteFromCoreDataOperation(parentContext: context, recordID: $0)
-			deleteOperation.errorBlock = { self.errorBlock?($0) }
-			self.queue.addOperation(deleteOperation)
+            self.addDeleteRecordOperation(recordID: $0, context: context)
 		}
 		
 		recordZoneChangesOperation.errorBlock = { zoneID, error in
@@ -122,46 +172,50 @@ public class PullOperation: Operation {
 		}
         
         recordZoneChangesOperation.completionBlock = {
-            // iterate over all missing references and fix them, now are all NSManagedObjects created
-            for missingReferences in objectsWithMissingReferences {
-                for (object, references) in missingReferences {
-                    guard let serviceAttributes = object.entity.serviceAttributeNames else { continue }
-                    
-                    for (attributeName, recordNames) in references {
-                        for recordName in recordNames {
-                            guard let relationship = object.entity.relationshipsByName[attributeName], let targetEntityName = relationship.destinationEntity?.name else { continue }
+            self.processMissingReferences(context: context)
+        }
+		
+		queue.addOperation(recordZoneChangesOperation)
+	}
+    
+    private func processMissingReferences(context: NSManagedObjectContext) {
+        // iterate over all missing references and fix them, now are all NSManagedObjects created
+        for missingReferences in objectsWithMissingReferences {
+            for (object, references) in missingReferences {
+                guard let serviceAttributes = object.entity.serviceAttributeNames else { continue }
+                
+                for (attributeName, recordNames) in references {
+                    for recordName in recordNames {
+                        guard let relationship = object.entity.relationshipsByName[attributeName], let targetEntityName = relationship.destinationEntity?.name else { continue }
+                        
+                        // TODO: move to extension
+                        let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: targetEntityName)
+                        fetchRequest.predicate = NSPredicate(format: serviceAttributes.recordName + " == %@" , recordName)
+                        fetchRequest.fetchLimit = 1
+                        fetchRequest.includesPropertyValues = false
+                        
+                        do {
+                            let foundObject = try context.fetch(fetchRequest).first as? NSManagedObject
                             
-                            // TODO: move to extension
-                            let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: targetEntityName)
-                            fetchRequest.predicate = NSPredicate(format: serviceAttributes.recordName + " == %@" , recordName)
-                            fetchRequest.fetchLimit = 1
-                            fetchRequest.includesPropertyValues = false
-                            
-                            do {
-                                let foundObject = try context.fetch(fetchRequest).first as? NSManagedObject
-                                
-                                if let foundObject = foundObject {
-                                    if relationship.isToMany {
-                                        let set = object.value(forKey: attributeName) as? NSMutableSet ?? NSMutableSet()
-                                        set.add(foundObject)
-                                        object.setValue(set, forKey: attributeName)
-                                    } else {
-                                        object.setValue(foundObject, forKey: attributeName)
-                                    }
+                            if let foundObject = foundObject {
+                                if relationship.isToMany {
+                                    let set = object.value(forKey: attributeName) as? NSMutableSet ?? NSMutableSet()
+                                    set.add(foundObject)
+                                    object.setValue(set, forKey: attributeName)
                                 } else {
-                                    print("warning: object not found " + recordName)
+                                    object.setValue(foundObject, forKey: attributeName)
                                 }
-                            } catch {
-                                self.errorBlock?(error)
+                            } else {
+                                print("warning: object not found " + recordName)
                             }
+                        } catch {
+                            self.errorBlock?(error)
                         }
                     }
                 }
             }
         }
-		
-		queue.addOperation(recordZoneChangesOperation)
-	}
+    }
     
     private func deleteRecordsFromDeletedZones(recordZoneIDs: [CKRecordZone.ID]) {
         persistentContainer.performBackgroundTask { (moc) in

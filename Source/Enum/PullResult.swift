@@ -29,7 +29,7 @@ public enum PullResult: UInt {
 		/// Convert `self` to `UIBackgroundFetchResult`
 		///
 		/// Very usefull at `application(_:didReceiveRemoteNotification:fetchCompletionHandler)` as `completionHandler`
-		public var uiBackgroundFetchResult: UIBackgroundFetchResult {
+        var uiBackgroundFetchResult: UIBackgroundFetchResult {
 			return UIBackgroundFetchResult(rawValue: self.rawValue)!
 		}
 		
