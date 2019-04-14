@@ -25,7 +25,7 @@ public class PublicDatabaseSubscriptions {
     //   - completion: returns subscriptionID and error upon operation completion
     static public func subscribe(recordType: String, predicate: NSPredicate, completion: ((_ subscriptionID: String, _ error: Error?) -> Void)?) {
         let id = prefix + recordType + "-" + predicate.predicateFormat
-        if let index = self.cachedIDs.index(of: id) { return }
+        if self.cachedIDs.index(of: id) != nil { return }
         
         let options: CKQuerySubscription.Options = [.firesOnRecordCreation, .firesOnRecordUpdate, .firesOnRecordDeletion]
         let subscription = CKQuerySubscription(recordType: recordType, predicate: predicate, subscriptionID: id, options: options)
