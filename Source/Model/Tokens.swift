@@ -27,9 +27,10 @@ import CloudKit
 	}
 	```
 */
-open class Tokens: NSObject, NSCoding {
+@objc @objcMembers open class Tokens: NSObject, NSCoding {
 	
 	var tokensByRecordZoneID = [CKRecordZoneID: CKServerChangeToken]()
+    var canSaveToken = true
 	
 	private struct ArchiverKey {
 		static let tokensByRecordZoneID = "tokensByRecordZoneID"
@@ -45,7 +46,7 @@ open class Tokens: NSObject, NSCoding {
 	/// Load saved Tokens from UserDefaults. Key is used from `CloudCoreConfig.userDefaultsKeyTokens`
 	///
 	/// - Returns: previously saved `Token` object, if tokens weren't saved before newly initialized `Tokens` object will be returned
-	open static func loadFromUserDefaults() -> Tokens {
+    public static func loadFromUserDefaults() -> Tokens {
 		guard let tokensData = UserDefaults.standard.data(forKey: CloudCore.config.userDefaultsKeyTokens),
 			let tokens = NSKeyedUnarchiver.unarchiveObject(with: tokensData) as? Tokens else {
 				return Tokens()
@@ -56,6 +57,10 @@ open class Tokens: NSObject, NSCoding {
 	
 	/// Save tokens to UserDefaults and synchronize. Key is used from `CloudCoreConfig.userDefaultsKeyTokens`
 	open func saveToUserDefaults() {
+        guard canSaveToken else {
+            NSLog("CloudCore will not save tokens as incompatible version error occured")
+            return
+        }
 		let tokensData = NSKeyedArchiver.archivedData(withRootObject: self)
 		UserDefaults.standard.set(tokensData, forKey: CloudCore.config.userDefaultsKeyTokens)
 		UserDefaults.standard.synchronize()

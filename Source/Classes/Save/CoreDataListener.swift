@@ -25,7 +25,7 @@ class CoreDataListener {
 	public init(container: NSPersistentContainer) {
 		self.container = container
 		converter.errorBlock = { [weak self] in
-			self?.delegate?.error(error: $0, module: .some(.saveToCloud))
+			self?.delegate?.error(error: $0, module: .saveToCloud)
 		}
 	}
 	
@@ -82,7 +82,7 @@ class CoreDataListener {
 					try backgroundContext.save()
 				}
 			} catch {
-				listener.delegate?.error(error: error, module: .some(.saveToCloud))
+				listener.delegate?.error(error: error, module: .saveToCloud)
 			}
 
 			CloudCore.delegate?.didSyncToCloud()
@@ -91,7 +91,7 @@ class CoreDataListener {
 	
 	private func handle(error: Error, parentContext: NSManagedObjectContext) {
 		guard let cloudError = error as? CKError else {
-			delegate?.error(error: error, module: .some(.saveToCloud))
+			delegate?.error(error: error, module: .saveToCloud)
 			return
 		}
 
@@ -103,25 +103,25 @@ class CoreDataListener {
 			// Create CloudCore Zone
 			let createZoneOperation = CreateCloudCoreZoneOperation()
 			createZoneOperation.errorBlock = {
-				self.delegate?.error(error: $0, module: .some(.saveToCloud))
+				self.delegate?.error(error: $0, module: .saveToCloud)
 				self.cloudSaveOperationQueue.cancelAllOperations()
 			}
 			
 			// Subscribe operation
 			#if !os(watchOS)
 				let subscribeOperation = SubscribeOperation()
-				subscribeOperation.errorBlock = { self.delegate?.error(error: $0, module: .some(.saveToCloud)) }
+				subscribeOperation.errorBlock = { self.delegate?.error(error: $0, module: .saveToCloud) }
 				subscribeOperation.addDependency(createZoneOperation)
 				cloudSaveOperationQueue.addOperation(subscribeOperation)
 			#endif
 			
 			// Upload all local data
 			let uploadOperation = UploadAllLocalDataOperation(parentContext: parentContext, managedObjectModel: container.managedObjectModel)
-			uploadOperation.errorBlock = { self.delegate?.error(error: $0, module: .some(.saveToCloud)) }
+			uploadOperation.errorBlock = { self.delegate?.error(error: $0, module: .saveToCloud) }
 			
 			cloudSaveOperationQueue.addOperations([createZoneOperation, uploadOperation], waitUntilFinished: true)
 		case .operationCancelled: return
-		default: delegate?.error(error: cloudError, module: .some(.saveToCloud))
+		default: delegate?.error(error: cloudError, module: .saveToCloud)
 		}
 	}
 

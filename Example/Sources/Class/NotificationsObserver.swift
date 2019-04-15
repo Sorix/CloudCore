@@ -28,7 +28,7 @@ class CloudCoreDelegateHandler: CloudCoreDelegate {
 		os_log("✅ Finished saving to iCloud", log: OSLog.default, type: .debug)
 	}
 	
-	func error(error: Error, module: Module?) {
+	func error(error: Error, module: Module) {
 		print("⚠️ CloudCore error detected in module \(String(describing: module)): \(error)")
 	}
 	

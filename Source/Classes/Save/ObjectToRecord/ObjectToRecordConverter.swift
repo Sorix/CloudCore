@@ -51,6 +51,9 @@ class ObjectToRecordConverter {
 				} else {
 					recordWithSystemFields = try object.setRecordInformation()
 				}
+
+                // Update record version
+                recordWithSystemFields.setValue(CloudCore.config.databaseVersion, forKey: ServiceAttributeNames.recordVersion)
 				
 				var changedAttributes: [String]?
 				

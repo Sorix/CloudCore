@@ -22,8 +22,10 @@ public enum CloudCoreError: Error, CustomStringConvertible {
 	
 	/// Custom error, description is placed inside associated value
 	case custom(String)
-	
-	
+
+    /// Incompatible record version error
+    case incompatibleVersion(Int)
+
 	/// CloudCore doesn't support relationships with `NSOrderedSet` type
 	case orderedSetRelationshipIsNotSupported(NSRelationshipDescription)
 
@@ -36,6 +38,7 @@ public enum CloudCoreError: Error, CustomStringConvertible {
 		case .cloudKit(let text): return "iCloud error: \(text)"
 		case .coreData(let text): return "Core Data error: \(text)"
 		case .custom(let error): return error
+        case .incompatibleVersion(let version): return "Record version \(version) / Database version \(CloudCore.config.databaseVersion)"
 		case .orderedSetRelationshipIsNotSupported(let relationship): return "Relationships with NSOrderedSet type are not supported. Error occured in: \(relationship)"
 		}
 	}

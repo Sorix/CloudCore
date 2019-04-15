@@ -47,7 +47,7 @@ import CloudKit
 
 	You can also check for updated data at CloudKit **manually** (e.g. push notifications are not working). Use for that `CloudCore.fetchAndSave(to:error:completion:)`
 */
-open class CloudCore {
+@objc @objcMembers open class CloudCore: NSObject {
 	
 	// MARK: - Properties
 	
@@ -93,7 +93,7 @@ open class CloudCore {
 		// Fetch updated data (e.g. push notifications weren't received)
         let updateFromCloudOperation = FetchAndSaveOperation(persistentContainer: container)
 		updateFromCloudOperation.errorBlock = {
-			self.delegate?.error(error: $0, module: .some(.fetchFromCloud))
+			self.delegate?.error(error: $0, module: .fetchFromCloud)
 		}
 		
 		#if !os(watchOS)
@@ -112,6 +112,11 @@ open class CloudCore {
 		
 		// FIXME: unsubscribe
 	}
+
+    /// Set Database Version
+    public static func setDatabaseVersion(_ version: Int) {
+        config.databaseVersion = version
+    }
 	
 	// MARK: Fetchers
 	
@@ -185,7 +190,7 @@ open class CloudCore {
 
 	static private func handle(subscriptionError: Error, container: NSPersistentContainer) {
 		guard let cloudError = subscriptionError as? CKError, let partialErrorValues = cloudError.partialErrorsByItemID?.values else {
-			delegate?.error(error: subscriptionError, module: nil)
+			delegate?.error(error: subscriptionError, module: .subscribeToCloud)
 			return
 		}
 		
@@ -203,7 +208,7 @@ open class CloudCore {
 			}
 		}
 		
-		delegate?.error(error: subscriptionError, module: nil)
+		delegate?.error(error: subscriptionError, module: .subscribeToCloud)
 	}
 
 }
