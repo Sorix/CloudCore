@@ -27,7 +27,7 @@ import CloudKit
 	}
 	```
 */
-open class Tokens: NSObject, NSCoding {
+@objc @objcMembers open class Tokens: NSObject, NSCoding {
 	
 	var tokensByRecordZoneID = [CKRecordZoneID: CKServerChangeToken]()
     var canSaveToken = true
