@@ -68,6 +68,7 @@ public class PullOperation: Operation {
                     if let innerQueryNotification = innerNotification as? CKQueryNotification {
                         if innerQueryNotification.queryNotificationReason == .recordDeleted {
                             deletedRecordIDs.add(innerQueryNotification.recordID!)
+                            changedRecordIDs.remove(innerQueryNotification.recordID!)
                         } else {
                             changedRecordIDs.add(innerQueryNotification.recordID!)
                         }
@@ -87,7 +88,7 @@ public class PullOperation: Operation {
                     }
                     self.queue.addOperation(fetch)
                     
-                    let allDeletedRecordIDs = changedRecordIDs.allObjects as! [CKRecord.ID]
+                    let allDeletedRecordIDs = deletedRecordIDs.allObjects as! [CKRecord.ID]
                     for recordID in allDeletedRecordIDs {
                         self.addDeleteRecordOperation(recordID: recordID, context: backgroundContext)
                     }
