@@ -68,6 +68,13 @@ public class PublicDatabaseSubscriptions {
     }
     
     
+    static public func unsubscribe(recordType: String, predicate: NSPredicate, completion: ((Error?) -> Void)?) {
+        let id = prefix + recordType + "-" + predicate.predicateFormat
+        
+        self.unsubscribe(subscriptionID: id, completion: completion)
+    }
+    
+    
     // Refresh local `cachedIDs` variable with actual data from CloudKit.
     // Recommended to use after application's UserDefaults reset.
     //
