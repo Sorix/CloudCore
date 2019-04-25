@@ -18,9 +18,7 @@ public class PullOperation: Operation {
 		CloudCore.config.container.privateCloudDatabase,
 		CloudCore.config.container.sharedCloudDatabase
 	]
-	
-	public typealias NotificationUserInfo = [AnyHashable : Any]
-	
+		
 	private let databases: [CKDatabase]
 	private let persistentContainer: NSPersistentContainer
     private let tokens: Tokens
