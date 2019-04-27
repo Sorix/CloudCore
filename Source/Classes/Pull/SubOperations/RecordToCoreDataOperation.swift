@@ -14,7 +14,7 @@ typealias RecordName = String
 typealias MissingReferences = [NSManagedObject: [AttributeName: [RecordName]]]
 
 /// Convert CKRecord to NSManagedObject and save it to parent context, thread-safe
-class RecordToCoreDataOperation: AsynchronousOperation {
+public class RecordToCoreDataOperation: AsynchronousOperation {
 	let parentContext: NSManagedObjectContext
 	let record: CKRecord
 	var errorBlock: ErrorBlock?
@@ -23,7 +23,7 @@ class RecordToCoreDataOperation: AsynchronousOperation {
     /// - Parameters:
     ///   - parentContext: operation will be safely performed in that context, **operation doesn't save that context** you need to do it manually
     ///   - record: record that will be converted to `NSManagedObject`
-	init(parentContext: NSManagedObjectContext, record: CKRecord) {
+	public init(parentContext: NSManagedObjectContext, record: CKRecord) {
 		self.parentContext = parentContext
 		self.record = record
 		
@@ -32,7 +32,7 @@ class RecordToCoreDataOperation: AsynchronousOperation {
 		self.name = "RecordToCoreDataOperation"
 	}
 	
-	override func main() {
+    override public func main() {
 		if self.isCancelled { return }
 
         parentContext.performAndWait {
