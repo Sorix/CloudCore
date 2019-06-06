@@ -14,17 +14,43 @@
 * **private database** and **shared database** push and pull is supported.
 * **public database** push is supported
 * Parent-Child relationships can be defined for CloudKit Sharing
-* Respects of Core Data options (cascade deletions, external storage).
-* Knows and manages with CloudKit errors like `userDeletedZone`, `zoneNotFound`, `changeTokenExpired`, `isMore`.
+* Respects Core Data options (cascade deletions, external storage).
+* Knows and manages CloudKit errors like `userDeletedZone`, `zoneNotFound`, `changeTokenExpired`, `isMore`.
+
+#### CloudCore vs iOS 13?
+
+At WWDC 2019, Apple announced support for NSPersistentCloudKitContainer in iOS 13, which provides native support for Core Data <-> CloudKit synchronization.  Here are some initial thoughts on the differences between these two approaches.
+
+###### NSPersistentCloudKitContainer
+* Simple to enable
+* Private Database only, no Sharing or Public support
+* Synchronizes All Records
+* No CloudKit Metadata (e.g. recordName, systemFields, owner)
+* Record-level Synchronization (entire objects are pushed)
+* Offline Synchronization is opaque, but doesn't appear to require NSPersistentHistoryTracking
+* All Core Data names are preceeded with "CD_" in CloudKit
+* Core Data Relationships are mapped thru CDMR records in CloudKit
+
+###### CloudCore
+* Support requires specific configuration in the Core Data Model
+* Support for Private, Shared, and Public databases
+* Selective Synchronization (e.g. can delete local objects without deleting remote records)
+* Explicit CloudKit Metadata
+* Field-level Synchronization (only changed attributes are pushed)
+* Offline Synchronziation via NSPersistentHistoryTracking
+* Core Data names are mapped exactly in CloudKit
+* Core Data Relationships are mapped to CloudKit CKReferences
+
+During their WWDC presentation, Apple very clearly stated that NSPersistentCloudKitContainer is a foundation for future support of more advanced features #YMMV
 
 ## How it works?
-CloudCore is built using "black box" architecture, so it works invisibly for your application, you just need to add several lines to `AppDelegate` to enable it. Synchronization and error resolving is managed automatically.
+CloudCore is built using a "black box" architecture, so it works invisibly for your application.  You just need to add several lines to your `AppDelegate` to enable it, as well as identify various aspects of your Core Data Model schema. Synchronization and error resolving is managed automatically.
 
 1. CloudCore stores *change tokens* from CloudKit, so only changed data is downloaded.
 2. When CloudCore is enabled (`CloudCore.enable`) it pulls changed data from CloudKit and subscribes to CloudKit push notifications about new changes.
 3. When `CloudCore.pull` is called manually or by push notification, CloudCore pulls and saves changed data to Core Data.
-4. When data is written to persistent container (parent context is saved) CloudCore founds locally changed data and pushed to CloudKit.
-5. when leveraging NSPersistentHistory, changes are pushed only when online.
+4. When data is written to your persistent container (parent context is saved) CloudCore finds locally changed data and pushes to CloudKit.
+5. By leveraging NSPersistentHistory, changes can be queued when offline and pushed when online.
 
 ## Installation
 
@@ -175,7 +201,6 @@ CloudKit objects can't be mocked up, that's why I create 2 different types of te
 
 ## Roadmap
 
-- [ ] Properly push only changed fields from NSPersistenHistory
 - [ ] Move beta to release status
 - [ ] Add `CloudCore.disable` method
 - [ ] Add methods to clear local cache and remote database
