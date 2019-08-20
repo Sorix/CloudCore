@@ -39,7 +39,7 @@ class DetailViewController: UITableViewController {
             moc.name = CloudCore.config.pushContextName
 
             let employee = ModelFactory.insertEmployee(context: moc)
-            let organization = try? moc.existingObject(with: self.organizationID) as! Organization
+            let organization = try? moc.existingObject(with: self.organizationID) as? Organization
             employee.organization = organization
             
             try? moc.save()
@@ -51,7 +51,7 @@ class DetailViewController: UITableViewController {
         persistentContainer.performBackgroundTask { (moc) in
             moc.name = CloudCore.config.pushContextName
 
-            let organization = try? moc.existingObject(with: self.organizationID) as! Organization
+            let organization = try? moc.existingObject(with: self.organizationID) as? Organization
             organization?.name = newTitle
             
             try? moc.save()

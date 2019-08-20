@@ -30,6 +30,7 @@ At WWDC 2019, Apple announced support for NSPersistentCloudKitContainer in iOS 1
 * Offline Synchronization is opaque, but doesn't appear to require NSPersistentHistoryTracking
 * All Core Data names are preceeded with "CD_" in CloudKit
 * Core Data Relationships are mapped thru CDMR records in CloudKit
+* Uses a specific custom zone in the Private Database
 
 ###### CloudCore
 * Support requires specific configuration in the Core Data Model

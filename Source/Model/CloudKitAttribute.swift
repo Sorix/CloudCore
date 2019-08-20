@@ -31,7 +31,9 @@ class CloudKitAttribute {
 	
 	func makeCoreDataValue() throws -> Any? {
 		switch value {
-        case let reference as CKRecord.Reference: return try findManagedObject(for: reference.recordID)
+        case let reference as CKRecord.Reference:
+            return try findManagedObject(for: reference.recordID)
+            
         case let references as [CKRecord.Reference]:
 			let managedObjects = NSMutableSet()
 			for ref in references {
@@ -41,8 +43,13 @@ class CloudKitAttribute {
 
 			if managedObjects.count == 0 { return nil }
 			return managedObjects
-		case let asset as CKAsset: return try Data(contentsOf: asset.fileURL)
-		default: return value
+            
+		case let asset as CKAsset:
+            guard let url = asset.fileURL else { return nil }
+            return try Data(contentsOf: url)
+
+		default:
+            return value
 		}
 	}
 	

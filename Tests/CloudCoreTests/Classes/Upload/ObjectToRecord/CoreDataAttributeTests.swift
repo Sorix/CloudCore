@@ -63,7 +63,7 @@ class CoreDataAttributeTests: CoreDataTestCase {
 		do {
 			// External binary
 			if let recordExternalValue = try externalAttribute?.makeRecordValue() as? CKAsset {
-				let recordData = try Data(contentsOf: recordExternalValue.fileURL)
+				let recordData = try Data(contentsOf: recordExternalValue.fileURL!)
 				XCTAssertEqual(recordData, externalData)
 			} else {
 				XCTFail("External binary isn't stored correctly")
@@ -71,7 +71,7 @@ class CoreDataAttributeTests: CoreDataTestCase {
 			
 			// External big binary
 			if let recordExternalValue = try externalBigAttribute?.makeRecordValue() as? CKAsset {
-				let recordData = try Data(contentsOf: recordExternalValue.fileURL)
+				let recordData = try Data(contentsOf: recordExternalValue.fileURL!)
 				XCTAssertEqual(recordData, externalBigData)
 			} else {
 				XCTFail("External big binary isn't stored correctly")
