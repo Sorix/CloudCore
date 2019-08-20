@@ -200,6 +200,9 @@ class CoreDataObserver {
                                     deletedRecordIDs.append(recordIDWithDatabase)
                                 }
                             }
+                            
+                        default:
+                            break
                         }
                     }
                     

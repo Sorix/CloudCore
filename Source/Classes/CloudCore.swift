@@ -134,9 +134,7 @@ open class CloudCore {
 		- completion: `PullResult` enumeration with results of operation
 	*/
 	public static func pull(using userInfo: NotificationUserInfo, to container: NSPersistentContainer, error: ErrorBlock?, completion: @escaping (_ fetchResult: PullResult) -> Void) {
-        let notification = CKNotification(fromRemoteNotificationDictionary: userInfo)
-        
-		guard let cloudDatabase = self.database(for: notification) else {
+		guard let notification = CKNotification(fromRemoteNotificationDictionary: userInfo), let cloudDatabase = self.database(for: notification) else {
 			completion(.noData)
 			return
 		}
@@ -176,7 +174,8 @@ open class CloudCore {
 	 - Returns: `true` if notification contains CloudCore data
 	*/
 	public static func isCloudCoreNotification(withUserInfo userInfo: NotificationUserInfo) -> Bool {
-        let notification = CKNotification(fromRemoteNotificationDictionary: userInfo)
+        guard let notification = CKNotification(fromRemoteNotificationDictionary: userInfo) else { return false }
+        
 		return (database(for: notification) != nil)
 	}
 	
