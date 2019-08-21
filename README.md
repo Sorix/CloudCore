@@ -2,7 +2,7 @@
 
 ![Platform](https://img.shields.io/cocoapods/p/CloudCore.svg?style=flat)
 ![Status](https://img.shields.io/badge/status-beta-orange.svg)
-![Swift](https://img.shields.io/badge/swift-4.2-orange.svg)
+![Swift](https://img.shields.io/badge/swift-5.0-orange.svg)
 
 **CloudCore** is a framework that manages syncing between iCloud (CloudKit) and Core Data written on native Swift.
 
@@ -60,7 +60,7 @@ CloudCore is built using a "black box" architecture, so it works invisibly for y
 it, simply add the following line to your Podfile:
 
 ```ruby
-pod 'CloudCore', :git => 'https://github.com/deeje/CloudCore.git'
+pod 'CloudCore'
 ```
 
 ## How to help?
