@@ -9,16 +9,21 @@
 import CoreData
 import CloudKit
 
+typealias AttributeName = String
+typealias RecordName = String
+typealias MissingReferences = [NSManagedObject: [AttributeName: [RecordName]]]
+
 /// Convert CKRecord to NSManagedObject and save it to parent context, thread-safe
-class RecordToCoreDataOperation: AsynchronousOperation {
+public class RecordToCoreDataOperation: AsynchronousOperation {
 	let parentContext: NSManagedObjectContext
 	let record: CKRecord
 	var errorBlock: ErrorBlock?
+    var missingObjectsPerEntities = MissingReferences()
 	
     /// - Parameters:
     ///   - parentContext: operation will be safely performed in that context, **operation doesn't save that context** you need to do it manually
     ///   - record: record that will be converted to `NSManagedObject`
-	init(parentContext: NSManagedObjectContext, record: CKRecord) {
+	public init(parentContext: NSManagedObjectContext, record: CKRecord) {
 		self.parentContext = parentContext
 		self.record = record
 		
@@ -27,10 +32,10 @@ class RecordToCoreDataOperation: AsynchronousOperation {
 		self.name = "RecordToCoreDataOperation"
 	}
 	
-	override func main() {
+    override public func main() {
 		if self.isCancelled { return }
 
-        parentContext.perform {
+        parentContext.performAndWait {
             do {
                 try self.setManagedObject(in: self.parentContext)
             } catch {
@@ -56,7 +61,7 @@ class RecordToCoreDataOperation: AsynchronousOperation {
 		
 		// Try to find existing objects
 		let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: entityName)
-		fetchRequest.predicate = NSPredicate(format: serviceAttributes.recordID + " == %@", record.recordID.encodedString)
+		fetchRequest.predicate = NSPredicate(format: serviceAttributes.recordName + " == %@", record.recordID.recordName)
 		
 		if let foundObject = try context.fetch(fetchRequest).first as? NSManagedObject {
 			try fill(object: foundObject, entityName: entityName, serviceAttributeNames: serviceAttributes, context: context)
@@ -76,13 +81,34 @@ class RecordToCoreDataOperation: AsynchronousOperation {
 		for key in record.allKeys() {
 			let recordValue = record.value(forKey: key)
 			
-			let attribute = CloudKitAttribute(value: recordValue, fieldName: key, entityName: entityName, serviceAttributes: serviceAttributeNames, context: context)
-			let coreDataValue = try attribute.makeCoreDataValue()
-			object.setValue(coreDataValue, forKey: key)
+			let ckAttribute = CloudKitAttribute(value: recordValue, fieldName: key, entityName: entityName, serviceAttributes: serviceAttributeNames, context: context)
+			let coreDataValue = try ckAttribute.makeCoreDataValue()
+            
+            if let cdAttribute = object.entity.attributesByName[key], cdAttribute.attributeType == .transformableAttributeType,
+                let data = coreDataValue as? Data {
+                if let name = cdAttribute.valueTransformerName, let transformer = ValueTransformer(forName: NSValueTransformerName(rawValue: name)) {
+                    let value = transformer.transformedValue(coreDataValue)
+                    object.setValue(value, forKey: key)
+                } else if let unarchivedObject = NSKeyedUnarchiver.unarchiveObject(with: data) {
+                    object.setValue(unarchivedObject, forKey: key)
+                } else {
+                    object.setValue(coreDataValue, forKey: key)
+                }
+            } else {
+                if object.entity.attributesByName[key] != nil || object.entity.relationshipsByName[key] != nil {
+                    object.setValue(coreDataValue, forKey: key)
+                }
+                missingObjectsPerEntities[object] = ckAttribute.notFoundRecordNamesForAttribute
+            }
 		}
 		
 		// Set system headers
-		object.setValue(record.recordID.encodedString, forKey: serviceAttributeNames.recordID)
-		object.setValue(record.encdodedSystemFields, forKey: serviceAttributeNames.recordData)
+        object.setValue(record.recordID.recordName, forKey: serviceAttributeNames.recordName)
+        object.setValue(record.recordID.zoneID.ownerName, forKey: serviceAttributeNames.ownerName)
+        if record.recordID.zoneID == CKRecordZone.default().zoneID {
+            object.setValue(record.encdodedSystemFields, forKey: serviceAttributeNames.publicRecordData)
+        } else {
+            object.setValue(record.encdodedSystemFields, forKey: serviceAttributeNames.privateRecordData)
+        }
 	}
 }

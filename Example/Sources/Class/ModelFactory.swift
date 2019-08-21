@@ -54,7 +54,7 @@ class ModelFactory {
 	private static func randomAvatar() -> Data? {
 		let randomNumber = String(faker.number.randomInt(min: 1, max: 9))
 		let image = UIImage(named: "avatar_" + randomNumber)!
-		return UIImagePNGRepresentation(image)
+		return image.pngData()
 	}
 	
 	static func newCompanyName() -> String {

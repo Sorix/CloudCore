@@ -35,14 +35,14 @@ extension CoreDataTestCase {
 		
 		wait(for: [didSyncExpectation], timeout: 10)
 		
-		let fetchAndSaveExpectation = expectation(description: "fetchAndSave")
-		CloudCore.fetchAndSave(to: persistentContainer, error: { (error) in
-			XCTFail("fetchAndSave error: \(error)")
+		let pullExpectation = expectation(description: "pull")
+		CloudCore.pull(to: persistentContainer, error: { (error) in
+			XCTFail("pull error: \(error)")
 		}) {
-			fetchAndSaveExpectation.fulfill()
+			pullExpectation.fulfill()
 		}
 		
-		wait(for: [fetchAndSaveExpectation], timeout: 10)
+		wait(for: [pullExpectation], timeout: 10)
 		UserDefaults.standard.set(true, forKey: "isCloudKitConfigured")
 		
 		delegateListener.didSyncToCloudBlock = nil
@@ -50,7 +50,7 @@ extension CoreDataTestCase {
 	
 	static func deleteAllRecordsFromCloudKit() {
 		let operationQueue = OperationQueue()
-		var recordIdsToDelete = [CKRecordID]()
+		var recordIdsToDelete = [CKRecord.ID]()
 		let publicDatabase = CKContainer.default().privateCloudDatabase
 		
 		let queries = [
@@ -75,7 +75,7 @@ extension CoreDataTestCase {
 		if recordIdsToDelete.isEmpty { return }
 		
 		let deleteOperation = CKModifyRecordsOperation(recordsToSave: nil, recordIDsToDelete: recordIdsToDelete)
-		deleteOperation.modifyRecordsCompletionBlock = { (savedRecords: [CKRecord]?, deletedRecordIDs: [CKRecordID]?, error: Error?) in
+		deleteOperation.modifyRecordsCompletionBlock = { (savedRecords: [CKRecord]?, deletedRecordIDs: [CKRecord.ID]?, error: Error?) in
 			if let error = error {
 				XCTFail("Error while tried to clean test objects: \(error)")
 			}

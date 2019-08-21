@@ -12,7 +12,7 @@ import Foundation
 /// ## How to use:
 /// 1. Call `super.main()` when override `main` method, call `super.start()` when override `start` method.
 /// 2. When operation is finished or cancelled set `self.state = .finished`
-class AsynchronousOperation: Operation {
+public class AsynchronousOperation: Operation {
 	open override var isAsynchronous: Bool { return true }
 	open override var isExecuting: Bool { return state == .executing }
 	open override var isFinished: Bool { return state == .finished }
@@ -28,14 +28,14 @@ class AsynchronousOperation: Operation {
 		}
 	}
 	
-	enum State: String {
+	public enum State: String {
 		case ready = "Ready"
 		case executing = "Executing"
 		case finished = "Finished"
 		fileprivate var keyPath: String { return "is" + self.rawValue }
 	}
 	
-	override func start() {
+    override public func start() {
 		if self.isCancelled {
 			state = .finished
 		} else {
@@ -44,7 +44,7 @@ class AsynchronousOperation: Operation {
 		}
 	}
 	
-	override func main() {
+    override public func main() {
 		if self.isCancelled {
 			state = .finished
 		} else {

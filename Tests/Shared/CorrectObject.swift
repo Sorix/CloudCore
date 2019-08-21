@@ -38,7 +38,7 @@ struct CorrectObject {
 		let managedObject = TestEntity(context: context)
 		
 		// Header
-		managedObject.recordData = self.recordData as Data
+		managedObject.privateRecordData = self.recordData as Data
 		
 		// Binary
 		managedObject.binary = binary as Data
@@ -76,8 +76,9 @@ struct CorrectObject {
 	}
 	
 	func makeRecord() -> CKRecord {
-		let record = CKRecord(recordType: "TestEntity", zoneID: CloudCore.config.zoneID)
-		
+        let recordID = CKRecord.ID(recordName: UUID().uuidString, zoneID: CloudCore.config.privateZoneID())
+        let record = CKRecord(recordType: "TestEntity", recordID: recordID)
+        
 		let asset = try? CoreDataAttribute.createAsset(for: externalBinary)
 		XCTAssertNotNil(asset)
 		record.setValue(asset, forKey: "externalBinary")
@@ -100,7 +101,7 @@ struct CorrectObject {
 
 func assertEqualAttributes(_ managedObject: TestEntity, _ record: CKRecord) {
 	// Headers
-	if let encodedRecordData = managedObject.recordData as Data? {
+	if let encodedRecordData = managedObject.privateRecordData as Data? {
 		let recordFromObject = CKRecord(archivedData: encodedRecordData)
 		
 		XCTAssertEqual(recordFromObject?.recordID, record.recordID)
@@ -143,7 +144,7 @@ func assertEqualPlainTextAttributes(_ managedObject: TestEntity, _ record: CKRec
 
 func assertEqualBinaryAttributes(_ managedObject: TestEntity, _ record: CKRecord) {
 	if let recordAsset = record.value(forKey: "externalBinary") as! CKAsset? {
-		let downloadedData = try! Data(contentsOf: recordAsset.fileURL)
+		let downloadedData = try! Data(contentsOf: recordAsset.fileURL!)
 		XCTAssertEqual(managedObject.externalBinary, downloadedData)
 	}
 	

@@ -9,7 +9,7 @@
 import CloudKit
 import CoreData
 
-class CloudSaveOperationQueue: OperationQueue {
+class PushOperationQueue: OperationQueue {
 	var errorBlock: ErrorBlock?
 	
 	/// Modify CloudKit database, operations will be created and added to operation queue.
@@ -44,7 +44,7 @@ class CloudSaveOperationQueue: OperationQueue {
 		}
 	}
 	
-	private func addOperation(recordsToSave: [CKRecord], recordIDsToDelete: [CKRecordID], database: CKDatabase) {
+    private func addOperation(recordsToSave: [CKRecord], recordIDsToDelete: [CKRecord.ID], database: CKDatabase) {
 		// Modify CKRecord Operation
 		let modifyOperation = CKModifyRecordsOperation(recordsToSave: recordsToSave, recordIDsToDelete: recordIDsToDelete)
 		modifyOperation.savePolicy = .changedKeys
@@ -62,7 +62,7 @@ class CloudSaveOperationQueue: OperationQueue {
 				self.errorBlock?(error)
 			}
 		}
-		
+		        
 		modifyOperation.database = database
 
 		self.addOperation(modifyOperation)
@@ -72,7 +72,9 @@ class CloudSaveOperationQueue: OperationQueue {
 	private func removeCachedAssets(for record: CKRecord) {
 		for key in record.allKeys() {
 			guard let asset = record.value(forKey: key) as? CKAsset else { continue }
-			try? FileManager.default.removeItem(at: asset.fileURL)
+            if let url = asset.fileURL {
+                try? FileManager.default.removeItem(at: url)
+            }
 		}
 	}
 
@@ -81,7 +83,7 @@ class CloudSaveOperationQueue: OperationQueue {
 fileprivate class DatabaseModifyDataSource {
 	let database: CKDatabase
 	var save = [CKRecord]()
-	var delete = [CKRecordID]()
+    var delete = [CKRecord.ID]()
 	
 	init(database: CKDatabase) {
 		self.database = database

@@ -21,7 +21,7 @@ class MasterViewController: UITableViewController {
 
 	override func viewDidLoad() {
 		super.viewDidLoad()
-		
+		        
 		let fetchRequest: NSFetchRequest<Organization> = Organization.fetchRequest()
 		fetchRequest.sortDescriptors = [NSSortDescriptor(key: "sort", ascending: true)]
 		tableDataSource = MasterTableViewDataSource(fetchRequest: fetchRequest, context: context, sectionNameKeyPath: nil, delegate: self, tableView: tableView)
@@ -29,26 +29,18 @@ class MasterViewController: UITableViewController {
 		try! tableDataSource.performFetch()
 		
 		self.clearsSelectionOnViewWillAppear = true
-
-		self.navigationItem.rightBarButtonItem = editButtonItem
 	}
-	
-	override func setEditing(_ editing: Bool, animated: Bool) {
-		super.setEditing(editing, animated: animated)
-		
-		// Save on editing end
-		if !editing {
-			try! context.save()
-		}
-	}
-	
+    
 	@IBAction func addButtonClicked(_ sender: UIBarButtonItem) {
-		ModelFactory.insertOrganizationWithEmployees(context: context)
-		try! context.save()
+        persistentContainer.performBackgroundTask { (moc) in
+            moc.name = CloudCore.config.pushContextName
+            ModelFactory.insertOrganizationWithEmployees(context: moc)
+            try! moc.save()
+        }
 	}
 	
 	@IBAction func refreshValueChanged(_ sender: UIRefreshControl) {
-		CloudCore.fetchAndSave(to: persistentContainer, error: { (error) in
+		CloudCore.pull(to: persistentContainer, error: { (error) in
 			print("⚠️ FetchAndSave error: \(error)")
 			DispatchQueue.main.async {
 				sender.endRefreshing()
@@ -70,7 +62,7 @@ class MasterViewController: UITableViewController {
 		}
 	}
 
-	override func tableView(_ tableView: UITableView, editingStyleForRowAt indexPath: IndexPath) -> UITableViewCellEditingStyle {
+	override func tableView(_ tableView: UITableView, editingStyleForRowAt indexPath: IndexPath) -> UITableViewCell.EditingStyle {
 		return .delete
 	}
 	
@@ -92,15 +84,35 @@ extension MasterViewController: FRCTableViewDelegate {
 	
 }
 
-fileprivate class MasterTableViewDataSource: FRCTableViewDataSource<Organization> {
-	
-	override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCellEditingStyle, forRowAt indexPath: IndexPath) {
-		let context = frc.managedObjectContext
-		
-		switch editingStyle {
-		case .delete: context.delete(object(at: indexPath))
-		default: return
-		}
-	}
-	
+extension MasterViewController {
+
+    @available(iOS 11.0, *)
+    override func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
+        let deleteTitle = NSLocalizedString("Delete", comment: "Delete action")
+        let deleteAction = UIContextualAction(style: .destructive, title: deleteTitle,
+                                              handler: { [weak self] action, view, completionHandler in
+                                                
+                                                let anObject = self?.tableDataSource.object(at: indexPath)
+                                                let objectID = anObject?.objectID
+                                                
+                                                persistentContainer.performBackgroundTask { (moc) in
+                                                    moc.name = CloudCore.config.pushContextName
+                                                    if let objectToDelete = try? moc.existingObject(with: objectID!) {
+                                                        moc.delete(objectToDelete)
+                                                        try? moc.save()
+                                                    }
+                                                }
+                                                
+                                                completionHandler(true)
+        })
+        
+        let configuration = UISwipeActionsConfiguration(actions: [deleteAction])
+        return configuration
+    }
+
 }
+
+fileprivate class MasterTableViewDataSource: FRCTableViewDataSource<Organization> {
+		
+}
+

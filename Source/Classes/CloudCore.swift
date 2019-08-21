@@ -30,7 +30,7 @@ import CloudKit
 	```
 
 	## Fetch from cloud
-	When CloudKit data is changed **push notification** is posted to an application. You need to handle it and fetch changed data from CloudKit with `CloudCore.fetchAndSave(using:to:error:completion:)` method.
+	When CloudKit data is changed **push notification** is posted to an application. You need to handle it and fetch changed data from CloudKit with `CloudCore.pull(using:to:error:completion:)` method.
 
 	### Example
 	```swift
@@ -38,21 +38,29 @@ import CloudKit
 		// Check if it CloudKit's and CloudCore notification
 		if CloudCore.isCloudCoreNotification(withUserInfo: userInfo) {
 			// Fetch changed data from iCloud
-			CloudCore.fetchAndSave(using: userInfo, to: persistentContainer, error: nil, completion: { (fetchResult) in
+			CloudCore.pull(using: userInfo, to: persistentContainer, error: nil, completion: { (fetchResult) in
 				completionHandler(fetchResult.uiBackgroundFetchResult)
 			})
 		}
 	}
 	```
 
-	You can also check for updated data at CloudKit **manually** (e.g. push notifications are not working). Use for that `CloudCore.fetchAndSave(to:error:completion:)`
+	You can also check for updated data at CloudKit **manually** (e.g. push notifications are not working). Use for that `CloudCore.pull(to:error:completion:)`
 */
 open class CloudCore {
 	
 	// MARK: - Properties
 	
-	private(set) static var coreDataListener: CoreDataListener?
-	
+	private(set) static var coreDataObserver: CoreDataObserver?
+    public static var isOnline: Bool {
+        get {
+            return coreDataObserver?.isOnline ?? false
+        }
+        set {
+            coreDataObserver?.isOnline = newValue
+        }
+    }
+    
 	/// CloudCore configuration, it's recommended to set up before calling any of CloudCore methods. You can read more at `CloudCoreConfig` struct description
 	public static var config = CloudCoreConfig()
 	
@@ -62,7 +70,7 @@ open class CloudCore {
 	/// Error and sync actions are reported to that delegate
 	public static weak var delegate: CloudCoreDelegate? {
 		didSet {
-			coreDataListener?.delegate = delegate
+			coreDataObserver?.delegate = delegate
 		}
 	}
 	
@@ -78,10 +86,10 @@ open class CloudCore {
 	///   - container: `NSPersistentContainer` that will be used to save data
 	public static func enable(persistentContainer container: NSPersistentContainer) {
 		// Listen for local changes
-		let listener = CoreDataListener(container: container)
-		listener.delegate = self.delegate
-		listener.observe()
-		self.coreDataListener = listener
+		let observer = CoreDataObserver(container: container)
+		observer.delegate = self.delegate
+		observer.start()
+		self.coreDataObserver = observer
 		
 		// Subscribe (subscription may be outdated/removed)
 		#if !os(watchOS)
@@ -91,9 +99,9 @@ open class CloudCore {
 		#endif
 		
 		// Fetch updated data (e.g. push notifications weren't received)
-        let updateFromCloudOperation = FetchAndSaveOperation(persistentContainer: container)
+        let updateFromCloudOperation = PullOperation(persistentContainer: container)
 		updateFromCloudOperation.errorBlock = {
-			self.delegate?.error(error: $0, module: .some(.fetchFromCloud))
+			self.delegate?.error(error: $0, module: .some(.pullFromCloud))
 		}
 		
 		#if !os(watchOS)
@@ -107,8 +115,8 @@ open class CloudCore {
 	public static func disable() {
 		queue.cancelAllOperations()
 
-		coreDataListener?.stopObserving()
-		coreDataListener = nil
+		coreDataObserver?.stop()
+		coreDataObserver = nil
 		
 		// FIXME: unsubscribe
 	}
@@ -117,30 +125,30 @@ open class CloudCore {
 	
 	/** Fetch changes from one CloudKit database and save it to CoreData from `didReceiveRemoteNotification` method.
 
-	Don't forget to check notification's UserInfo by calling `isCloudCoreNotification(withUserInfo:)`. If incorrect user info is provided `FetchResult.noData` will be returned at completion block.
+	Don't forget to check notification's UserInfo by calling `isCloudCoreNotification(withUserInfo:)`. If incorrect user info is provided `PullResult.noData` will be returned at completion block.
 
 	- Parameters:
 		- userInfo: notification's user info, CloudKit database will be extraced from that notification
 		- container: `NSPersistentContainer` that will be used to save fetched data
 		- error: block will be called every time when error occurs during process
-		- completion: `FetchResult` enumeration with results of operation
+		- completion: `PullResult` enumeration with results of operation
 	*/
-	public static func fetchAndSave(using userInfo: NotificationUserInfo, to container: NSPersistentContainer, error: ErrorBlock?, completion: @escaping (_ fetchResult: FetchResult) -> Void) {
-		guard let cloudDatabase = self.database(for: userInfo) else {
+	public static func pull(using userInfo: NotificationUserInfo, to container: NSPersistentContainer, error: ErrorBlock?, completion: @escaping (_ fetchResult: PullResult) -> Void) {
+		guard let notification = CKNotification(fromRemoteNotificationDictionary: userInfo), let cloudDatabase = self.database(for: notification) else {
 			completion(.noData)
 			return
 		}
-
+        
 		DispatchQueue.global(qos: .utility).async {
 			let errorProxy = ErrorBlockProxy(destination: error)
-			let operation = FetchAndSaveOperation(from: [cloudDatabase], persistentContainer: container)
+			let operation = PullOperation(from: [cloudDatabase], persistentContainer: container)
 			operation.errorBlock = { errorProxy.send(error: $0) }
 			operation.start()
 			
 			if errorProxy.wasError {
-				completion(FetchResult.failed)
+				completion(PullResult.failed)
 			} else {
-				completion(FetchResult.newData)
+				completion(PullResult.newData)
 			}
 		}
 	}
@@ -150,10 +158,10 @@ open class CloudCore {
 	- Parameters:
 		- container: `NSPersistentContainer` that will be used to save fetched data
 		- error: block will be called every time when error occurs during process
-		- completion: `FetchResult` enumeration with results of operation
+		- completion: `PullResult` enumeration with results of operation
 	*/
-	public static func fetchAndSave(to container: NSPersistentContainer, error: ErrorBlock?, completion: (() -> Void)?) {
-        let operation = FetchAndSaveOperation(persistentContainer: container)
+	public static func pull(to container: NSPersistentContainer, error: ErrorBlock?, completion: (() -> Void)?) {
+        let operation = PullOperation(persistentContainer: container)
 		operation.errorBlock = error
 		operation.completionBlock = completion
 
@@ -166,13 +174,12 @@ open class CloudCore {
 	 - Returns: `true` if notification contains CloudCore data
 	*/
 	public static func isCloudCoreNotification(withUserInfo userInfo: NotificationUserInfo) -> Bool {
-		return (database(for: userInfo) != nil)
+        guard let notification = CKNotification(fromRemoteNotificationDictionary: userInfo) else { return false }
+        
+		return (database(for: notification) != nil)
 	}
 	
-	static func database(for notificationUserInfo: NotificationUserInfo) -> CKDatabase? {
-		guard let notificationDictionary = notificationUserInfo as? [String: NSObject] else { return nil }
-		let notification = CKNotification(fromRemoteNotificationDictionary: notificationDictionary)
-		
+	static func database(for notification: CKNotification) -> CKDatabase? {
 		guard let id = notification.subscriptionID else { return nil }
 		
 		switch id {
@@ -196,7 +203,7 @@ open class CloudCore {
 			if case .zoneNotFound = subError.code {
 				// Zone wasn't found, we need to create it
 				self.queue.cancelAllOperations()
-				let setupOperation = SetupOperation(container: container, parentContext: nil)
+                let setupOperation = SetupOperation(container: container, uploadAllData: !(coreDataObserver?.usePersistentHistoryForPush)!)
 				self.queue.addOperation(setupOperation)
 				
 				return

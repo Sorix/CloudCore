@@ -64,7 +64,7 @@ class RecordToCoreDataOperationTests: CoreDataTestCase {
 		context.performAndWait {
 			// Check operation results
 			let fetchRequest: NSFetchRequest<TestEntity> = TestEntity.fetchRequest()
-			fetchRequest.predicate = NSPredicate(format: "recordID = %@", record.recordID.encodedString)
+			fetchRequest.predicate = NSPredicate(format: "recordName = %@", record.recordID.recordName)
 			do {
 				guard let managedObject = try context.fetch(fetchRequest).first else {
 					XCTFail("Couldn't find converted object")

@@ -9,7 +9,7 @@
 import XCTest
 
 func XCTAssertThrowsSpecific<T>(_ expression: @autoclosure () throws -> T, _ error: Error) {
-	XCTAssertThrowsError(expression) { (throwedError) in
+	XCTAssertThrowsError(try expression()) { (throwedError) in
 		XCTAssertEqual("\(throwedError)", "\(error)", "XCTAssertThrowsSpecific: errors are not equal")
 	}
 }

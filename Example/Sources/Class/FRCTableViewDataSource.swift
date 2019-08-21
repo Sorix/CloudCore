@@ -71,7 +71,9 @@ class FRCTableViewDataSource<FetchRequestResult: NSFetchRequestResult>: NSObject
 		case .delete: tableView?.deleteSections(sectionIndexSet, with: .automatic)
 		case .update: tableView?.reloadSections(sectionIndexSet, with: .automatic)
 		case .move: break
-		}
+        @unknown default:
+            break
+        }
 	}
 	
 	func controller(_ controller: NSFetchedResultsController<NSFetchRequestResult>, didChange anObject: Any, at indexPath: IndexPath?, for type: NSFetchedResultsChangeType, newIndexPath: IndexPath?) {
@@ -88,14 +90,15 @@ class FRCTableViewDataSource<FetchRequestResult: NSFetchRequestResult>: NSObject
 		case .move:
 			guard let indexPath = indexPath, let newIndexPath = newIndexPath else { return }
 			tableView?.moveRow(at: indexPath, to: newIndexPath)
-		}
+        @unknown default:
+            break
+        }
 	}
 	
 	func controllerDidChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
 		tableView?.endUpdates()
 	}
 	
-	func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCellEditingStyle, forRowAt indexPath: IndexPath) {}
 	func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? { return nil }
 
 }

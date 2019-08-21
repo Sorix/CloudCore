@@ -14,6 +14,7 @@ class ObjectToRecordOperation: Operation {
 	var parentContext: NSManagedObjectContext?
 	
 	// Set on init
+    let scope: CKDatabase.Scope
 	let record: CKRecord
 	private let changedAttributes: [String]?
 	private let serviceAttributeNames: ServiceAttributeNames
@@ -22,8 +23,9 @@ class ObjectToRecordOperation: Operation {
 	var errorCompletionBlock: ((Error) -> Void)?
 	var conversionCompletionBlock: ((CKRecord) -> Void)?
 	
-	init(record: CKRecord, changedAttributes: [String]?, serviceAttributeNames: ServiceAttributeNames) {
-		self.record = record
+    init(scope: CKDatabase.Scope, record: CKRecord, changedAttributes: [String]?, serviceAttributeNames: ServiceAttributeNames) {
+		self.scope = scope
+        self.record = record
 		self.changedAttributes = changedAttributes
 		self.serviceAttributeNames = serviceAttributeNames
 		
@@ -40,15 +42,17 @@ class ObjectToRecordOperation: Operation {
 		}
 		
 		let childContext = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
-		childContext.parent = parentContext
-		
-		do {
-			try self.fillRecordWithData(using: childContext)
-			try childContext.save()
-			self.conversionCompletionBlock?(self.record)
-		} catch {
-			self.errorCompletionBlock?(error)
-		}
+        childContext.performAndWait {
+            childContext.parent = parentContext
+            
+            do {
+                try self.fillRecordWithData(using: childContext)
+                try childContext.save()
+                self.conversionCompletionBlock?(self.record)
+            } catch {
+                self.errorCompletionBlock?(error)
+            }
+        }
 	}
 	
 	private func fillRecordWithData(using context: NSManagedObjectContext) throws {
@@ -59,14 +63,22 @@ class ObjectToRecordOperation: Operation {
 		let changedValues = managedObject.committedValues(forKeys: changedAttributes)
 		
 		for (attributeName, value) in changedValues {
-			if attributeName == serviceAttributeNames.recordData || attributeName == serviceAttributeNames.recordID { continue }
+			if serviceAttributeNames.contains(attributeName) { continue }
 			
 			if let attribute = CoreDataAttribute(value: value, attributeName: attributeName, entity: managedObject.entity) {
 				let recordValue = try attribute.makeRecordValue()
 				record.setValue(recordValue, forKey: attributeName)
-			} else if let relationship = CoreDataRelationship(value: value, relationshipName: attributeName, entity: managedObject.entity) {
+            } else if let relationship = CoreDataRelationship(scope: scope, value: value, relationshipName: attributeName, entity: managedObject.entity) {
 				let references = try relationship.makeRecordValue()
 				record.setValue(references, forKey: attributeName)
+                
+                if let parentRef = references as? CKRecord.Reference,
+                    parentRef.recordID.zoneID.ownerName == managedObject.sharingOwnerName,
+                    let parentAttributeName = managedObject.parentAttributeName,
+                    parentAttributeName == attributeName
+                {
+                    record.setParent(parentRef.recordID)
+                }
 			}
 		}
 	}
@@ -75,7 +87,7 @@ class ObjectToRecordOperation: Operation {
 		let entityName = record.recordType
 		
 		let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: entityName)
-		fetchRequest.predicate = NSPredicate(format: serviceAttributeNames.recordID + " == %@", record.recordID.encodedString)
+		fetchRequest.predicate = NSPredicate(format: serviceAttributeNames.recordName + " == %@", record.recordID.recordName)
 		
 		return try context.fetch(fetchRequest).first as? NSManagedObject
 	}

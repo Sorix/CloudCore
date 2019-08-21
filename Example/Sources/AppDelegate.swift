@@ -9,6 +9,7 @@
 import UIKit
 import CoreData
 import CloudCore
+import Reachability
 
 let persistentContainer = (UIApplication.shared.delegate as! AppDelegate).persistentContainer
 
@@ -16,8 +17,10 @@ let persistentContainer = (UIApplication.shared.delegate as! AppDelegate).persis
 class AppDelegate: UIResponder, UIApplicationDelegate, UISplitViewControllerDelegate {
 	
 	let delegateHandler = CloudCoreDelegateHandler()
-
-	func application(_ application: UIApplication, willFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey : Any]? = nil) -> Bool {
+    
+    var reachability: Reachability?
+    
+	func application(_ application: UIApplication, willFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
 		// Register for push notifications about changes
 		application.registerForRemoteNotifications()
 		
@@ -25,32 +28,41 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UISplitViewControllerDele
 		CloudCore.delegate = delegateHandler
 		CloudCore.enable(persistentContainer: persistentContainer)
 		
+        NotificationCenter.default.addObserver(self,
+                                               selector: #selector(reachabilityChanged(notification:)),
+                                               name: .reachabilityChanged,
+                                               object: reachability)
+        
+        reachability = Reachability(hostname: "icloud.com")
+        try? reachability?.startNotifier()
+        
 		return true
 	}
 	
+    @objc private func reachabilityChanged(notification: Notification) {
+        let reachability = notification.object as! Reachability
+        
+        CloudCore.isOnline = reachability.connection != .none
+    }
+    
 	// Notification from CloudKit about changes in remote database
 	func application(_ application: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable : Any], fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {
 		// Check if it CloudKit's and CloudCore notification
 		if CloudCore.isCloudCoreNotification(withUserInfo: userInfo) {
 			// Fetch changed data from iCloud
-			CloudCore.fetchAndSave(using: userInfo, to: persistentContainer, error: {
+			CloudCore.pull(using: userInfo, to: persistentContainer, error: {
 				print("fetchAndSave from didReceiveRemoteNotification error: \($0)")
 			}, completion: { (fetchResult) in
 				completionHandler(fetchResult.uiBackgroundFetchResult)
 			})
 		}
 	}
-	
-	func applicationWillTerminate(_ application: UIApplication) {
-		// Save tokens on exit used to differential sync
-		CloudCore.tokens.saveToUserDefaults()
-	}
-	
+		
 	// MARK: - Default Apple initialization, you can skip that
 	
 	var window: UIWindow?
 
-	func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
+	func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
 		return true
 	}
 	
@@ -64,6 +76,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UISplitViewControllerDele
 	     error conditions that could cause the creation of the store to fail.
 	    */
 	    let container = NSPersistentContainer(name: "Model")
+        
+        if #available(iOS 11.0, *) {
+            let storeDescription = container.persistentStoreDescriptions.first
+            storeDescription?.setOption(true as NSNumber, forKey:NSPersistentHistoryTrackingKey)
+        }
+        
 	    container.loadPersistentStores(completionHandler: { (storeDescription, error) in
 	        if let error = error as NSError? {
 	            // Replace this implementation with code to handle the error appropriately.
@@ -81,6 +99,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UISplitViewControllerDele
 	        }
 	    })
 		container.viewContext.automaticallyMergesChangesFromParent = true
+                
 	    return container
 	}()
 
