@@ -2,7 +2,7 @@
 
 ![Platform](https://img.shields.io/cocoapods/p/CloudCore.svg?style=flat)
 ![Status](https://img.shields.io/badge/status-beta-orange.svg)
-![Swift](https://img.shields.io/badge/swift-4.2-orange.svg)
+![Swift](https://img.shields.io/badge/swift-5.0-orange.svg)
 
 **CloudCore** is a framework that manages syncing between iCloud (CloudKit) and Core Data written on native Swift.
 
