@@ -19,7 +19,7 @@ class FetchRecordZoneChangesOperation: Operation {
 	var recordChangedBlock: ((CKRecord) -> Void)?
 	var recordWithIDWasDeletedBlock: ((CKRecord.ID) -> Void)?
 	
-    private let optionsByRecordZoneID: [CKRecordZone.ID: CKFetchRecordZoneChangesOperation.ZoneOptions]
+    private let optionsByRecordZoneID: [CKRecordZone.ID: CKFetchRecordZoneChangesOperation.ZoneConfiguration]
 	private let fetchQueue = OperationQueue()
 	
 	init(from database: CKDatabase, recordZoneIDs: [CKRecordZone.ID], tokens: Tokens) {
@@ -27,9 +27,9 @@ class FetchRecordZoneChangesOperation: Operation {
 		self.database = database
 		self.recordZoneIDs = recordZoneIDs
 		
-        var optionsByRecordZoneID = [CKRecordZone.ID: CKFetchRecordZoneChangesOperation.ZoneOptions]()
+        var optionsByRecordZoneID = [CKRecordZone.ID: CKFetchRecordZoneChangesOperation.ZoneConfiguration]()
 		for zoneID in recordZoneIDs {
-            let options = CKFetchRecordZoneChangesOperation.ZoneOptions()
+            let options = CKFetchRecordZoneChangesOperation.ZoneConfiguration()
 			options.previousServerChangeToken = self.tokens.tokensByRecordZoneID[zoneID]
 			optionsByRecordZoneID[zoneID] = options
 		}
@@ -49,9 +49,9 @@ class FetchRecordZoneChangesOperation: Operation {
 		fetchQueue.waitUntilAllOperationsAreFinished()
 	}
 	
-    private func makeFetchOperation(optionsByRecordZoneID: [CKRecordZone.ID: CKFetchRecordZoneChangesOperation.ZoneOptions]) -> CKFetchRecordZoneChangesOperation {
+    private func makeFetchOperation(optionsByRecordZoneID: [CKRecordZone.ID: CKFetchRecordZoneChangesOperation.ZoneConfiguration]) -> CKFetchRecordZoneChangesOperation {
 		// Init Fetch Operation
-		let fetchOperation = CKFetchRecordZoneChangesOperation(recordZoneIDs: recordZoneIDs, optionsByRecordZoneID: optionsByRecordZoneID)
+		let fetchOperation = CKFetchRecordZoneChangesOperation(recordZoneIDs: recordZoneIDs, configurationsByRecordZoneID: optionsByRecordZoneID)
 		        
 		fetchOperation.recordChangedBlock = {
 			self.recordChangedBlock?($0)
