@@ -39,7 +39,7 @@ open class Tokens: NSObject, NSCoding {
 	/// - Returns: previously saved `Token` object, if tokens weren't saved before newly initialized `Tokens` object will be returned
 	public static func loadFromUserDefaults() -> Tokens {
 		guard let tokensData = UserDefaults.standard.data(forKey: CloudCore.config.userDefaultsKeyTokens),
-			let tokens = NSKeyedUnarchiver.unarchiveObject(with: tokensData) as? Tokens else {
+            let tokens = try? NSKeyedUnarchiver.unarchivedObject(ofClasses: [Tokens.classForKeyedUnarchiver()], from: tokensData) as? Tokens else {
 				return Tokens()
 		}
 		
@@ -48,9 +48,10 @@ open class Tokens: NSObject, NSCoding {
 	
 	/// Save tokens to UserDefaults and synchronize. Key is used from `CloudCoreConfig.userDefaultsKeyTokens`
 	open func saveToUserDefaults() {
-		let tokensData = NSKeyedArchiver.archivedData(withRootObject: self)
-		UserDefaults.standard.set(tokensData, forKey: CloudCore.config.userDefaultsKeyTokens)
-		UserDefaults.standard.synchronize()
+        if let tokensData = try? NSKeyedArchiver.archivedData(withRootObject: self, requiringSecureCoding: false) {
+            UserDefaults.standard.set(tokensData, forKey: CloudCore.config.userDefaultsKeyTokens)
+            UserDefaults.standard.synchronize()
+        }
 	}
 	
 	// MARK: NSCoding

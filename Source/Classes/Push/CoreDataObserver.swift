@@ -225,7 +225,7 @@ class CoreDataObserver {
                 let settings = UserDefaults.standard
                 var token: NSPersistentHistoryToken? = nil
                 if let data = settings.object(forKey: key) as? Data {
-                     token = NSKeyedUnarchiver.unarchiveObject(with: data) as? NSPersistentHistoryToken
+                    token = try? NSKeyedUnarchiver.unarchivedObject(ofClasses: [NSPersistentHistoryToken.classForKeyedUnarchiver()], from: data) as? NSPersistentHistoryToken
                 }
                 let historyRequest = NSPersistentHistoryChangeRequest.fetchHistory(after: token)
                 do {
@@ -237,8 +237,9 @@ class CoreDataObserver {
                                 let deleteRequest = NSPersistentHistoryChangeRequest.deleteHistory(before: transaction)
                                 try moc.execute(deleteRequest)
                                 
-                                let data = NSKeyedArchiver.archivedData(withRootObject: transaction.token)
-                                settings.set(data, forKey: key)
+                                if let data = try? NSKeyedArchiver.archivedData(withRootObject: transaction.token, requiringSecureCoding: false) {
+                                    settings.set(data, forKey: key)
+                                }
                             } else {
                                 break
                             }

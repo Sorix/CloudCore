@@ -89,7 +89,7 @@ public class RecordToCoreDataOperation: AsynchronousOperation {
                 if let name = cdAttribute.valueTransformerName, let transformer = ValueTransformer(forName: NSValueTransformerName(rawValue: name)) {
                     let value = transformer.transformedValue(coreDataValue)
                     object.setValue(value, forKey: key)
-                } else if let unarchivedObject = NSKeyedUnarchiver.unarchiveObject(with: data) {
+                } else if let unarchivedObject = try? NSKeyedUnarchiver.unarchivedObject(ofClasses: [NSObject.classForKeyedUnarchiver()], from: data) {
                     object.setValue(unarchivedObject, forKey: key)
                 } else {
                     object.setValue(coreDataValue, forKey: key)
