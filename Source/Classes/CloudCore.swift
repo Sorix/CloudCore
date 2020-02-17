@@ -92,11 +92,9 @@ open class CloudCore {
 		self.coreDataObserver = observer
 		
 		// Subscribe (subscription may be outdated/removed)
-		#if !os(watchOS)
 		let subscribeOperation = SubscribeOperation()
 		subscribeOperation.errorBlock = { handle(subscriptionError: $0, container: container) }
 		queue.addOperation(subscribeOperation)
-		#endif
 		
 		// Fetch updated data (e.g. push notifications weren't received)
         let updateFromCloudOperation = PullOperation(persistentContainer: container)
@@ -104,9 +102,7 @@ open class CloudCore {
 			self.delegate?.error(error: $0, module: .some(.pullFromCloud))
 		}
 		
-		#if !os(watchOS)
 		updateFromCloudOperation.addDependency(subscribeOperation)
-		#endif
 			
 		queue.addOperation(updateFromCloudOperation)
 	}

@@ -277,12 +277,10 @@ class CoreDataObserver {
 			}
 			
 			// Subscribe operation
-			#if !os(watchOS)
-				let subscribeOperation = SubscribeOperation()
-				subscribeOperation.errorBlock = { self.delegate?.error(error: $0, module: .some(.pushToCloud)) }
-				subscribeOperation.addDependency(createZoneOperation)
-				pushOperationQueue.addOperation(subscribeOperation)
-			#endif
+            let subscribeOperation = SubscribeOperation()
+            subscribeOperation.errorBlock = { self.delegate?.error(error: $0, module: .some(.pushToCloud)) }
+            subscribeOperation.addDependency(createZoneOperation)
+            pushOperationQueue.addOperation(subscribeOperation)
 			
 			// Upload all local data
 			let uploadOperation = PushAllLocalDataOperation(parentContext: parentContext, managedObjectModel: container.managedObjectModel)

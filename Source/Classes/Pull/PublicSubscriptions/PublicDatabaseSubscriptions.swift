@@ -10,7 +10,6 @@ import CloudKit
 
 // Use that class to manage subscriptions to public CloudKit database.
 // If you want to sync some records with public database you need to subsrcibe for notifications on that changes to enable iCloud -> Local database syncing.
-#if !os(watchOS)
 public class PublicDatabaseSubscriptions {
     
     private static var prefix: String { return CloudCore.config.publicSubscriptionIDPrefix }
@@ -100,4 +99,3 @@ public class PublicDatabaseSubscriptions {
     }
     
 }
-#endif
