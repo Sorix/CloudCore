@@ -82,23 +82,23 @@ public class RecordToCoreDataOperation: AsynchronousOperation {
 			let recordValue = record.value(forKey: key)
 			
 			let ckAttribute = CloudKitAttribute(value: recordValue, fieldName: key, entityName: entityName, serviceAttributes: serviceAttributeNames, context: context)
-			let coreDataValue = try ckAttribute.makeCoreDataValue()
-            
-            if let cdAttribute = object.entity.attributesByName[key], cdAttribute.attributeType == .transformableAttributeType,
-                let data = coreDataValue as? Data {
-                if let name = cdAttribute.valueTransformerName, let transformer = ValueTransformer(forName: NSValueTransformerName(rawValue: name)) {
-                    let value = transformer.transformedValue(coreDataValue)
-                    object.setValue(value, forKey: key)
-                } else if let unarchivedObject = try? NSKeyedUnarchiver.unarchivedObject(ofClasses: [NSObject.classForKeyedUnarchiver()], from: data) {
-                    object.setValue(unarchivedObject, forKey: key)
+            if let coreDataValue = try? ckAttribute.makeCoreDataValue() {
+                if let cdAttribute = object.entity.attributesByName[key], cdAttribute.attributeType == .transformableAttributeType,
+                    let data = coreDataValue as? Data {
+                    if let name = cdAttribute.valueTransformerName, let transformer = ValueTransformer(forName: NSValueTransformerName(rawValue: name)) {
+                        let value = transformer.transformedValue(coreDataValue)
+                        object.setValue(value, forKey: key)
+                    } else if let unarchivedObject = try? NSKeyedUnarchiver.unarchivedObject(ofClasses: [NSObject.classForKeyedUnarchiver()], from: data) {
+                        object.setValue(unarchivedObject, forKey: key)
+                    } else {
+                        object.setValue(coreDataValue, forKey: key)
+                    }
                 } else {
-                    object.setValue(coreDataValue, forKey: key)
+                    if object.entity.attributesByName[key] != nil || object.entity.relationshipsByName[key] != nil {
+                        object.setValue(coreDataValue, forKey: key)
+                    }
+                    missingObjectsPerEntities[object] = ckAttribute.notFoundRecordNamesForAttribute
                 }
-            } else {
-                if object.entity.attributesByName[key] != nil || object.entity.relationshipsByName[key] != nil {
-                    object.setValue(coreDataValue, forKey: key)
-                }
-                missingObjectsPerEntities[object] = ckAttribute.notFoundRecordNamesForAttribute
             }
 		}
 		
