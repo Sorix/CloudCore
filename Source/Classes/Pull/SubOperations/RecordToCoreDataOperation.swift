@@ -105,7 +105,7 @@ public class RecordToCoreDataOperation: AsynchronousOperation {
 		// Set system headers
         object.setValue(record.recordID.recordName, forKey: serviceAttributeNames.recordName)
         object.setValue(record.recordID.zoneID.ownerName, forKey: serviceAttributeNames.ownerName)
-        if record.recordID.zoneID == CKRecordZone.default().zoneID {
+        if record.recordID.zoneID.zoneName == CKRecordZone.default().zoneID.zoneName {
             object.setValue(record.encdodedSystemFields, forKey: serviceAttributeNames.publicRecordData)
         } else {
             object.setValue(record.encdodedSystemFields, forKey: serviceAttributeNames.privateRecordData)
