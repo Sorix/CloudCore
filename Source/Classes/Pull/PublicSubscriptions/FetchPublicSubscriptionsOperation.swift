@@ -19,7 +19,7 @@ class FetchPublicSubscriptionsOperation: AsynchronousOperation {
     override func main() {
         super.main()
         
-        CKContainer.default().publicCloudDatabase.fetchAllSubscriptions { (subscriptions, error) in
+        CloudCore.config.container.publicCloudDatabase.fetchAllSubscriptions { (subscriptions, error) in
             defer {
                 self.state = .finished
             }

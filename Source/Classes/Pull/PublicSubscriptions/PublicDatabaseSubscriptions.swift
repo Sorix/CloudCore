@@ -46,7 +46,7 @@ public class PublicDatabaseSubscriptions {
         config.timeoutIntervalForResource = 20
         operation.configuration = config
         
-        CKContainer.default().publicCloudDatabase.add(operation)
+        CloudCore.config.container.publicCloudDatabase.add(operation)
     }
     
     // Unsubscribe from public database
@@ -69,7 +69,7 @@ public class PublicDatabaseSubscriptions {
         config.timeoutIntervalForResource = 20
         operation.configuration = config
         
-        CKContainer.default().publicCloudDatabase.add(operation)
+        CloudCore.config.container.publicCloudDatabase.add(operation)
     }
     
     
