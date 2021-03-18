@@ -93,18 +93,20 @@ open class CloudCore {
 		
 		// Subscribe (subscription may be outdated/removed)
 		let subscribeOperation = SubscribeOperation()
-		subscribeOperation.errorBlock = { handle(subscriptionError: $0, container: container) }
-		queue.addOperation(subscribeOperation)
+		subscribeOperation.errorBlock = {
+            handle(subscriptionError: $0, container: container)
+        }
 		
 		// Fetch updated data (e.g. push notifications weren't received)
-        let updateFromCloudOperation = PullOperation(persistentContainer: container)
-		updateFromCloudOperation.errorBlock = {
+        let pullOperation = PullOperation(persistentContainer: container)
+		pullOperation.errorBlock = {
 			self.delegate?.error(error: $0, module: .some(.pullFromCloud))
 		}
 		
-		updateFromCloudOperation.addDependency(subscribeOperation)
-			
-		queue.addOperation(updateFromCloudOperation)
+		pullOperation.addDependency(subscribeOperation)
+        
+        queue.addOperation(subscribeOperation)
+        queue.addOperation(pullOperation)
 	}
 	
 	/// Disables synchronization (push notifications won't be sent also)

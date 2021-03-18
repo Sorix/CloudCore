@@ -27,6 +27,11 @@ class PushAllLocalDataOperation: Operation {
 	init(parentContext: NSManagedObjectContext, managedObjectModel: NSManagedObjectModel) {
 		self.parentContext = parentContext
 		self.managedObjectModel = managedObjectModel
+        
+        super.init()
+        
+        name = "PushAllLocalDataOperation"
+        qualityOfService = .userInteractive
 	}
 	
 	override func main() {

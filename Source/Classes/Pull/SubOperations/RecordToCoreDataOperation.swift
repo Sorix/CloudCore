@@ -29,7 +29,8 @@ public class RecordToCoreDataOperation: AsynchronousOperation {
 		
 		super.init()
 		
-		self.name = "RecordToCoreDataOperation"
+        name = "RecordToCoreDataOperation"
+        qualityOfService = .userInteractive
 	}
 	
     override public func main() {

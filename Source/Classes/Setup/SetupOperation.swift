@@ -28,6 +28,11 @@ class SetupOperation: Operation {
     init(container: NSPersistentContainer, uploadAllData: Bool) {
 		self.container = container
         self.uploadAllData = uploadAllData
+        
+        super.init()
+        
+        name = "SetupOperation"
+        qualityOfService = .userInteractive
 	}
 	
 	private let queue = OperationQueue()

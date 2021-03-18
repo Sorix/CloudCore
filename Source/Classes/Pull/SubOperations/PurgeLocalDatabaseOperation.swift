@@ -19,6 +19,9 @@ class PurgeLocalDatabaseOperation: Operation {
 		self.managedObjectModel = managedObjectModel
 		
 		super.init()
+        
+        name = "PurgeLocalDatabaseOperation"
+        qualityOfService = .userInteractive
 	}
 	
 	override func main() {

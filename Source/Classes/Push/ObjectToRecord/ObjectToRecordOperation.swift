@@ -30,7 +30,9 @@ class ObjectToRecordOperation: Operation {
 		self.serviceAttributeNames = serviceAttributeNames
 		
 		super.init()
-		self.name = "ObjectToRecordOperation"
+		
+        name = "ObjectToRecordOperation"
+        qualityOfService = .userInteractive
 	}
 	
 	override func main() {

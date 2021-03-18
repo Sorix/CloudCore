@@ -20,7 +20,8 @@ class DeleteFromCoreDataOperation: Operation {
 		
 		super.init()
 		
-		self.name = "DeleteFromCoreDataOperation"
+        name = "DeleteFromCoreDataOperation"
+        qualityOfService = .userInteractive
 	}
 	
 	override func main() {

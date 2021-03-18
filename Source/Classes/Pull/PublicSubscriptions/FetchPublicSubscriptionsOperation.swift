@@ -16,6 +16,13 @@ class FetchPublicSubscriptionsOperation: AsynchronousOperation {
     
     private let prefix = CloudCore.config.publicSubscriptionIDPrefix
     
+    public override init() {
+        super.init()
+        
+        name = "FetchPublicSubscriptionsOperation"
+        qualityOfService = .userInteractive
+    }
+    
     override func main() {
         super.main()
         

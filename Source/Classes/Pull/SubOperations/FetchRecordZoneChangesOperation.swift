@@ -37,29 +37,33 @@ class FetchRecordZoneChangesOperation: Operation {
 		
 		super.init()
 		
-		self.name = "FetchRecordZoneChangesOperation"
+        name = "FetchRecordZoneChangesOperation"
+        qualityOfService = .userInteractive
 	}
 	
 	override func main() {
 		super.main()
 
 		let fetchOperation = self.makeFetchOperation(optionsByRecordZoneID: optionsByRecordZoneID)
-		fetchQueue.addOperation(fetchOperation)
+        let finish = BlockOperation { }
+        finish.addDependency(fetchOperation)
+        database.add(fetchOperation)
+		fetchQueue.addOperation(finish)
 		
 		fetchQueue.waitUntilAllOperationsAreFinished()
 	}
 	
     private func makeFetchOperation(optionsByRecordZoneID: [CKRecordZone.ID: CKFetchRecordZoneChangesOperation.ZoneConfiguration]) -> CKFetchRecordZoneChangesOperation {
 		// Init Fetch Operation
-		let fetchOperation = CKFetchRecordZoneChangesOperation(recordZoneIDs: recordZoneIDs, configurationsByRecordZoneID: optionsByRecordZoneID)
-		        
-		fetchOperation.recordChangedBlock = {
+		let fetchRecordZoneChanges = CKFetchRecordZoneChangesOperation(recordZoneIDs: recordZoneIDs, configurationsByRecordZoneID: optionsByRecordZoneID)
+        
+		fetchRecordZoneChanges.recordChangedBlock = {
 			self.recordChangedBlock?($0)
 		}
-		fetchOperation.recordWithIDWasDeletedBlock = { recordID, _ in
+		fetchRecordZoneChanges.recordWithIDWasDeletedBlock = { recordID, _ in
 			self.recordWithIDWasDeletedBlock?(recordID)
 		}
-		fetchOperation.recordZoneFetchCompletionBlock = { zoneId, serverChangeToken, clientChangeTokenData, isMore, error in
+		fetchRecordZoneChanges.recordZoneFetchCompletionBlock = { zoneId, serverChangeToken, clientChangeTokenData, isMore, error in
 			self.tokens.tokensByRecordZoneID[zoneId] = serverChangeToken
 			
 			if let error = error {
@@ -68,13 +72,16 @@ class FetchRecordZoneChangesOperation: Operation {
 			
 			if isMore {
 				let moreOperation = self.makeFetchOperation(optionsByRecordZoneID: optionsByRecordZoneID)
-				self.fetchQueue.addOperation(moreOperation)
+                let finish = BlockOperation { }
+                finish.addDependency(moreOperation)
+                self.database.add(moreOperation)
+				self.fetchQueue.addOperation(finish)
 			}
 		}
 		
-		fetchOperation.qualityOfService = self.qualityOfService
-		fetchOperation.database = self.database
-		
-		return fetchOperation
+        fetchRecordZoneChanges.database = self.database
+        fetchRecordZoneChanges.qualityOfService = .userInteractive
+
+		return fetchRecordZoneChanges
 	}
 }

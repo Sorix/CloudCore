@@ -42,15 +42,20 @@ public class PullOperation: Operation {
 		self.databases = databases
 		self.persistentContainer = persistentContainer
         self.tokens = tokens
-
-		queue.name = "PullQueue"
+        
+        super.init()
+        
+        name = "PullOperation"
+        qualityOfService = .userInteractive
+        
+        queue.name = "PullQueue"
         queue.maxConcurrentOperationCount = 1
 	}
 	
 	/// Performs the receiver’s non-concurrent task.
 	override public func main() {
 		if self.isCancelled { return }
-
+        
 		CloudCore.delegate?.willSyncFromCloud()
 		
 		let backgroundContext = persistentContainer.newBackgroundContext()
@@ -61,8 +66,9 @@ public class PullOperation: Operation {
                 let changedRecordIDs: NSMutableSet = []
                 let deletedRecordIDs: NSMutableSet = []
                 let previousToken = self.tokens.tokensByDatabaseScope[database.databaseScope.rawValue]
-                let notesOp = CKFetchNotificationChangesOperation(previousServerChangeToken: previousToken)
-                notesOp.notificationChangedBlock = { (innerNotification) in
+                let fetchNotificationChanges = CKFetchNotificationChangesOperation(previousServerChangeToken: previousToken)
+                fetchNotificationChanges.qualityOfService = .userInteractive
+                fetchNotificationChanges.notificationChangedBlock = { (innerNotification) in
                     if let innerQueryNotification = innerNotification as? CKQueryNotification {
                         if innerQueryNotification.queryNotificationReason == .recordDeleted {
                             deletedRecordIDs.add(innerQueryNotification.recordID!)
@@ -72,19 +78,23 @@ public class PullOperation: Operation {
                         }
                     }
                 }
-                notesOp.fetchNotificationChangesCompletionBlock = { (changeToken, error) in
+                fetchNotificationChanges.fetchNotificationChangesCompletionBlock = { (changeToken, error) in
                     let allChangedRecordIDs = changedRecordIDs.allObjects as! [CKRecord.ID]
-                    let fetch = CKFetchRecordsOperation(recordIDs: allChangedRecordIDs)
-                    fetch.database = CloudCore.config.container.publicCloudDatabase
-                    fetch.perRecordCompletionBlock = { (record, recordID, error) in
+                    let fetchRecords = CKFetchRecordsOperation(recordIDs: allChangedRecordIDs)
+                    fetchRecords.database = CloudCore.config.container.publicCloudDatabase
+                    fetchRecords.qualityOfService = .userInteractive
+                    fetchRecords.perRecordCompletionBlock = { (record, recordID, error) in
                         if error == nil {
                             self.addConvertRecordOperation(record: record!, context: backgroundContext)
                         }
                     }
-                    fetch.fetchRecordsCompletionBlock = { (_, error) in
+                    fetchRecords.fetchRecordsCompletionBlock = { (_, error) in
                         self.processMissingReferences(context: backgroundContext)
                     }
-                    self.queue.addOperation(fetch)
+                    let finished = BlockOperation { }
+                    finished.addDependency(fetchRecords)
+                    database.add(fetchRecords)
+                    self.queue.addOperation(finished)
                     
                     let allDeletedRecordIDs = deletedRecordIDs.allObjects as! [CKRecord.ID]
                     for recordID in allDeletedRecordIDs {
@@ -93,21 +103,25 @@ public class PullOperation: Operation {
                     
                     self.tokens.tokensByDatabaseScope[database.databaseScope.rawValue] = changeToken
                 }
-                self.queue.addOperation(notesOp)
+                let finished = BlockOperation { }
+                finished.addDependency(fetchNotificationChanges)
+                CloudCore.config.container.add(fetchNotificationChanges)
+                self.queue.addOperation(finished)
             } else {
                 var changedZoneIDs = [CKRecordZone.ID]()
                 var deletedZoneIDs = [CKRecordZone.ID]()
                 
                 let databaseChangeToken = tokens.tokensByDatabaseScope[database.databaseScope.rawValue]
-                let databaseChangeOp = CKFetchDatabaseChangesOperation(previousServerChangeToken: databaseChangeToken)
-                databaseChangeOp.database = database
-                databaseChangeOp.recordZoneWithIDChangedBlock = { (recordZoneID) in
+                let fetchDatabaseChanges = CKFetchDatabaseChangesOperation(previousServerChangeToken: databaseChangeToken)
+                fetchDatabaseChanges.database = database
+                fetchDatabaseChanges.qualityOfService = .userInteractive
+                fetchDatabaseChanges.recordZoneWithIDChangedBlock = { (recordZoneID) in
                     changedZoneIDs.append(recordZoneID)
                 }
-                databaseChangeOp.recordZoneWithIDWasDeletedBlock = { (recordZoneID) in
+                fetchDatabaseChanges.recordZoneWithIDWasDeletedBlock = { (recordZoneID) in
                     deletedZoneIDs.append(recordZoneID)
                 }
-                databaseChangeOp.fetchDatabaseChangesCompletionBlock = { (changeToken, moreComing, error) in
+                fetchDatabaseChanges.fetchDatabaseChangesCompletionBlock = { (changeToken, moreComing, error) in
                     // TODO: error handling?
                     
                     if changedZoneIDs.count > 0 {
@@ -119,12 +133,25 @@ public class PullOperation: Operation {
                     
                     self.tokens.tokensByDatabaseScope[database.databaseScope.rawValue] = changeToken
                 }
-                self.queue.addOperation(databaseChangeOp)
+                /*
+                 To improve performance overall, and on watchOS in particular
+                 make sure to queue up CK operations on the proper queue
+                 whether its for the container in general or a specific database.
+                 
+                 To maintain the overall logic of CloudCore, we shadow these ops
+                 in our own queues, using no-op block ops with dependencies.
+                 
+                 You will see this pattern elsewhere in CloudCore when appropriate.
+                 */
+                let finished = BlockOperation { }
+                finished.addDependency(fetchDatabaseChanges)
+                database.add(fetchDatabaseChanges)
+                self.queue.addOperation(finished)
             }
         }
         
 		self.queue.waitUntilAllOperationsAreFinished()
-
+        
 		do {
 			try backgroundContext.save()
 		} catch {
@@ -157,7 +184,7 @@ public class PullOperation: Operation {
 		if recordZoneIDs.isEmpty { return }
 		
 		let recordZoneChangesOperation = FetchRecordZoneChangesOperation(from: database, recordZoneIDs: recordZoneIDs, tokens: tokens)
-		
+        recordZoneChangesOperation.qualityOfService = .userInteractive
 		recordZoneChangesOperation.recordChangedBlock = {
             self.addConvertRecordOperation(record: $0, context: context)
 		}
