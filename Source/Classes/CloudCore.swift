@@ -98,7 +98,7 @@ open class CloudCore {
         }
 		
 		// Fetch updated data (e.g. push notifications weren't received)
-        let pullOperation = PullOperation(persistentContainer: container)
+        let pullOperation = PullChangesOperation(persistentContainer: container)
 		pullOperation.errorBlock = {
 			self.delegate?.error(error: $0, module: .some(.pullFromCloud))
 		}
@@ -139,7 +139,7 @@ open class CloudCore {
         
 		DispatchQueue.global(qos: .utility).async {
 			let errorProxy = ErrorBlockProxy(destination: error)
-			let operation = PullOperation(from: [cloudDatabase], persistentContainer: container)
+			let operation = PullChangesOperation(from: [cloudDatabase], persistentContainer: container)
 			operation.errorBlock = { errorProxy.send(error: $0) }
 			operation.start()
 			
@@ -159,13 +159,36 @@ open class CloudCore {
 		- completion: `PullResult` enumeration with results of operation
 	*/
 	public static func pull(to container: NSPersistentContainer, error: ErrorBlock?, completion: (() -> Void)?) {
-        let operation = PullOperation(persistentContainer: container)
+        let operation = PullChangesOperation(persistentContainer: container)
 		operation.errorBlock = error
 		operation.completionBlock = completion
-
+        
 		queue.addOperation(operation)
 	}
 	
+    /** Fetch one full record from all CloudKit databases and save it to Core Data
+
+    - Parameters:
+        - recordID: `CKRecord.ID` identifies the record to retrieve
+        - database: `CKDatabase` identifies which database from the container to use
+        - container: `NSPersistentContainer` that will be used to save fetched data
+        - error: block will be called every time when error occurs during process
+        - completion: `PullResult` enumeration with results of operation
+    */
+    public static func pull(rootRecordID: CKRecord.ID,
+                            database: CKDatabase = config.container.sharedCloudDatabase,
+                            container: NSPersistentContainer,
+                            error: ErrorBlock?,
+                            completion: (() -> Void)?) {
+        let operation = PullRecordOperation(rootRecordID: rootRecordID,
+                                            database: database,
+                                            persistentContainer: container)
+        operation.errorBlock = error
+        operation.completionBlock = completion
+        
+        queue.addOperation(operation)
+    }
+    
 	/** Check if notification is CloudKit notification containing CloudCore data
 
 	 - Parameter userInfo: userInfo of notification
