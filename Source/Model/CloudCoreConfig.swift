@@ -77,6 +77,7 @@ public struct CloudCoreConfig {
 	///
 	/// Default value is `CloudCoreTokens`
 	public var userDefaultsKeyTokens = "CloudCoreTokens"
+    public var persistentHistoryTokenKey = "lastPersistentHistoryTokenKey"
 	
     public init() {
         

@@ -16,8 +16,8 @@ class CoreDataObserver {
 	
 	let converter = ObjectToRecordConverter()
 	let pushOperationQueue = PushOperationQueue()
-
-	let cloudContextName = "CloudCoreSync"
+    
+	static let syncContextName = "CloudCoreSync"
 	
     let processSemaphore = DispatchSemaphore(value: 1)
     
@@ -94,7 +94,7 @@ class CoreDataObserver {
         CloudCore.delegate?.willSyncToCloud()
         
         let backgroundContext = container.newBackgroundContext()
-        backgroundContext.name = cloudContextName
+        backgroundContext.name = CoreDataObserver.syncContextName
         
         let records = converter.processPendingOperations(in: backgroundContext)
         pushOperationQueue.errorBlock = {
@@ -228,10 +228,9 @@ class CoreDataObserver {
             }
             
             container.performBackgroundTask { (moc) in
-                let key = "lastPersistentHistoryTokenKey"
                 let settings = UserDefaults.standard
                 var token: NSPersistentHistoryToken? = nil
-                if let data = settings.object(forKey: key) as? Data {
+                if let data = settings.object(forKey: CloudCore.config.persistentHistoryTokenKey) as? Data {
                     token = try? NSKeyedUnarchiver.unarchivedObject(ofClasses: [NSPersistentHistoryToken.classForKeyedUnarchiver()], from: data) as? NSPersistentHistoryToken
                 }
                 let historyRequest = NSPersistentHistoryChangeRequest.fetchHistory(after: token)
@@ -245,7 +244,7 @@ class CoreDataObserver {
                                 try moc.execute(deleteRequest)
                                 
                                 if let data = try? NSKeyedArchiver.archivedData(withRootObject: transaction.token, requiringSecureCoding: false) {
-                                    settings.set(data, forKey: key)
+                                    settings.set(data, forKey: CloudCore.config.persistentHistoryTokenKey)
                                 }
                             } else {
                                 break
@@ -256,7 +255,7 @@ class CoreDataObserver {
                     let nserror = error as NSError
                     switch nserror.code {
                     case NSPersistentHistoryTokenExpiredError:
-                        settings.set(nil, forKey: key)
+                        settings.set(nil, forKey: CloudCore.config.persistentHistoryTokenKey)
                     default:
                         fatalError("Unresolved error \(nserror), \(nserror.userInfo)")
                     }
