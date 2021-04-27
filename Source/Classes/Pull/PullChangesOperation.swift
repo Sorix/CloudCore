@@ -139,11 +139,13 @@ public class PullChangesOperation: PullOperation {
         
 		self.queue.waitUntilAllOperationsAreFinished()
         
-		do {
-			try backgroundContext.save()
-		} catch {
-			errorBlock?(error)
-		}
+        backgroundContext.performAndWait {
+            do {
+                try backgroundContext.save()
+            } catch {
+                errorBlock?(error)
+            }
+        }
 		
         tokens.saveToUserDefaults()
         

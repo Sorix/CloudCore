@@ -105,13 +105,15 @@ class CoreDataObserver {
         pushOperationQueue.waitUntilAllOperationsAreFinished()
         
         if success {
-            do {
-                if backgroundContext.hasChanges {
-                    try backgroundContext.save()
+            backgroundContext.performAndWait {
+                do {
+                    if backgroundContext.hasChanges {
+                        try backgroundContext.save()
+                    }
+                } catch {
+                    delegate?.error(error: error, module: .some(.pushToCloud))
+                    success = false
                 }
-            } catch {
-                delegate?.error(error: error, module: .some(.pushToCloud))
-                success = false
             }
         }
         

@@ -39,10 +39,12 @@ public class PullRecordOperation: PullOperation {
         
         self.processMissingReferences(context: backgroundContext)
         
-        do {
-            try backgroundContext.save()
-        } catch {
-            errorBlock?(error)
+        backgroundContext.performAndWait {
+            do {
+                try backgroundContext.save()
+            } catch {
+                errorBlock?(error)
+            }
         }
                 
         CloudCore.delegate?.didSyncFromCloud()
