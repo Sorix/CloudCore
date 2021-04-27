@@ -43,6 +43,16 @@ class ObjectToRecordOperation: Operation {
 			return
 		}
 		
+        #if TARGET_OS_IOS
+        let app = UIApplication.shared
+        var backgroundTaskID = app.beginBackgroundTask(withName: name) {
+            app.endBackgroundTask(backgroundTaskID!)
+        }
+        defer {
+            app.endBackgroundTask(backgroundTaskID!)
+        }
+        #endif
+        
 		let childContext = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
         childContext.performAndWait {
             childContext.parent = parentContext
