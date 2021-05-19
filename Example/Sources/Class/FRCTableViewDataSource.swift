@@ -4,7 +4,7 @@
 import UIKit
 import CoreData
 
-protocol FRCTableViewDelegate: class {
+protocol FRCTableViewDelegate: AnyObject {
 	func frcTableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell
 }
 
