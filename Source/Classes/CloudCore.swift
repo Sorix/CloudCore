@@ -76,6 +76,8 @@ open class CloudCore {
 	
 	public typealias NotificationUserInfo = [AnyHashable : Any]
 	
+    public static var userRecordID: CKRecord.ID? = nil
+    
 	static private let queue = OperationQueue()
 	
 	// MARK: - Methods
@@ -107,6 +109,12 @@ open class CloudCore {
         
         queue.addOperation(subscribeOperation)
         queue.addOperation(pullOperation)
+        
+        config.container.fetchUserRecordID { recordID, error in
+            if error == nil {
+                self.userRecordID = recordID
+            }
+        }
 	}
 	
 	/// Disables synchronization (push notifications won't be sent also)
@@ -119,6 +127,11 @@ open class CloudCore {
 		// FIXME: unsubscribe
 	}
 	
+    /// return the user's record name
+    public static func userRecordName() -> String? {
+        return userRecordID?.recordName
+    }
+    
 	// MARK: Fetchers
 	
 	/** Fetch changes from one CloudKit database and save it to CoreData from `didReceiveRemoteNotification` method.
