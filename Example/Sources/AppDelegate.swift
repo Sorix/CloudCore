@@ -53,7 +53,21 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UISplitViewControllerDele
 			})
 		}
 	}
-		
+    
+    // User accepted a sharing link, pull the complete record
+    func application(_ application: UIApplication,
+                     userDidAcceptCloudKitShareWith cloudKitShareMetadata: CKShare.Metadata) {
+        let acceptShareOperation = CKAcceptSharesOperation(shareMetadatas: [cloudKitShareMetadata])
+        acceptShareOperation.qualityOfService = .userInteractive
+        acceptShareOperation.perShareCompletionBlock = { meta, share, error in
+            CloudCore.pull(rootRecordID: meta.rootRecordID, container: self.persistentContainer, error: nil) { }
+        }
+        acceptShareOperation.acceptSharesCompletionBlock = { error in
+            // N/A
+        }
+        CKContainer(identifier: cloudKitShareMetadata.containerIdentifier).add(acceptShareOperation)
+    }
+    
 	// MARK: - Default Apple initialization, you can skip that
 	
 	var window: UIWindow?
