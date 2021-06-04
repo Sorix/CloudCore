@@ -176,7 +176,24 @@ CloudCore now has built-in support for CloudKit Sharing.  There are several addi
 
 1. Add the CKSharingSupported key, with value true, to your info.plist
 
-2. Implement the UIApplicationDelegate function userDidAcceptCloudKitShare, something like…
+2. Implement the appropriate delegate(… userDidAcceptCloudKitShare), something like…
+
+```swift
+func windowScene(_ windowScene: UIWindowScene, 
+				 userDidAcceptCloudKitShareWith cloudKitShareMetadata: CKShare.Metadata) {
+  let acceptShareOperation = CKAcceptSharesOperation(shareMetadatas: [cloudKitShareMetadata])
+  acceptShareOperation.qualityOfService = .userInteractive
+  acceptShareOperation.perShareCompletionBlock = { meta, share, error in
+    CloudCore.pull(rootRecordID: meta.rootRecordID, container: self.persistentContainer, error: nil) { }
+  }
+  acceptShareOperation.acceptSharesCompletionBlock = { error in
+    // N/A
+  }
+  CKContainer(identifier: cloudKitShareMetadata.containerIdentifier).add(acceptShareOperation)
+}
+```
+
+OR
 
 ```swift
 func application(_ application: UIApplication,
@@ -192,7 +209,8 @@ func application(_ application: UIApplication,
   CKContainer(identifier: cloudKitShareMetadata.containerIdentifier).add(acceptShareOperation)
 }
 ```
-Note that when a user accepts a share, the app does not receive a remote notification, and so it must specifically pull the shared record in.
+
+Note that when a user accepts a share, the app does not receive a remote notification of changes from iCloud, and so it must specifically pull the shared record in.
 
 3. Use a CloudCoreSharingController to configure a UICloudSharingController for presentation
 
