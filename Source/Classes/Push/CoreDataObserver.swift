@@ -293,7 +293,8 @@ class CoreDataObserver {
 			// Upload all local data
 			let uploadOperation = PushAllLocalDataOperation(parentContext: parentContext, managedObjectModel: container.managedObjectModel)
 			uploadOperation.errorBlock = { self.delegate?.error(error: $0, module: .some(.pushToCloud)) }
-			
+            uploadOperation.addDependency(createZoneOperation)
+            
 			pushOperationQueue.addOperations([createZoneOperation, uploadOperation], waitUntilFinished: true)
 		case .operationCancelled: return
 		default: delegate?.error(error: cloudError, module: .some(.pushToCloud))
