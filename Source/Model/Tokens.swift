@@ -19,14 +19,16 @@ import CloudKit
 
 open class Tokens: NSObject, NSSecureCoding {
 	
-    var tokensByDatabaseScope = [Int: CKServerChangeToken]()
-    var tokensByRecordZoneID = [CKRecordZone.ID: CKServerChangeToken]()
+    private var tokensByDatabaseScope = [Int: CKServerChangeToken]()
+    private var tokensByRecordZoneID = [CKRecordZone.ID: CKServerChangeToken]()
 	
 	private struct ArchiverKey {
         static let tokensByDatabaseScope = "tokensByDatabaseScope"
         static let tokensByRecordZoneID = "tokensByRecordZoneID"
 	}
 	
+    private let queue = DispatchQueue(label: "com.deeje.CloudCore.Tokens")
+    
     public static var supportsSecureCoding: Bool {
         return true
     }
@@ -45,6 +47,7 @@ open class Tokens: NSObject, NSSecureCoding {
         if let tokensData = UserDefaults.standard.data(forKey: CloudCore.config.userDefaultsKeyTokens) {
             do {
                 let allowableClasses = [Tokens.classForKeyedUnarchiver(),
+                                        NSNumber.classForKeyedUnarchiver(),
                                         NSDictionary.classForKeyedUnarchiver(),
                                         CKRecordZone.ID.classForKeyedUnarchiver(),
                                         CKServerChangeToken.classForKeyedUnarchiver()]
@@ -85,4 +88,20 @@ open class Tokens: NSObject, NSSecureCoding {
         aCoder.encode(tokensByRecordZoneID, forKey: ArchiverKey.tokensByRecordZoneID)
 	}
 	
+    func token(for scope: CKDatabase.Scope) -> CKServerChangeToken? {
+        return queue.sync { tokensByDatabaseScope[scope.rawValue] }
+    }
+    
+    func setToken(_ newToken: CKServerChangeToken?, for scope: CKDatabase.Scope) {
+        queue.sync { tokensByDatabaseScope[scope.rawValue] = newToken }
+    }
+    
+    func token(for zone: CKRecordZone.ID) -> CKServerChangeToken? {
+        return queue.sync { tokensByRecordZoneID[zone] }
+    }
+    
+    func setToken(_ newToken: CKServerChangeToken?, for zone: CKRecordZone.ID) {
+        queue.sync { tokensByRecordZoneID[zone] = newToken }
+    }
+    
 }

@@ -30,7 +30,7 @@ class FetchRecordZoneChangesOperation: Operation {
         var optionsByRecordZoneID = [CKRecordZone.ID: CKFetchRecordZoneChangesOperation.ZoneConfiguration]()
 		for zoneID in recordZoneIDs {
             let options = CKFetchRecordZoneChangesOperation.ZoneConfiguration()
-			options.previousServerChangeToken = self.tokens.tokensByRecordZoneID[zoneID]
+            options.previousServerChangeToken = self.tokens.token(for: zoneID)
 			optionsByRecordZoneID[zoneID] = options
 		}
 		self.optionsByRecordZoneID = optionsByRecordZoneID
@@ -74,7 +74,7 @@ class FetchRecordZoneChangesOperation: Operation {
 			self.recordWithIDWasDeletedBlock?(recordID)
 		}
 		fetchRecordZoneChanges.recordZoneFetchCompletionBlock = { zoneId, serverChangeToken, clientChangeTokenData, isMore, error in
-			self.tokens.tokensByRecordZoneID[zoneId] = serverChangeToken
+            self.tokens.setToken(serverChangeToken, for: zoneId)
 			
 			if let error = error {
 				self.errorBlock?(zoneId, error)

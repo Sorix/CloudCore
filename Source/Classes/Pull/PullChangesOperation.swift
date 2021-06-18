@@ -41,7 +41,7 @@ public class PullChangesOperation: PullOperation {
 	
 	/// Performs the receiver’s non-concurrent task.
 	override public func main() {
-		if self.isCancelled { return }
+		if isCancelled { return }
         
         #if TARGET_OS_IOS
         let app = UIApplication.shared
@@ -58,14 +58,15 @@ public class PullChangesOperation: PullOperation {
 		let backgroundContext = persistentContainer.newBackgroundContext()
 		backgroundContext.name = CloudCore.config.pullContextName
         
-        for database in self.databases {
+        for database in databases {
+            let databaseChangeToken = tokens.token(for: database.databaseScope)
+            
             if database.databaseScope == .public {
                 let changedRecordIDs: NSMutableSet = []
                 let deletedRecordIDs: NSMutableSet = []
-                let previousToken = self.tokens.tokensByDatabaseScope[database.databaseScope.rawValue]
-                let fetchNotificationChanges = CKFetchNotificationChangesOperation(previousServerChangeToken: previousToken)
+                let fetchNotificationChanges = CKFetchNotificationChangesOperation(previousServerChangeToken: databaseChangeToken)
                 fetchNotificationChanges.qualityOfService = .userInteractive
-                fetchNotificationChanges.notificationChangedBlock = { (innerNotification) in
+                fetchNotificationChanges.notificationChangedBlock = { innerNotification in
                     if let innerQueryNotification = innerNotification as? CKQueryNotification {
                         if innerQueryNotification.queryNotificationReason == .recordDeleted {
                             deletedRecordIDs.add(innerQueryNotification.recordID!)
@@ -75,17 +76,17 @@ public class PullChangesOperation: PullOperation {
                         }
                     }
                 }
-                fetchNotificationChanges.fetchNotificationChangesCompletionBlock = { (changeToken, error) in
+                fetchNotificationChanges.fetchNotificationChangesCompletionBlock = { changeToken, error in
                     let allChangedRecordIDs = changedRecordIDs.allObjects as! [CKRecord.ID]
                     let fetchRecords = CKFetchRecordsOperation(recordIDs: allChangedRecordIDs)
                     fetchRecords.database = CloudCore.config.container.publicCloudDatabase
                     fetchRecords.qualityOfService = .userInteractive
-                    fetchRecords.perRecordCompletionBlock = { (record, recordID, error) in
+                    fetchRecords.perRecordCompletionBlock = { record, recordID, error in
                         if error == nil {
                             self.addConvertRecordOperation(record: record!, context: backgroundContext)
                         }
                     }
-                    fetchRecords.fetchRecordsCompletionBlock = { (_, error) in
+                    fetchRecords.fetchRecordsCompletionBlock = { _, error in
                         self.processMissingReferences(context: backgroundContext)
                     }
                     let finished = BlockOperation { }
@@ -98,27 +99,26 @@ public class PullChangesOperation: PullOperation {
                         self.addDeleteRecordOperation(recordID: recordID, context: backgroundContext)
                     }
                     
-                    self.tokens.tokensByDatabaseScope[database.databaseScope.rawValue] = changeToken
+                    self.tokens.setToken(changeToken, for: database.databaseScope)
                 }
                 let finished = BlockOperation { }
                 finished.addDependency(fetchNotificationChanges)
                 CloudCore.config.container.add(fetchNotificationChanges)
-                self.queue.addOperation(finished)
+                queue.addOperation(finished)
             } else {
                 var changedZoneIDs = [CKRecordZone.ID]()
                 var deletedZoneIDs = [CKRecordZone.ID]()
                 
-                let databaseChangeToken = tokens.tokensByDatabaseScope[database.databaseScope.rawValue]
                 let fetchDatabaseChanges = CKFetchDatabaseChangesOperation(previousServerChangeToken: databaseChangeToken)
                 fetchDatabaseChanges.database = database
                 fetchDatabaseChanges.qualityOfService = .userInteractive
-                fetchDatabaseChanges.recordZoneWithIDChangedBlock = { (recordZoneID) in
+                fetchDatabaseChanges.recordZoneWithIDChangedBlock = { recordZoneID in
                     changedZoneIDs.append(recordZoneID)
                 }
-                fetchDatabaseChanges.recordZoneWithIDWasDeletedBlock = { (recordZoneID) in
+                fetchDatabaseChanges.recordZoneWithIDWasDeletedBlock = { recordZoneID in
                     deletedZoneIDs.append(recordZoneID)
                 }
-                fetchDatabaseChanges.fetchDatabaseChangesCompletionBlock = { (changeToken, moreComing, error) in
+                fetchDatabaseChanges.fetchDatabaseChangesCompletionBlock = { changeToken, moreComing, error in
                     // TODO: error handling?
                     
                     if changedZoneIDs.count > 0 {
@@ -128,7 +128,7 @@ public class PullChangesOperation: PullOperation {
                         self.deleteRecordsFromDeletedZones(recordZoneIDs: deletedZoneIDs)
                     }
                     
-                    self.tokens.tokensByDatabaseScope[database.databaseScope.rawValue] = changeToken
+                    self.tokens.setToken(changeToken, for: database.databaseScope)
                 }
                 /*
                  To improve performance overall, and on watchOS in particular
@@ -143,11 +143,11 @@ public class PullChangesOperation: PullOperation {
                 let finished = BlockOperation { }
                 finished.addDependency(fetchDatabaseChanges)
                 database.add(fetchDatabaseChanges)
-                self.queue.addOperation(finished)
+                queue.addOperation(finished)
             }
         }
         
-		self.queue.waitUntilAllOperationsAreFinished()
+		queue.waitUntilAllOperationsAreFinished()
         
         backgroundContext.performAndWait {
             do {
@@ -166,7 +166,7 @@ public class PullChangesOperation: PullOperation {
         // Delete NSManagedObject with specified recordID Operation
         let deleteOperation = DeleteFromCoreDataOperation(parentContext: context, recordID: recordID)
         deleteOperation.errorBlock = { self.errorBlock?($0) }
-        self.queue.addOperation(deleteOperation)
+        queue.addOperation(deleteOperation)
     }
     
     private func addRecordZoneChangesOperation(recordZoneIDs: [CKRecordZone.ID], database: CKDatabase, context: NSManagedObjectContext) {
@@ -194,7 +194,7 @@ public class PullChangesOperation: PullOperation {
 	}
     
     private func deleteRecordsFromDeletedZones(recordZoneIDs: [CKRecordZone.ID]) {
-        persistentContainer.performBackgroundTask { (moc) in
+        persistentContainer.performBackgroundTask { moc in
             for entity in self.persistentContainer.managedObjectModel.entities {
                 if let serviceAttributes = entity.serviceAttributeNames {
                     for recordZoneID in recordZoneIDs {
@@ -220,7 +220,7 @@ public class PullChangesOperation: PullOperation {
         }
     }
 
-    private func handle(recordZoneChangesError: Error, in zoneId: CKRecordZone.ID, database: CKDatabase, context: NSManagedObjectContext) {
+    private func handle(recordZoneChangesError: Error, in zoneID: CKRecordZone.ID, database: CKDatabase, context: NSManagedObjectContext) {
 		guard let cloudError = recordZoneChangesError as? CKError else {
 			errorBlock?(recordZoneChangesError)
 			return
@@ -237,9 +237,11 @@ public class PullChangesOperation: PullOperation {
 			
 		// Our token is expired, we need to refetch everything again
 		case .changeTokenExpired:
-			tokens.tokensByRecordZoneID[zoneId] = nil
-			self.addRecordZoneChangesOperation(recordZoneIDs: [zoneId], database: database, context: context)
-		default: errorBlock?(cloudError)
+            tokens.setToken(nil, for: zoneID)
+			addRecordZoneChangesOperation(recordZoneIDs: [zoneID], database: database, context: context)
+            
+		default:
+            errorBlock?(cloudError)
 		}
 	}
 	
