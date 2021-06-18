@@ -188,6 +188,14 @@ public class PullChangesOperation: PullOperation {
         
         recordZoneChangesOperation.completionBlock = {
             self.processMissingReferences(context: context)
+            
+            context.performAndWait {
+                do {
+                    try context.save()
+                } catch {
+                    self.errorBlock?(error)
+                }
+            }
         }
 		
 		queue.addOperation(recordZoneChangesOperation)
