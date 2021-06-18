@@ -150,11 +150,14 @@ open class CloudCore {
 			return
 		}
         
-        let errorProxy = ErrorBlockProxy(destination: error)
+        var hadError = false
         let pullChangesOp = PullChangesOperation(from: [cloudDatabase], persistentContainer: container)
-        pullChangesOp.errorBlock = { errorProxy.send(error: $0) }
+        pullChangesOp.errorBlock = {
+            hadError = true
+            error?($0)
+        }
         pullChangesOp.completionBlock = {
-            completion(errorProxy.wasError ? PullResult.failed : PullResult.newData)
+            completion(hadError ? PullResult.failed : PullResult.newData)
         }
         
         queue.addOperation(pullChangesOp)
