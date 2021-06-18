@@ -14,7 +14,7 @@ extension UIViewController {
     
     public func iCloudAvailable(completion: @escaping ((Bool) -> Void)) {
         CloudCore.config.container.accountStatus { accountStatus, error in
-            DispatchQueue.main.async() {
+            DispatchQueue.main.async {
                 var title: String?
                 var message: String?
                 
