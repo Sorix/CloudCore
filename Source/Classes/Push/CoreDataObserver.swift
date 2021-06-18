@@ -231,12 +231,12 @@ class CoreDataObserver {
             
             container.performBackgroundTask { (moc) in
                 let settings = UserDefaults.standard
-                var token: NSPersistentHistoryToken? = nil
-                if let data = settings.object(forKey: CloudCore.config.persistentHistoryTokenKey) as? Data {
-                    token = try? NSKeyedUnarchiver.unarchivedObject(ofClasses: [NSPersistentHistoryToken.classForKeyedUnarchiver()], from: data) as? NSPersistentHistoryToken
-                }
-                let historyRequest = NSPersistentHistoryChangeRequest.fetchHistory(after: token)
                 do {
+                    var token: NSPersistentHistoryToken? = nil
+                    if let data = settings.object(forKey: CloudCore.config.persistentHistoryTokenKey) as? Data {
+                        token = try NSKeyedUnarchiver.unarchivedObject(ofClasses: [NSPersistentHistoryToken.classForKeyedUnarchiver()], from: data) as? NSPersistentHistoryToken
+                    }
+                    let historyRequest = NSPersistentHistoryChangeRequest.fetchHistory(after: token)
                     let historyResult = try moc.execute(historyRequest) as! NSPersistentHistoryResult
                     
                     if let history = historyResult.result as? [NSPersistentHistoryTransaction] {
@@ -245,9 +245,8 @@ class CoreDataObserver {
                                 let deleteRequest = NSPersistentHistoryChangeRequest.deleteHistory(before: transaction)
                                 try moc.execute(deleteRequest)
                                 
-                                if let data = try? NSKeyedArchiver.archivedData(withRootObject: transaction.token, requiringSecureCoding: false) {
-                                    settings.set(data, forKey: CloudCore.config.persistentHistoryTokenKey)
-                                }
+                                let data = try NSKeyedArchiver.archivedData(withRootObject: transaction.token, requiringSecureCoding: false)
+                                settings.set(data, forKey: CloudCore.config.persistentHistoryTokenKey)
                             } else {
                                 break
                             }
