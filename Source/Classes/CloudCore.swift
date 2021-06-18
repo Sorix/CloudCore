@@ -150,18 +150,14 @@ open class CloudCore {
 			return
 		}
         
-		DispatchQueue.global(qos: .utility).async {
-			let errorProxy = ErrorBlockProxy(destination: error)
-			let operation = PullChangesOperation(from: [cloudDatabase], persistentContainer: container)
-			operation.errorBlock = { errorProxy.send(error: $0) }
-			operation.start()
-			
-			if errorProxy.wasError {
-				completion(PullResult.failed)
-			} else {
-				completion(PullResult.newData)
-			}
-		}
+        let errorProxy = ErrorBlockProxy(destination: error)
+        let pullChangesOp = PullChangesOperation(from: [cloudDatabase], persistentContainer: container)
+        pullChangesOp.errorBlock = { errorProxy.send(error: $0) }
+        pullChangesOp.completionBlock = {
+            completion(errorProxy.wasError ? PullResult.failed : PullResult.newData)
+        }
+        
+        queue.addOperation(pullChangesOp)
 	}
 
 	/** Fetch changes from all CloudKit databases and save it to Core Data
