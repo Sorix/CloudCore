@@ -42,36 +42,38 @@ public class PullOperation: Operation {
     
     internal func processMissingReferences(context: NSManagedObjectContext) {
         // iterate over all missing references and fix them, now are all NSManagedObjects created
-        for missingReferences in objectsWithMissingReferences {
-            for (object, references) in missingReferences {
-                guard let serviceAttributes = object.entity.serviceAttributeNames else { continue }
-                
-                for (attributeName, recordNames) in references {
-                    for recordName in recordNames {
-                        guard let relationship = object.entity.relationshipsByName[attributeName], let targetEntityName = relationship.destinationEntity?.name else { continue }
-                        
-                        // TODO: move to extension
-                        let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: targetEntityName)
-                        fetchRequest.predicate = NSPredicate(format: serviceAttributes.recordName + " == %@" , recordName)
-                        fetchRequest.fetchLimit = 1
-                        fetchRequest.includesPropertyValues = false
-                        
-                        do {
-                            let foundObject = try context.fetch(fetchRequest).first as? NSManagedObject
+        context.performAndWait {
+            for missingReferences in objectsWithMissingReferences {
+                for (object, references) in missingReferences {
+                    guard let serviceAttributes = object.entity.serviceAttributeNames else { continue }
+                    
+                    for (attributeName, recordNames) in references {
+                        for recordName in recordNames {
+                            guard let relationship = object.entity.relationshipsByName[attributeName], let targetEntityName = relationship.destinationEntity?.name else { continue }
                             
-                            if let foundObject = foundObject {
-                                if relationship.isToMany {
-                                    let set = object.value(forKey: attributeName) as? NSMutableSet ?? NSMutableSet()
-                                    set.add(foundObject)
-                                    object.setValue(set, forKey: attributeName)
+                            // TODO: move to extension
+                            let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: targetEntityName)
+                            fetchRequest.predicate = NSPredicate(format: serviceAttributes.recordName + " == %@" , recordName)
+                            fetchRequest.fetchLimit = 1
+                            fetchRequest.includesPropertyValues = false
+                            
+                            do {
+                                let foundObject = try context.fetch(fetchRequest).first as? NSManagedObject
+                                
+                                if let foundObject = foundObject {
+                                    if relationship.isToMany {
+                                        let set = object.value(forKey: attributeName) as? NSMutableSet ?? NSMutableSet()
+                                        set.add(foundObject)
+                                        object.setValue(set, forKey: attributeName)
+                                    } else {
+                                        object.setValue(foundObject, forKey: attributeName)
+                                    }
                                 } else {
-                                    object.setValue(foundObject, forKey: attributeName)
+                                    print("warning: object not found " + recordName)
                                 }
-                            } else {
-                                print("warning: object not found " + recordName)
+                            } catch {
+                                self.errorBlock?(error)
                             }
-                        } catch {
-                            self.errorBlock?(error)
                         }
                     }
                 }
