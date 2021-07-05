@@ -18,6 +18,9 @@ public class CloudCoreSharingController: NSObject, UICloudSharingControllerDeleg
     let persistentContainer: NSPersistentContainer
     let object: CloudCoreSharing
     
+    public var didSaveShare: ((CKShare)->Void)? = nil
+    public var didStopSharing: (()->Void)? = nil
+    
     public init(persistentContainer: NSPersistentContainer, object: CloudCoreSharing) {
         self.persistentContainer = persistentContainer
         self.object = object
@@ -111,6 +114,10 @@ public class CloudCoreSharingController: NSObject, UICloudSharingControllerDeleg
         return object.sharingType
     }
     
+    public func cloudSharingControllerDidSaveShare(_ csc: UICloudSharingController) {
+        didSaveShare?(csc.share!)
+    }
+    
     public func cloudSharingControllerDidStopSharing(_ csc: UICloudSharingController) {
         persistentContainer.performBackgroundTask { moc in
             if let updatedObject = try? moc.existingObject(with: self.object.objectID) as? CloudCoreSharing {
@@ -123,6 +130,7 @@ public class CloudCoreSharingController: NSObject, UICloudSharingControllerDeleg
                 try? moc.save()
             }
         }
+        didStopSharing?()
     }
     
 }
