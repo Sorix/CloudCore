@@ -132,7 +132,7 @@ extension MasterViewController {
         let confirm = UIAlertAction(title: "Remove", style: .destructive) { _ in
             guard let object = (try? self.context.existingObject(with: objectID)) as? Organization else { return }
             
-            object.stopSharing { didStop in
+            object.stopSharing(in: persistentContainer) { didStop in
                 if didStop {
                     persistentContainer.performBackgroundTask { moc in
                         if let deleteObject = try? moc.existingObject(with: objectID) {

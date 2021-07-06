@@ -17,6 +17,8 @@ class DetailViewController: UITableViewController {
 	
 	private var tableDataSource: DetailTableDataSource!
 	
+    private var sharingController: CloudCoreSharingController!
+    
 	override func viewDidLoad() {
 		super.viewDidLoad()
 		
@@ -72,18 +74,17 @@ class DetailViewController: UITableViewController {
             
             guard let organization = try? self.context.existingObject(with: self.organizationID) as? CloudCoreSharing else { return }
             
-            let sharingController = CloudCoreSharingController(persistentContainer: persistentContainer,
+            if self.sharingController == nil {
+                self.sharingController = CloudCoreSharingController(persistentContainer: persistentContainer,
                                                                 object: organization)
-            sharingController.configureSharingController(permissions: [.allowReadOnly, .allowPrivate, .allowPublic]) { csc in
-                DispatchQueue.main.async() {
-                    if let csc = csc {
-                        csc.popoverPresentationController?.barButtonItem = sender
-                        self.present(csc, animated:true, completion:nil)
-                    }
+            }
+            self.sharingController.configureSharingController(permissions: [.allowReadOnly, .allowPrivate, .allowPublic]) { csc in
+                if let csc = csc {
+                    csc.popoverPresentationController?.barButtonItem = sender
+                    self.present(csc, animated:true, completion:nil)
                 }
             }
         }
-
     }
 
 }
