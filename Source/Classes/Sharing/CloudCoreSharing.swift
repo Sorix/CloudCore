@@ -14,14 +14,15 @@ public typealias StopSharingCompletionBlock = (_ didStop: Bool) -> Void
 public protocol CloudCoreSharing: CloudKitSharing, CloudCoreType {
     
     var isOwnedByCurrentUser: Bool { get }
+    var isShared: Bool { get }
     var shareRecordData: Data? { get set }
     
     func fetchExistingShareRecord(completion: @escaping ((CKShare?, Error?) -> Void))
-    func fetchShareRecord(in persistentContainer: NSPersistentContainer, completion: @escaping ((CKShare?, Error?) -> Void))
+    func fetchShareRecord(completion: @escaping ((CKShare?, Error?) -> Void))
     func fetchEditablePermissions(completion: @escaping FetchedEditablePermissionsCompletionBlock)
     func setShare(data: Data?, in persistentContainer: NSPersistentContainer)
-    func stopSharing(completion: @escaping StopSharingCompletionBlock)
-
+    func stopSharing(in persistentContainer: NSPersistentContainer, completion: @escaping StopSharingCompletionBlock)
+    
 }
 
 extension CloudCoreSharing {
@@ -32,20 +33,30 @@ extension CloudCoreSharing {
         }
     }
     
+    public var isShared: Bool {
+        get {
+            return shareRecordData != nil
+        }
+    }
+    
     public func fetchExistingShareRecord(completion: @escaping ((CKShare?, Error?) -> Void)) {
         if let shareData = shareRecordData {
-            let aShare = CKShare(archivedData: shareData)!
+            let shareForName = CKShare(archivedData: shareData)!
+            let database: CKDatabase
+            let shareID: CKRecord.ID
             
-            var database = CloudCore.config.container.sharedCloudDatabase
-            var ownerUUID = ownerName!
-            if ownerUUID == CKCurrentUserDefaultName {
+            if isOwnedByCurrentUser {
                 database = CloudCore.config.container.privateCloudDatabase
-                ownerUUID = CloudCore.userRecordName()!
+                
+                shareID = shareForName.recordID
+            } else {
+                database = CloudCore.config.container.sharedCloudDatabase
+                
+                let zoneID = CKRecordZone.ID(zoneName: CloudCore.config.zoneName, ownerName: ownerName!)
+                shareID = CKRecord.ID(recordName: shareForName.recordID.recordName, zoneID: zoneID)
             }
             
-            let zoneID = CKRecordZone.ID(zoneName: CloudCore.config.zoneName, ownerName: ownerUUID)
-            let shareID = CKRecord.ID(recordName: aShare.recordID.recordName, zoneID: zoneID)
-            database.fetch(withRecordID: shareID) { (record, error) in
+            database.fetch(withRecordID: shareID) { record, error in
                 completion(record as? CKShare, error)
             }
         } else {
@@ -53,34 +64,20 @@ extension CloudCoreSharing {
         }
     }
     
-    public func fetchShareRecord(in persistentContainer: NSPersistentContainer, completion: @escaping ((CKShare?, Error?) -> Void)) {
+    public func fetchShareRecord(completion: @escaping ((CKShare?, Error?) -> Void)) {
+        let aRecord = try! self.restoreRecordWithSystemFields(for: .private)!
+        let title = sharingTitle as CKRecordValue?
+        let type = sharingType as CKRecordValue?
+        
         fetchExistingShareRecord { share, error in
-            var createIt = false
-            if share == nil && error == nil {
-                createIt = true
-            }
-            if let ckError = error as? CKError,
-               ckError.code == .unknownItem {
-                createIt = true
-            }
-            if createIt, let aRecord = try? self.restoreRecordWithSystemFields(for: .private) {
-                let newShare = CKShare(rootRecord: aRecord)
-                newShare[CKShare.SystemFieldKey.title] = self.sharingTitle as CKRecordValue?
-                newShare[CKShare.SystemFieldKey.shareType] = self.sharingType as CKRecordValue?
-                
-                let modOp: CKModifyRecordsOperation = CKModifyRecordsOperation(recordsToSave: [newShare, aRecord], recordIDsToDelete: nil)
-                modOp.savePolicy = .ifServerRecordUnchanged
-                modOp.modifyRecordsCompletionBlock = {records, recordIDs, error in
-                    let savedShare = records?.first as? CKShare
-                    if let savedShare = savedShare {
-                        let shareData = savedShare.encdodedSystemFields
-                        self.setShare(data: shareData, in: persistentContainer)
-                    }
-                    completion(savedShare, error)
-                }
-                CloudCore.config.container.privateCloudDatabase.add(modOp)
+            if let share = share {
+                completion(share, nil)
             } else {
-                completion(share, error)
+                let newShare = CKShare(rootRecord: aRecord)
+                newShare[CKShare.SystemFieldKey.title] = title
+                newShare[CKShare.SystemFieldKey.shareType] = type
+                
+                completion(newShare, nil)
             }
         }
     }
@@ -117,22 +114,33 @@ extension CloudCoreSharing {
         }
     }
     
-    public func stopSharing(completion: @escaping StopSharingCompletionBlock) {
-        if isOwnedByCurrentUser {
-            completion(false)
-            
-            return
-        }
-        
+    public func stopSharing(in persistentContainer: NSPersistentContainer, completion: @escaping StopSharingCompletionBlock) {
         if let shareData = shareRecordData {
-            let sharedDB = CloudCore.config.container.sharedCloudDatabase
+            var database = CloudCore.config.container.sharedCloudDatabase
+            var ownerUUID = ownerName!
+            if ownerUUID == CKCurrentUserDefaultName {
+                database = CloudCore.config.container.privateCloudDatabase
+                ownerUUID = CloudCore.userRecordName()!
+            }
             
-            let aShare = CKShare(archivedData: shareData)!
-            let zoneID = CKRecordZone.ID(zoneName: CloudCore.config.zoneName, ownerName: ownerName!)
-            let shareID = CKRecord.ID(recordName: aShare.recordID.recordName, zoneID: zoneID)
-            sharedDB.delete(withRecordID: shareID) { recordID, error in
+            let shareForName = CKShare(archivedData: shareData)!
+            let zoneID = CKRecordZone.ID(zoneName: CloudCore.config.zoneName, ownerName: ownerUUID)
+            let shareID = CKRecord.ID(recordName: shareForName.recordID.recordName, zoneID: zoneID)
+            
+            database.delete(withRecordID: shareID) { recordID, error in
                 completion(error == nil)
             }
+            
+            if isOwnedByCurrentUser {
+                persistentContainer.performBackgroundPushTask { moc in
+                    if let updatedObject = try? moc.existingObject(with: self.objectID) as? CloudCoreSharing {
+                        updatedObject.shareRecordData = nil
+                        try? moc.save()
+                    }
+                }
+            }
+        } else {
+            completion(true)
         }
     }
     

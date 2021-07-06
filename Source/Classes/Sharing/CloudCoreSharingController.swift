@@ -35,65 +35,36 @@ public class CloudCoreSharingController: NSObject, UICloudSharingControllerDeleg
             completion(sharingController)
         }
         
-        if let aRecord = try? object.restoreRecordWithSystemFields(for: .private) {
-            let aShare: CKShare
-            if let shareData = object.shareRecordData {
-                aShare = CKShare(archivedData: shareData)!
-                if object.isOwnedByCurrentUser {
-                    CloudCore.config.container.privateCloudDatabase.fetch(withRecordID: aShare.recordID) { (record, error) in
-                        if let fetchedShare = record as? CKShare {
-                            DispatchQueue.main.async {
-                                let sharingController = UICloudSharingController(share: fetchedShare, container: CloudCore.config.container)
-                                commonConfigure(sharingController)
-                            }
-                        } else if let ckError = error as? CKError {
-                            switch ckError.code {
-                            case .unknownItem:
-                                self.object.setShare(data: nil, in: self.persistentContainer)
-                            default:
-                                break
-                            }
-                            completion(nil)
-                        }
-                    }
+        guard let aRecord = try! object.restoreRecordWithSystemFields(for: .private) else { completion(nil); return }
+        
+        object.fetchShareRecord { share, error in
+            guard error == nil, let share = share else { completion(nil); return }
+            
+            DispatchQueue.main.async {
+                if share.participants.count > 1 {
+                    let sharingController = UICloudSharingController(share: share, container: CloudCore.config.container)
+                    commonConfigure(sharingController)
                 } else {
-                    let zoneID = CKRecordZone.ID(zoneName: CloudCore.config.zoneName, ownerName: object.ownerName!)
-                    let shareID = CKRecord.ID(recordName: aShare.recordID.recordName, zoneID: zoneID)
-                    CloudCore.config.container.sharedCloudDatabase.fetch(withRecordID: shareID) { (record, error) in
-                        if let fetchedShare = record as? CKShare {
-                            DispatchQueue.main.async {
-                                let sharingController = UICloudSharingController(share: fetchedShare, container: CloudCore.config.container)
-                                commonConfigure(sharingController)
+                    let sharingController = UICloudSharingController { _, handler in
+                        let modifyOp = CKModifyRecordsOperation(recordsToSave: [aRecord, share], recordIDsToDelete: nil)
+                        modifyOp.savePolicy = .changedKeys
+                        modifyOp.modifyRecordsCompletionBlock = { records, recordIDs, error in
+                            if let share = records?.first as? CKShare {
+                                DispatchQueue.main.async {
+                                    self.object.setShare(data: share.encdodedSystemFields, in: self.persistentContainer)
+                                }
+                                
+                                handler(share, CloudCore.config.container, error)
+                            } else {
+                                handler(nil, nil, error)
                             }
-                        } else {
-                            completion(nil)
                         }
+                        modifyOp.savePolicy = .changedKeys
+                        CloudCore.config.container.privateCloudDatabase.add(modifyOp)
                     }
-                }
-            } else {
-                aShare = CKShare(rootRecord: aRecord)
-                aShare[CKShare.SystemFieldKey.title] = object.sharingTitle as CKRecordValue?
-                aShare[CKShare.SystemFieldKey.shareType] = object.sharingType as CKRecordValue?
-                
-                let sharingController = UICloudSharingController { (_, handler:
-                                                                        @escaping (CKShare?, CKContainer?, Error?) -> Void) in
                     
-                    let modifyOp = CKModifyRecordsOperation(recordsToSave: [aRecord, aShare], recordIDsToDelete: nil)
-                    modifyOp.savePolicy = .changedKeys
-                    modifyOp.modifyRecordsCompletionBlock = { (records, recordIDs, error) in
-                        if let share = records?.first as? CKShare {
-                            self.object.setShare(data: aShare.encdodedSystemFields, in: self.persistentContainer)
-                            
-                            handler(share, CloudCore.config.container, error)
-                        } else {
-                            handler(nil, nil, error)
-                        }
-                    }
-                    modifyOp.savePolicy = .changedKeys
-                    CloudCore.config.container.privateCloudDatabase.add(modifyOp)
+                    commonConfigure(sharingController)
                 }
-                
-                commonConfigure(sharingController)
             }
         }
     }
