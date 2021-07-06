@@ -39,22 +39,28 @@ extension CloudCoreSharing {
         }
     }
     
+    func shareDatabaseAndRecordID(from shareData: Data) -> (CKDatabase, CKRecord.ID) {
+        let shareForName = CKShare(archivedData: shareData)!
+        let database: CKDatabase
+        let shareID: CKRecord.ID
+        
+        if isOwnedByCurrentUser {
+            database = CloudCore.config.container.privateCloudDatabase
+            
+            shareID = shareForName.recordID
+        } else {
+            database = CloudCore.config.container.sharedCloudDatabase
+            
+            let zoneID = CKRecordZone.ID(zoneName: CloudCore.config.zoneName, ownerName: ownerName!)
+            shareID = CKRecord.ID(recordName: shareForName.recordID.recordName, zoneID: zoneID)
+        }
+        
+        return (database, shareID)
+    }
+    
     public func fetchExistingShareRecord(completion: @escaping ((CKShare?, Error?) -> Void)) {
         if let shareData = shareRecordData {
-            let shareForName = CKShare(archivedData: shareData)!
-            let database: CKDatabase
-            let shareID: CKRecord.ID
-            
-            if isOwnedByCurrentUser {
-                database = CloudCore.config.container.privateCloudDatabase
-                
-                shareID = shareForName.recordID
-            } else {
-                database = CloudCore.config.container.sharedCloudDatabase
-                
-                let zoneID = CKRecordZone.ID(zoneName: CloudCore.config.zoneName, ownerName: ownerName!)
-                shareID = CKRecord.ID(recordName: shareForName.recordID.recordName, zoneID: zoneID)
-            }
+            let (database, shareID) = shareDatabaseAndRecordID(from: shareData)
             
             database.fetch(withRecordID: shareID) { record, error in
                 completion(record as? CKShare, error)
@@ -116,16 +122,7 @@ extension CloudCoreSharing {
     
     public func stopSharing(in persistentContainer: NSPersistentContainer, completion: @escaping StopSharingCompletionBlock) {
         if let shareData = shareRecordData {
-            var database = CloudCore.config.container.sharedCloudDatabase
-            var ownerUUID = ownerName!
-            if ownerUUID == CKCurrentUserDefaultName {
-                database = CloudCore.config.container.privateCloudDatabase
-                ownerUUID = CloudCore.userRecordName()!
-            }
-            
-            let shareForName = CKShare(archivedData: shareData)!
-            let zoneID = CKRecordZone.ID(zoneName: CloudCore.config.zoneName, ownerName: ownerUUID)
-            let shareID = CKRecord.ID(recordName: shareForName.recordID.recordName, zoneID: zoneID)
+            let (database, shareID) = shareDatabaseAndRecordID(from: shareData)
             
             database.delete(withRecordID: shareID) { recordID, error in
                 completion(error == nil)
