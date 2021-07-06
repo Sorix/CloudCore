@@ -90,17 +90,6 @@ public class CloudCoreSharingController: NSObject, UICloudSharingControllerDeleg
     }
     
     public func cloudSharingControllerDidStopSharing(_ csc: UICloudSharingController) {
-        persistentContainer.performBackgroundTask { moc in
-            if let updatedObject = try? moc.existingObject(with: self.object.objectID) as? CloudCoreSharing {
-                if updatedObject.isOwnedByCurrentUser {
-                    moc.name = CloudCore.config.pushContextName
-                    updatedObject.shareRecordData = nil
-                } else {
-                    moc.delete(updatedObject)
-                }
-                try? moc.save()
-            }
-        }
         didStopSharing?()
     }
     
