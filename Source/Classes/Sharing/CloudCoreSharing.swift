@@ -20,7 +20,7 @@ public protocol CloudCoreSharing: CloudKitSharing, CloudCoreType {
     func fetchExistingShareRecord(completion: @escaping ((CKShare?, Error?) -> Void))
     func fetchShareRecord(completion: @escaping ((CKShare?, Error?) -> Void))
     func fetchEditablePermissions(completion: @escaping FetchedEditablePermissionsCompletionBlock)
-    func setShare(data: Data?, in persistentContainer: NSPersistentContainer)
+    func setShareRecord(share: CKShare?, in persistentContainer: NSPersistentContainer)
     func stopSharing(in persistentContainer: NSPersistentContainer, completion: @escaping StopSharingCompletionBlock)
     
 }
@@ -59,6 +59,8 @@ extension CloudCoreSharing {
     }
     
     public func fetchExistingShareRecord(completion: @escaping ((CKShare?, Error?) -> Void)) {
+        managedObjectContext?.refresh(self, mergeChanges: true)
+        
         if let shareData = shareRecordData {
             let (database, shareID) = shareDatabaseAndRecordID(from: shareData)
             
@@ -111,10 +113,10 @@ extension CloudCoreSharing {
         }
     }
     
-    public func setShare(data: Data?, in persistentContainer: NSPersistentContainer) {
+    public func setShareRecord(share: CKShare?, in persistentContainer: NSPersistentContainer) {
         persistentContainer.performBackgroundPushTask { moc in
             if let updatedObject = try? moc.existingObject(with: self.objectID) as? CloudCoreSharing {
-                updatedObject.shareRecordData = data
+                updatedObject.shareRecordData = share?.encdodedSystemFields
                 try? moc.save()
             }
         }
@@ -129,12 +131,7 @@ extension CloudCoreSharing {
             }
             
             if isOwnedByCurrentUser {
-                persistentContainer.performBackgroundPushTask { moc in
-                    if let updatedObject = try? moc.existingObject(with: self.objectID) as? CloudCoreSharing {
-                        updatedObject.shareRecordData = nil
-                        try? moc.save()
-                    }
-                }
+                setShareRecord(share: nil, in: persistentContainer)
             }
         } else {
             completion(true)

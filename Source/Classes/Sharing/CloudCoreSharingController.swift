@@ -18,8 +18,9 @@ public class CloudCoreSharingController: NSObject, UICloudSharingControllerDeleg
     let persistentContainer: NSPersistentContainer
     let object: CloudCoreSharing
     
-    public var didSaveShare: ((CKShare)->Void)? = nil
-    public var didStopSharing: (()->Void)? = nil
+    public var didSaveShare: ((CKShare)->Void)?
+    public var didStopSharing: (()->Void)?
+    public var didError: ((Error)->Void)?
     
     public init(persistentContainer: NSPersistentContainer, object: CloudCoreSharing) {
         self.persistentContainer = persistentContainer
@@ -50,10 +51,6 @@ public class CloudCoreSharingController: NSObject, UICloudSharingControllerDeleg
                         modifyOp.savePolicy = .changedKeys
                         modifyOp.modifyRecordsCompletionBlock = { records, recordIDs, error in
                             if let share = records?.first as? CKShare {
-                                DispatchQueue.main.async {
-                                    self.object.setShare(data: share.encdodedSystemFields, in: self.persistentContainer)
-                                }
-                                
                                 handler(share, CloudCore.config.container, error)
                             } else {
                                 handler(nil, nil, error)
@@ -69,10 +66,6 @@ public class CloudCoreSharingController: NSObject, UICloudSharingControllerDeleg
         }
     }
     
-    public func cloudSharingController(_ csc: UICloudSharingController, failedToSaveShareWithError error: Error) {
-//        os_log(.debug, "failed to save share")
-    }
-    
     public func itemTitle(for csc: UICloudSharingController) -> String? {
         return object.sharingTitle
     }
@@ -86,11 +79,23 @@ public class CloudCoreSharingController: NSObject, UICloudSharingControllerDeleg
     }
     
     public func cloudSharingControllerDidSaveShare(_ csc: UICloudSharingController) {
+        if object.isOwnedByCurrentUser && object.shareRecordData == nil {
+            object.setShareRecord(share: csc.share, in: persistentContainer)
+        }
+        
         didSaveShare?(csc.share!)
     }
     
     public func cloudSharingControllerDidStopSharing(_ csc: UICloudSharingController) {
+        if object.isOwnedByCurrentUser {
+            object.setShareRecord(share: nil, in: persistentContainer)
+        }
+        
         didStopSharing?()
+    }
+    
+    public func cloudSharingController(_ csc: UICloudSharingController, failedToSaveShareWithError error: Error) {
+        didError?(error)
     }
     
 }
