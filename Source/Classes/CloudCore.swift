@@ -237,8 +237,17 @@ open class CloudCore {
 				// Zone wasn't found, we need to create it
 				self.queue.cancelAllOperations()
                 let setupOperation = SetupOperation(container: container, uploadAllData: !(coreDataObserver?.usePersistentHistoryForPush)!)
-				self.queue.addOperation(setupOperation)
 				
+                // for completeness, pull again
+                let pullOperation = PullChangesOperation(persistentContainer: container)
+                pullOperation.errorBlock = {
+                    self.delegate?.error(error: $0, module: .some(.pullFromCloud))
+                }
+                pullOperation.addDependency(setupOperation)
+                
+                self.queue.addOperation(setupOperation)
+                self.queue.addOperation(pullOperation)
+
 				return
 			}
 		}
