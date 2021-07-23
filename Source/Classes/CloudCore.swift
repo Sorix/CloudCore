@@ -78,7 +78,11 @@ open class CloudCore {
 	
     public static var userRecordID: CKRecord.ID? = nil
     
-	static private let queue = OperationQueue()
+    static private let queue: OperationQueue = {
+        let q = OperationQueue()
+        q.maxConcurrentOperationCount = 1
+        return q
+    }()
 	
 	// MARK: - Methods
 	
@@ -104,8 +108,6 @@ open class CloudCore {
 		pullOperation.errorBlock = {
 			self.delegate?.error(error: $0, module: .some(.pullFromCloud))
 		}
-		
-		pullOperation.addDependency(subscribeOperation)
         
         queue.addOperation(subscribeOperation)
         queue.addOperation(pullOperation)
@@ -236,6 +238,7 @@ open class CloudCore {
 			if case .zoneNotFound = subError.code {
 				// Zone wasn't found, we need to create it
 				self.queue.cancelAllOperations()
+                
                 let setupOperation = SetupOperation(container: container, uploadAllData: !(coreDataObserver?.usePersistentHistoryForPush)!)
 				
                 // for completeness, pull again
@@ -243,7 +246,6 @@ open class CloudCore {
                 pullOperation.errorBlock = {
                     self.delegate?.error(error: $0, module: .some(.pullFromCloud))
                 }
-                pullOperation.addDependency(setupOperation)
                 
                 self.queue.addOperation(setupOperation)
                 self.queue.addOperation(pullOperation)
