@@ -56,7 +56,6 @@ public class CloudCoreSharingController: NSObject, UICloudSharingControllerDeleg
                                 handler(nil, nil, error)
                             }
                         }
-                        modifyOp.savePolicy = .changedKeys
                         CloudCore.config.container.privateCloudDatabase.add(modifyOp)
                     }
                     
