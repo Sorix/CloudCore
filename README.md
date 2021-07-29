@@ -16,23 +16,22 @@
 * Parent-Child relationships can be defined for CloudKit Sharing
 * Respects Core Data options (cascade deletions, external storage).
 * Knows and manages CloudKit errors like `userDeletedZone`, `zoneNotFound`, `changeTokenExpired`, `isMore`.
-* Available on iOS, iPadOS, and watchOS (tvOS hasn't been tested)
+* Available on iOS and iPadOS (watchOS and tvOS haven't been tested)
 * Sharing can be extended to your NSManagedObject classes, and native SharingUI is implemented
 
-#### CloudCore vs iOS 13?
+#### CloudCore vs NSPersistentCloudKitContainer?
 
-At WWDC 2019, Apple announced support for NSPersistentCloudKitContainer in iOS 13, which provides native support for Core Data <-> CloudKit synchronization.  Here are some initial thoughts on the differences between these two approaches.
+NSPersistentCloudKitContainer provides native support for Core Data <-> CloudKit synchronization.  Here are some thoughts on the differences between these two approaches.
 
 ###### NSPersistentCloudKitContainer
 * Simple to enable
-* Private or(?) Public Database only, no Sharing
+* Support for Private, Shared, and Public databases
 * Synchronizes All Records
 * No CloudKit Metadata (e.g. recordName, systemFields, owner)
 * Record-level Synchronization (entire objects are pushed)
 * Offline Synchronization is opaque, but doesn't appear to require NSPersistentHistoryTracking
 * All Core Data names are preceeded with "CD_" in CloudKit
 * Core Data Relationships are mapped thru CDMR records in CloudKit
-* Uses a specific custom zone in the Private Database
 
 ###### CloudCore
 * Support requires specific configuration in the Core Data Model
@@ -66,7 +65,7 @@ pod 'CloudCore'
 ```
 
 ## How to help?
-Current version of framework hasn't been deeply tested and may contain errors. If you can test framework, I will be very glad. If you found an error, please post [an issue](https://github.com/deeje/CloudCore/issues).
+What would you like to see improved?
 
 ## Quick start
 1. Enable CloudKit capability for you application:
