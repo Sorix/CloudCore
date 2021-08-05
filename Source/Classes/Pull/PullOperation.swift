@@ -35,7 +35,9 @@ public class PullOperation: Operation {
         let convertOperation = RecordToCoreDataOperation(parentContext: context, record: record)
         convertOperation.errorBlock = { self.errorBlock?($0) }
         convertOperation.completionBlock = {
-            self.objectsWithMissingReferences.append(convertOperation.missingObjectsPerEntities)
+            context.performAndWait {
+                self.objectsWithMissingReferences.append(convertOperation.missingObjectsPerEntities)
+            }
         }
         self.queue.addOperation(convertOperation)
     }
