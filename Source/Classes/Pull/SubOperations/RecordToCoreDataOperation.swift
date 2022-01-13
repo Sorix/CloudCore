@@ -53,8 +53,8 @@ public class RecordToCoreDataOperation: AsynchronousOperation {
                 self.errorBlock?(error)
             }
             
-            self.state = .finished
         }
+        self.state = .finished
 	}
 	
 	/// Create or update existing NSManagedObject from CKRecord
