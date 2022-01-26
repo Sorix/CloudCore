@@ -181,7 +181,7 @@ CloudCore now has built-in support for CloudKit Sharing.  There are several addi
 func windowScene(_ windowScene: UIWindowScene, 
 				 userDidAcceptCloudKitShareWith cloudKitShareMetadata: CKShare.Metadata) {
   let acceptShareOperation = CKAcceptSharesOperation(shareMetadatas: [cloudKitShareMetadata])
-  acceptShareOperation.qualityOfService = .userInteractive
+  acceptShareOperation.qualityOfService = .userInitiated
   acceptShareOperation.perShareCompletionBlock = { meta, share, error in
     CloudCore.pull(rootRecordID: meta.rootRecordID, container: self.persistentContainer, error: nil) { }
   }
@@ -198,7 +198,7 @@ OR
 func application(_ application: UIApplication,
                  userDidAcceptCloudKitShareWith cloudKitShareMetadata: CKShare.Metadata) {
   let acceptShareOperation = CKAcceptSharesOperation(shareMetadatas: [cloudKitShareMetadata])
-  acceptShareOperation.qualityOfService = .userInteractive
+  acceptShareOperation.qualityOfService = .userInitiated
   acceptShareOperation.perShareCompletionBlock = { meta, share, error in
     CloudCore.pull(rootRecordID: meta.rootRecordID, container: self.persistentContainer, error: nil) { }
   }
