@@ -44,6 +44,7 @@ public class PublicDatabaseSubscriptions {
         
         let config = CKOperation.Configuration()
         config.timeoutIntervalForResource = 20
+        config.qualityOfService = .userInitiated
         modifySubscriptions.configuration = config
         
         CloudCore.config.container.publicCloudDatabase.add(modifySubscriptions)
@@ -67,6 +68,7 @@ public class PublicDatabaseSubscriptions {
         
         let config = CKOperation.Configuration()
         config.timeoutIntervalForResource = 20
+        config.qualityOfService = .userInitiated
         modifySubscription.configuration = config
         
         CloudCore.config.container.publicCloudDatabase.add(modifySubscription)
