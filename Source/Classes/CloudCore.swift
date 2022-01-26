@@ -256,5 +256,21 @@ open class CloudCore {
 		
 		delegate?.error(error: subscriptionError, module: nil)
 	}
-
+    
+    static public func perform(completion: ((CKContainer) -> Void)) {
+        let container = config.container
+        
+        if #available(iOSApplicationExtension 15.0, *) {
+            let ckConfig = CKOperation.Configuration()
+//            ckConfig.container = container
+            ckConfig.qualityOfService = .userInitiated
+            ckConfig.allowsCellularAccess = true
+            container.configuredWith(configuration: ckConfig, group: nil) { configuredContainer in
+                completion(configuredContainer)
+            }
+        } else {
+            completion(container)
+        }
+    }
+    
 }
