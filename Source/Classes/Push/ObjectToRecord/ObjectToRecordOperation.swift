@@ -79,7 +79,15 @@ class ObjectToRecordOperation: Operation {
 			
 			if let attribute = CoreDataAttribute(value: value, attributeName: attributeName, entity: managedObject.entity) {
 				let recordValue = try attribute.makeRecordValue()
-				record.setValue(recordValue, forKey: attributeName)
+                if #available(iOS 15, *) {
+                    if attribute.description.allowsCloudEncryption {
+                        record.encryptedValues[attributeName] = (recordValue as! __CKRecordObjCValue)
+                    } else {
+                        record.setValue(recordValue, forKey: attributeName)
+                    }
+                } else {
+                    record.setValue(recordValue, forKey: attributeName)
+                }
             } else if let relationship = CoreDataRelationship(scope: scope, value: value, relationshipName: attributeName, entity: managedObject.entity) {
 				let references = try relationship.makeRecordValue()
 				record.setValue(references, forKey: attributeName)
