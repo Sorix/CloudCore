@@ -37,7 +37,12 @@ class ModelFactory {
 		org.name = faker.company.name()
 		org.bs = faker.company.bs()
 		org.founded = Date(timeIntervalSince1970: faker.number.randomDouble(min: 1292250324, max: 1513175137))
-
+        
+        org.secretString = "This is a secret"
+        org.secretInteger = 42
+        org.secretDouble = 3.14
+        org.secretBoolean = true
+        
 		return org
 	}
 	
