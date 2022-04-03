@@ -49,6 +49,7 @@ public class CloudCoreSharingController: NSObject, UICloudSharingControllerDeleg
                     let sharingController = UICloudSharingController { _, handler in
                         let modifyOp = CKModifyRecordsOperation(recordsToSave: [aRecord, share], recordIDsToDelete: nil)
                         modifyOp.savePolicy = .changedKeys
+                        modifyOp.qualityOfService = .userInitiated
                         modifyOp.modifyRecordsCompletionBlock = { records, recordIDs, error in
                             if let share = records?.first as? CKShare {
                                 handler(share, CloudCore.config.container, error)
