@@ -89,10 +89,9 @@ public class RecordToCoreDataOperation: AsynchronousOperation {
 	///   - entityName: entity name of `object`
 	///   - recordDataAttributeName: attribute name containing recordData
 	private func fill(object: NSManagedObject, entityName: String, serviceAttributeNames: ServiceAttributeNames, context: NSManagedObjectContext) throws {
-		for key in record.allKeys() {
-			let recordValue = record.value(forKey: key)
-			
-			let ckAttribute = CloudKitAttribute(value: recordValue, fieldName: key, entityName: entityName, serviceAttributes: serviceAttributeNames, context: context)
+        
+        func storeValue(_ recordValue: Any?, for key: String) {
+            let ckAttribute = CloudKitAttribute(value: recordValue, fieldName: key, entityName: entityName, serviceAttributes: serviceAttributeNames, context: context)
             if let coreDataValue = try? ckAttribute.makeCoreDataValue() {
                 if let cdAttribute = object.entity.attributesByName[key], cdAttribute.attributeType == .transformableAttributeType,
                     let data = coreDataValue as? Data {
@@ -111,8 +110,28 @@ public class RecordToCoreDataOperation: AsynchronousOperation {
                     missingObjectsPerEntities[object] = ckAttribute.notFoundRecordNamesForAttribute
                 }
             }
-		}
-		
+        }
+        
+        if #available(iOS 15, *) {
+            let allKeys = record.allKeys()
+            let encryptedKeys = record.encryptedValues.allKeys()
+            
+            for key in allKeys {
+                let recordValue: Any?
+                if encryptedKeys.contains(key) {
+                    recordValue = record.encryptedValues[key]
+                } else {
+                    recordValue = record.value(forKey: key)
+                }
+                storeValue(recordValue, for: key)
+            }
+        } else {
+            for key in record.allKeys() {
+                let recordValue = record.value(forKey: key)
+                storeValue(recordValue, for: key)
+            }
+        }
+        
 		// Set system headers
         object.setValue(record.recordID.recordName, forKey: serviceAttributeNames.recordName)
         object.setValue(record.recordID.zoneID.ownerName, forKey: serviceAttributeNames.ownerName)
