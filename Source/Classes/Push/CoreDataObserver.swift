@@ -281,6 +281,8 @@ class CoreDataObserver {
             var deleteZoneOperation: Operation? = nil
             if let _ = cloudError.userInfo["CKErrorUserDidResetEncryptedDataKey"] {
                 // per https://developer.apple.com/documentation/cloudkit/encrypting_user_data
+                // see also https://github.com/apple/cloudkit-sample-encryption
+                
                 let deleteOp = DeleteCloudCoreZoneOperation()
                 resetZoneOperations.append(deleteOp)
                 
