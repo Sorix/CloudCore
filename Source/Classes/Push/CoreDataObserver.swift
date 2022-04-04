@@ -276,26 +276,41 @@ class CoreDataObserver {
 		case .zoneNotFound:
 			pushOperationQueue.cancelAllOperations()
 			
+            var resetZoneOperations: [Operation] = []
+            
+            var deleteZoneOperation: Operation? = nil
+            if let _ = cloudError.userInfo["CKErrorUserDidResetEncryptedDataKey"] {
+                // per https://developer.apple.com/documentation/cloudkit/encrypting_user_data
+                let deleteOp = DeleteCloudCoreZoneOperation()
+                resetZoneOperations.append(deleteOp)
+                
+                deleteZoneOperation = deleteOp
+            }
+            
 			// Create CloudCore Zone
 			let createZoneOperation = CreateCloudCoreZoneOperation()
 			createZoneOperation.errorBlock = {
 				self.delegate?.error(error: $0, module: .some(.pushToCloud))
 				self.pushOperationQueue.cancelAllOperations()
 			}
+            if let deleteZoneOperation = deleteZoneOperation {
+                createZoneOperation.addDependency(deleteZoneOperation)
+            }
+            resetZoneOperations.append(createZoneOperation)
 			
 			// Subscribe operation
             let subscribeOperation = SubscribeOperation()
             subscribeOperation.errorBlock = { self.delegate?.error(error: $0, module: .some(.pushToCloud)) }
             subscribeOperation.addDependency(createZoneOperation)
+            resetZoneOperations.append(subscribeOperation)
             
-            pushOperationQueue.addOperation(subscribeOperation)
-			
 			// Upload all local data
 			let uploadOperation = PushAllLocalDataOperation(parentContext: parentContext, managedObjectModel: container.managedObjectModel)
 			uploadOperation.errorBlock = { self.delegate?.error(error: $0, module: .some(.pushToCloud)) }
             uploadOperation.addDependency(createZoneOperation)
+            resetZoneOperations.append(uploadOperation)
             
-			pushOperationQueue.addOperations([createZoneOperation, uploadOperation], waitUntilFinished: true)
+			pushOperationQueue.addOperations(resetZoneOperations, waitUntilFinished: true)
 		case .operationCancelled: return
 		default: delegate?.error(error: cloudError, module: .some(.pushToCloud))
 		}
