@@ -15,6 +15,7 @@
 * **public database** push is supported
 * Parent-Child relationships can be defined for CloudKit Sharing
 * Respects Core Data options (cascade deletions, external storage).
+* Support for 'Allows Cloud Encryption' for attributes in Core Data with automatic encoding to and from encryptedValues[] in CloudKit.
 * Knows and manages CloudKit errors like `userDeletedZone`, `zoneNotFound`, `changeTokenExpired`, `isMore`.
 * Available on iOS and iPadOS (watchOS and tvOS haven't been tested)
 * Sharing can be extended to your NSManagedObject classes, and native SharingUI is implemented
