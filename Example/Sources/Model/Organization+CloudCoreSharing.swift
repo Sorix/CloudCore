@@ -18,7 +18,7 @@ extension Organization: CloudCoreSharing {
     }
     
     public var sharingType: String? {
-        return "com.deeje.cloudcore.example.organization"
+        return "com.deeje.sample.CloudCore.organization"
     }
     
     public var sharingImage: Data? {

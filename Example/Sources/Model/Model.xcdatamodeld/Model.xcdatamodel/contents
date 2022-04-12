@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="18154" systemVersion="20F71" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="20086" systemVersion="21E230" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
     <entity name="Employee" representedClassName="Employee" syncable="YES" codeGenerationType="class">
         <attribute name="department" attributeType="String"/>
         <attribute name="name" attributeType="String"/>
@@ -26,6 +26,10 @@
         <attribute name="privateRecordData" optional="YES" attributeType="Binary" preserveAfterDeletion="YES"/>
         <attribute name="publicRecordData" optional="YES" attributeType="Binary" preserveAfterDeletion="YES"/>
         <attribute name="recordName" optional="YES" attributeType="String"/>
+        <attribute name="secretBoolean" optional="YES" attributeType="Boolean" allowsCloudEncryption="YES" usesScalarValueType="YES"/>
+        <attribute name="secretDouble" optional="YES" attributeType="Double" defaultValueString="0.0" allowsCloudEncryption="YES" usesScalarValueType="YES"/>
+        <attribute name="secretInteger" optional="YES" attributeType="Integer 32" defaultValueString="0" allowsCloudEncryption="YES" usesScalarValueType="YES"/>
+        <attribute name="secretString" optional="YES" attributeType="String" allowsCloudEncryption="YES"/>
         <attribute name="shareRecordData" optional="YES" attributeType="Binary"/>
         <attribute name="sort" attributeType="Integer 32" defaultValueString="1" usesScalarValueType="YES"/>
         <relationship name="employees" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="Employee" inverseName="organization" inverseEntity="Employee"/>
@@ -38,6 +42,6 @@
     </entity>
     <elements>
         <element name="Employee" positionX="261" positionY="216" width="128" height="180"/>
-        <element name="Organization" positionX="261" positionY="189" width="128" height="179"/>
+        <element name="Organization" positionX="261" positionY="189" width="128" height="239"/>
     </elements>
 </model>
