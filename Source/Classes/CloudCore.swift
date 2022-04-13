@@ -260,7 +260,7 @@ open class CloudCore {
     static public func perform(completion: ((CKContainer) -> Void)) {
         let container = config.container
         
-        if #available(iOS 15.0, *) {
+        if #available(iOS 15.0, watchOS 8.0, tvOS 15.0, macOS 12.0, *) {
             let ckConfig = CKOperation.Configuration()
 //            ckConfig.container = container
             ckConfig.qualityOfService = .userInitiated

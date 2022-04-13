@@ -79,7 +79,7 @@ class ObjectToRecordOperation: Operation {
 			
 			if let attribute = CoreDataAttribute(value: value, attributeName: attributeName, entity: managedObject.entity) {
 				let recordValue = try attribute.makeRecordValue()
-                if #available(iOS 15, *) {
+                if #available(iOS 15.0, watchOS 8.0, tvOS 15.0, macOS 12.0, *) {
                     if attribute.description.allowsCloudEncryption {
                         record.encryptedValues[attributeName] = (recordValue as! __CKRecordObjCValue)
                     } else {
