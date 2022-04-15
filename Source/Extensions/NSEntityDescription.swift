@@ -68,27 +68,46 @@ extension NSEntityDescription {
             }
         }
         
+        let relationshipNames = relationshipsByName.map { $0.key }
+        
         return ServiceAttributeNames(entityName: entityName,
                                      scopes: attributeNamesFromUserInfo.scopes,
                                      recordName: recordNameAttribute,
                                      ownerName: ownerNameAttribute,
                                      privateRecordData: privateRecordDataAttribute,
-                                     publicRecordData: publicRecordDataAttribute)
+                                     publicRecordData: publicRecordDataAttribute,
+                                     allAttributeNames: attributeNamesFromUserInfo.allAttributeNames,
+                                     allRelationshipNames: relationshipNames,
+                                     maskedUpload: attributeNamesFromUserInfo.maskedUpload,
+                                     maskedDownload: attributeNamesFromUserInfo.maskedDownload)
 	}
 	
 	/// Parse data from User Info dictionary
-    private func parseAttributeNamesFromUserInfo() -> (scopes: [CKDatabase.Scope], recordName: String?, ownerName: String?, privateRecordData: String?, publicRecordData: String?) {
+    private func parseAttributeNamesFromUserInfo() -> (scopes: [CKDatabase.Scope],
+                                                       recordName: String?,
+                                                       ownerName: String?,
+                                                       privateRecordData: String?,
+                                                       publicRecordData: String?,
+                                                       allAttributeNames: [String],
+                                                       maskedUpload: [String],
+                                                       maskedDownload: [String]) {
         var scopes: [CKDatabase.Scope] = []
         var recordNameAttribute: String?
         var ownerNameAttribute: String?
         var privateRecordDataAttribute: String?
         var publicRecordDataAttribute: String?
+        var allAttributeNames: [String] = []
+        var maskedUpload: [String] = []
+        var maskedDownload: [String] = []
         
         func parse(_ attributeName: String, _ userInfo: [AnyHashable: Any]) {
+            allAttributeNames.append(attributeName)
+            
             for (key, value) in userInfo {
-                guard let key = key as? String,
-                    let value = value as? String else { continue }
-                
+                guard let key = key as? String, let value = value as? String else {
+                    continue
+                }
+                                
                 if key == ServiceAttributeNames.keyType {
                     switch value {
                     case ServiceAttributeNames.valueRecordName: recordNameAttribute = attributeName
@@ -97,33 +116,36 @@ extension NSEntityDescription {
                     case ServiceAttributeNames.valuePublicRecordData: publicRecordDataAttribute = attributeName
                     default: continue
                     }
-                } else if key == ServiceAttributeNames.keyScopes {
-                    let scopeStrings = value.components(separatedBy: ",")
-                    for scopeString in scopeStrings {
-                        switch scopeString {
-                        case "public":
-                            scopes.append(.public)
-                        case "private":
-                            scopes.append(.private)
-                        default:
-                            break
-                        }
+                    
+                    allAttributeNames.removeLast()
+                } else if key == ServiceAttributeNames.keyMasks {
+                    let maskStrings = value.components(separatedBy: ",")
+                    if maskStrings.contains("upload") {
+                        maskedUpload.append(attributeName)
+                    }
+                    if maskStrings.contains("download") {
+                        maskedDownload.append(attributeName)
                     }
                 }
             }
         }
         
-        if let userInfo = self.userInfo {
-            parse("", userInfo)
+        if let userInfo = self.userInfo, let scopesString = userInfo[ServiceAttributeNames.keyScopes] as? String {
+            let scopeComponents = scopesString.components(separatedBy: ",")
+            if scopeComponents.contains("public") {
+                scopes.append(.public)
+            }
+            if scopeComponents.contains("private") {
+                scopes.append(.private)
+            }
         }
         
-		// In attribute
-		for (attributeName, attributeDescription) in self.attributesByName {
+		for (attributeName, attributeDescription) in attributesByName {
 			guard let userInfo = attributeDescription.userInfo else { continue }
 			parse(attributeName, userInfo)
 		}
 		
-		return (scopes, recordNameAttribute, ownerNameAttribute, privateRecordDataAttribute, publicRecordDataAttribute)
+		return (scopes, recordNameAttribute, ownerNameAttribute, privateRecordDataAttribute, publicRecordDataAttribute, allAttributeNames, maskedUpload, maskedDownload)
 	}
 	
 }

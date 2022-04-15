@@ -22,7 +22,7 @@ class FetchRecordZoneChangesOperation: Operation {
     private let optionsByRecordZoneID: [CKRecordZone.ID: CKFetchRecordZoneChangesOperation.ZoneConfiguration]
 	private let fetchQueue = OperationQueue()
 	
-	init(from database: CKDatabase, recordZoneIDs: [CKRecordZone.ID], tokens: Tokens) {
+    init(from database: CKDatabase, recordZoneIDs: [CKRecordZone.ID], tokens: Tokens, desiredKeys: [String]? = nil) {
 		self.tokens = tokens
 		self.database = database
 		self.recordZoneIDs = recordZoneIDs
@@ -32,6 +32,7 @@ class FetchRecordZoneChangesOperation: Operation {
             let options = CKFetchRecordZoneChangesOperation.ZoneConfiguration()
             options.previousServerChangeToken = self.tokens.token(for: zoneID)
 			optionsByRecordZoneID[zoneID] = options
+            options.desiredKeys = desiredKeys
 		}
 		self.optionsByRecordZoneID = optionsByRecordZoneID
 		
@@ -73,6 +74,11 @@ class FetchRecordZoneChangesOperation: Operation {
 		fetchRecordZoneChanges.recordWithIDWasDeletedBlock = { recordID, _ in
 			self.recordWithIDWasDeletedBlock?(recordID)
 		}
+        /*
+        fetchRecordZoneChanges.recordZoneChangeTokensUpdatedBlock = { zoneId, serverChangeToken, _ in
+            self.tokens.setToken(serverChangeToken, for: zoneId)
+        }
+        */
 		fetchRecordZoneChanges.recordZoneFetchCompletionBlock = { zoneId, serverChangeToken, clientChangeTokenData, isMore, error in
             self.tokens.setToken(serverChangeToken, for: zoneId)
 			

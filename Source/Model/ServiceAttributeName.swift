@@ -14,6 +14,7 @@ struct ServiceAttributeNames {
 	static let keyType = "CloudCoreType"
 	static let keyScopes = "CloudCoreScopes"
     static let keyParent = "CloudCoreParent"
+    static let keyMasks = "CloudCoreMasks"
 	
     static let valueRecordName = "recordName"
     static let valueOwnerName = "ownerName"
@@ -29,12 +30,26 @@ struct ServiceAttributeNames {
     let privateRecordData: String
     let publicRecordData: String
     
-    func contains(_ attributeName: String) -> Bool {
+    let allAttributeNames: [String]
+    let allRelationshipNames: [String]
+    let maskedUpload: [String]
+    let maskedDownload: [String]
+    
+    func isMaskedUpload(_ attributeName: String) -> Bool {
         switch attributeName {
         case recordName, ownerName, privateRecordData, publicRecordData:
             return true
         default:
-            return false
+            return maskedUpload.contains(attributeName)
         }
     }
+    
+    func desiredKeys() -> [String] {
+        var keys = allAttributeNames.filter { !maskedDownload.contains($0) }
+        
+        keys.append(contentsOf: allRelationshipNames)
+        
+        return keys
+    }
+    
 }
