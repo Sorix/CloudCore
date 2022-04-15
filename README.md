@@ -4,10 +4,10 @@
 ![Status](https://img.shields.io/badge/status-beta-orange.svg)
 ![Swift](https://img.shields.io/badge/swift-5.0-orange.svg)
 
-**CloudCore** is a framework that manages syncing between iCloud (CloudKit) and Core Data written on native Swift.
+**CloudCore** is an advanced sync engine for CloudKit and Core Data.
 
 #### Features
-* Leveraging **NSPersistentHistory**, local changes are pushed to CloudKit when online
+* Leveraging **NSPersistentHistory**, local changes are pushed to CloudKit when online.  Never lose a change again.
 * Pull manually or on CloudKit **remote notifications**.
 * **Differential sync**, only changed object and values are uploaded and downloaded.
 * Core Data relationships are preserved
@@ -19,6 +19,7 @@
 * Knows and manages CloudKit errors like `userDeletedZone`, `zoneNotFound`, `changeTokenExpired`, `isMore`.
 * Available on iOS and iPadOS (watchOS and tvOS haven't been tested)
 * Sharing can be extended to your NSManagedObject classes, and native SharingUI is implemented
+* Maskable Attributes allows you to control which attributes are ignored during upload and/or download.
 
 #### CloudCore vs NSPersistentCloudKitContainer?
 
@@ -33,6 +34,7 @@ NSPersistentCloudKitContainer provides native support for Core Data <-> CloudKit
 * Offline Synchronization is opaque, but doesn't appear to require NSPersistentHistoryTracking
 * All Core Data names are preceeded with "CD_" in CloudKit
 * Core Data Relationships are mapped thru CDMR records in CloudKit
+* Sharing is supported via zones
 
 ###### CloudCore
 * Support requires specific configuration in the Core Data Model
@@ -43,6 +45,8 @@ NSPersistentCloudKitContainer provides native support for Core Data <-> CloudKit
 * Offline Synchronziation via NSPersistentHistoryTracking
 * Core Data names are mapped exactly in CloudKit
 * Core Data Relationships are mapped to CloudKit CKReferences
+* Maskable Attributes provides fine-grain control over local-only data and manually managed remote data.
+* Sharing is supported via root records
 
 During their WWDC presentation, Apple very clearly stated that NSPersistentCloudKitContainer is a foundation for future support of more advanced features #YMMV
 
@@ -169,10 +173,25 @@ When your *entities have relationships*, CloudCore will look for the following k
 
 ### 💡 Tips
 * I recommend to set the *Record Name* attribute as `Indexed`, to speed up updates in big databases.
-* *Record Data* attributes are used to store archived version of `CKRecord` with system fields only (like timestamps, tokens), so don't worry about size, no real data will be stored here.
+* *P… Record Data* attributes are used to store archived version of `CKRecord` with system fields only (like timestamps, tokens), so don't worry about size, no real data will be stored here.
+
+## Scope: Public and/or Private
+You can designate which databases each entity will synchronized with.  For each entity you want to synchronize, add an item to the entity's UserInfo, using the key `CloudCoreScope` and following values:
+* `public` = pushed to public database
+* `private` = synchronized with private (or shared) database
+* 'public,private' = both
+
+### Why Both?
+Maintaining two copies of a record means we get all the benefits of a private (and sharable) record, while also automatically maintaining a fully updated public copy.
+
+## Maskable Attributes
+You can designate attributes in your managed objects to be masked during upload and/or download.  For each attribute you want to mask, add an item to the attribute's UserInfo, using the key `CloudCoreMasks` and following values:
+* `upload` = ignored during modify operations
+* `download` = ignored during fetch operations
+* `upload,download` = both
 
 ## CloudKit Sharing
-CloudCore now has built-in support for CloudKit Sharing.  There are several additional steps you must take to enable it in your application.
+CloudCore has built-in support for CloudKit Sharing.  There are several additional steps you must take to enable it in your application.
 
 1. Add the CKSharingSupported key, with value true, to your info.plist
 
