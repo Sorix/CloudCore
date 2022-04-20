@@ -29,6 +29,7 @@ class DetailViewController: UITableViewController {
 		
 		tableDataSource = DetailTableDataSource(fetchRequest: fetchRequest, context: context, sectionNameKeyPath: nil, delegate: self, tableView: tableView)
 		tableView.dataSource = tableDataSource
+        tableView.delegate = self
 		try! tableDataSource.performFetch()
         
         guard let organization = try? self.context.existingObject(with: self.organizationID) as? CloudCoreSharing else { return }
@@ -86,7 +87,30 @@ class DetailViewController: UITableViewController {
             }
         }
     }
-
+    
+    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        let employee = tableDataSource.object(at: indexPath)
+        let employeeID = employee.objectID
+        
+        persistentContainer.performBackgroundTask { moc in
+            if let employee = try? moc.existingObject(with: employeeID) as? Employee,
+               let datafile = employee.datafiles?.allObjects.first as? Datafile
+            {
+                if datafile.remoteStatus == .available && datafile.cacheState != .cached {
+                    datafile.cacheState = .download
+                } else if datafile.cacheState == .local && datafile.remoteStatus == .pending {
+                    datafile.cacheState = .upload
+                }
+                
+                if moc.hasChanges {
+                    try? moc.save()
+                }
+            }
+        }
+        
+        tableView.deselectRow(at: indexPath, animated: true)
+    }
+    
 }
 
 extension DetailViewController: FRCTableViewDelegate {
@@ -97,8 +121,11 @@ extension DetailViewController: FRCTableViewDelegate {
 		
 		cell.nameLabel.text = employee.name
 		
-		if let imageData = employee.photoData, let image = UIImage(data: imageData) {
-			cell.photoImageView.image = image
+        if let datafile = employee.datafiles?.allObjects.first as? Datafile,
+           datafile.localAvailable,
+           let image = UIImage(contentsOfFile: datafile.urlPath)
+        {
+            cell.photoImageView.image = image
 		} else {
 			cell.photoImageView.image = nil
 		}

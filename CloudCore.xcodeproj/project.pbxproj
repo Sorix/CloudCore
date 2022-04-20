@@ -17,6 +17,10 @@
 		5763BF8C280B42F400B2CCCD /* CloudCoreType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5763BF8A280B42F400B2CCCD /* CloudCoreType.swift */; };
 		5763BF8F280B430C00B2CCCD /* NSManagedContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5763BF8D280B430C00B2CCCD /* NSManagedContainer.swift */; };
 		5763BF90280B430C00B2CCCD /* UIViewController+CloudKit.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5763BF8E280B430C00B2CCCD /* UIViewController+CloudKit.swift */; };
+		5763BF9F280B490200B2CCCD /* DownloadOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5763BF9B280B490200B2CCCD /* DownloadOperation.swift */; };
+		5763BFA0280B490200B2CCCD /* CloudCoreCacheManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5763BF9C280B490200B2CCCD /* CloudCoreCacheManager.swift */; };
+		5763BFA1280B490200B2CCCD /* CloudCoreCacheable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5763BF9D280B490200B2CCCD /* CloudCoreCacheable.swift */; };
+		5763BFA2280B490200B2CCCD /* UploadOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5763BF9E280B490200B2CCCD /* UploadOperation.swift */; };
 		D9089D4A1FE14E57000FC60C /* SetupOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9089D491FE14E57000FC60C /* SetupOperation.swift */; };
 		D97465F81FE319930060EA66 /* CloudCoreDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = D97465F71FE319930060EA66 /* CloudCoreDelegate.swift */; };
 		D97465FA1FE31A650060EA66 /* Module.swift in Sources */ = {isa = PBXBuildFile; fileRef = D97465F91FE31A650060EA66 /* Module.swift */; };
@@ -105,6 +109,10 @@
 		5763BF8A280B42F400B2CCCD /* CloudCoreType.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CloudCoreType.swift; sourceTree = "<group>"; };
 		5763BF8D280B430C00B2CCCD /* NSManagedContainer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NSManagedContainer.swift; sourceTree = "<group>"; };
 		5763BF8E280B430C00B2CCCD /* UIViewController+CloudKit.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UIViewController+CloudKit.swift"; sourceTree = "<group>"; };
+		5763BF9B280B490200B2CCCD /* DownloadOperation.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DownloadOperation.swift; sourceTree = "<group>"; };
+		5763BF9C280B490200B2CCCD /* CloudCoreCacheManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CloudCoreCacheManager.swift; sourceTree = "<group>"; };
+		5763BF9D280B490200B2CCCD /* CloudCoreCacheable.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CloudCoreCacheable.swift; sourceTree = "<group>"; };
+		5763BF9E280B490200B2CCCD /* UploadOperation.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UploadOperation.swift; sourceTree = "<group>"; };
 		8EAC4D8B1B0EF4ECE4BDA160 /* Pods_CloudCore.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_CloudCore.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		D5B2E89F1C3A780C00C0327D /* CloudCore.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = CloudCore.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		D5C6298B1C3A8BBD007F7B7C /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -215,6 +223,17 @@
 				5763BF7C280B427900B2CCCD /* CloudCoreSharingController.swift */,
 			);
 			path = Sharing;
+			sourceTree = "<group>";
+		};
+		5763BF9A280B490200B2CCCD /* Caching */ = {
+			isa = PBXGroup;
+			children = (
+				5763BF9D280B490200B2CCCD /* CloudCoreCacheable.swift */,
+				5763BF9C280B490200B2CCCD /* CloudCoreCacheManager.swift */,
+				5763BF9E280B490200B2CCCD /* UploadOperation.swift */,
+				5763BF9B280B490200B2CCCD /* DownloadOperation.swift */,
+			);
+			path = Caching;
 			sourceTree = "<group>";
 		};
 		D5B2E8951C3A780C00C0327D = {
@@ -341,6 +360,7 @@
 				E2075FF21E4BB6F700E31F1F /* Push */,
 				E2075FF31E4BB70D00E31F1F /* Pull */,
 				5763BF7B280B427900B2CCCD /* Sharing */,
+				5763BF9A280B490200B2CCCD /* Caching */,
 			);
 			path = Classes;
 			sourceTree = "<group>";
@@ -738,17 +758,21 @@
 				D9089D4A1FE14E57000FC60C /* SetupOperation.swift in Sources */,
 				D97465FA1FE31A650060EA66 /* Module.swift in Sources */,
 				57505AB021A7591500D9CF8F /* PullResult.swift in Sources */,
+				5763BFA1280B490200B2CCCD /* CloudCoreCacheable.swift in Sources */,
 				575ADF472655AB7C0050D693 /* PullChangesOperation.swift in Sources */,
 				E29BB2371E4377F80020F5B6 /* CoreDataAttribute.swift in Sources */,
 				E2E296CA1E49DA0800E7D6ED /* Tokens.swift in Sources */,
 				575ADF462655AB7C0050D693 /* PullRecordOperation.swift in Sources */,
 				E2075FFF1E4BCD7E00E31F1F /* ObjectToRecordOperation.swift in Sources */,
 				D985DEA41FE026D400236870 /* CreateCloudCoreZoneOperation.swift in Sources */,
+				5763BFA0280B490200B2CCCD /* CloudCoreCacheManager.swift in Sources */,
 				D985DEAB1FE0335800236870 /* PushAllLocalDataOperation.swift in Sources */,
+				5763BFA2280B490200B2CCCD /* UploadOperation.swift in Sources */,
 				5763BF8C280B42F400B2CCCD /* CloudCoreType.swift in Sources */,
 				E2C02A0E1E4C99AD001B2871 /* ObjectToRecordConverter.swift in Sources */,
 				D985DE9D1FDFF9D400236870 /* PurgeLocalDatabaseOperation.swift in Sources */,
 				E2FA74481E769D9400C3489D /* RecordIDWithDatabase.swift in Sources */,
+				5763BF9F280B490200B2CCCD /* DownloadOperation.swift in Sources */,
 				E29BB2211E4344E80020F5B6 /* CKRecord.swift in Sources */,
 				E2D390081E4A49350019BBCD /* NSEntityDescription.swift in Sources */,
 				5763BF8B280B42F400B2CCCD /* CloudKitSharing.swift in Sources */,

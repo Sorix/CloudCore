@@ -52,6 +52,7 @@ open class CloudCore {
 	// MARK: - Properties
 	
 	private(set) static var coreDataObserver: CoreDataObserver?
+    private(set) static var cacheManager: CloudCoreCacheManager?
     public static var isOnline: Bool {
         get {
             return coreDataObserver?.isOnline ?? false
@@ -97,6 +98,8 @@ open class CloudCore {
 		observer.start()
 		self.coreDataObserver = observer
 		
+        self.cacheManager = CloudCoreCacheManager(persistentContainer: container)
+        
 		// Subscribe (subscription may be outdated/removed)
 		let subscribeOperation = SubscribeOperation()
 		subscribeOperation.errorBlock = {

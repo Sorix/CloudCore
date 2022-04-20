@@ -15,6 +15,7 @@ struct ServiceAttributeNames {
 	static let keyScopes = "CloudCoreScopes"
     static let keyParent = "CloudCoreParent"
     static let keyMasks = "CloudCoreMasks"
+    static let keyCacheable = "CloudCoreCacheable"
 	
     static let valueRecordName = "recordName"
     static let valueOwnerName = "ownerName"

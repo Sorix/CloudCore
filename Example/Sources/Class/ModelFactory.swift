@@ -47,13 +47,21 @@ class ModelFactory {
 	}
 	
 	static func insertEmployee(context: NSManagedObjectContext) -> Employee {
-		let user = Employee(context: context)
-		user.department = faker.commerce.department()
-		user.name = faker.name.name()
-		user.workingSince = Date(timeIntervalSince1970: faker.number.randomDouble(min: 661109847, max: 1513186653))
-		user.photoData = randomAvatar()
-		
-		return user
+		let employee = Employee(context: context)
+		employee.department = faker.commerce.department()
+		employee.name = faker.name.name()
+		employee.workingSince = Date(timeIntervalSince1970: faker.number.randomDouble(min: 661109847, max: 1513186653))
+        
+        let datafile = Datafile(context: context)
+        datafile.suffix = ".png"
+        datafile.cacheState = .local
+        datafile.remoteStatus = .pending
+        datafile.employee = employee
+        
+        let photoData = randomAvatar()
+        try? photoData?.write(to: datafile.url)
+        
+		return employee
 	}
 	
 	private static func randomAvatar() -> Data? {
