@@ -227,9 +227,7 @@ class CoreDataObserver {
                                         
                     // check for cached assets
                     if success == true {
-                        for insertedObject in insertedObjects {
-                            moc.refresh(insertedObject, mergeChanges: true)
-                            
+                        for insertedObject in insertedObjects {                            
                             guard let cacheable = insertedObject as? CloudCoreCacheable,
                                   cacheable.cacheState == .local
                             else { continue }
