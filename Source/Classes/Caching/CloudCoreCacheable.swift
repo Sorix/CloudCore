@@ -74,8 +74,19 @@ public extension CloudCoreCacheable {
         return availableStates.contains(cacheState)
     }
     
-    var remoteAvailable: Bool {
-        return remoteStatus == .available
+    var readyToDownload: Bool {
+        return remoteStatus == .available && cacheState == .remote
+    }
+    
+    var progress: Double {
+        switch cacheState {
+        case .uploading:
+            return uploadProgress
+        case .downloading:
+            return downloadProgress
+        default:
+            return 0
+        }
     }
     
     var urlPath: String {

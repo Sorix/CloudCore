@@ -19,6 +19,13 @@ class DetailViewController: UITableViewController {
 	
     private var sharingController: CloudCoreSharingController!
     
+    private var datafilesObserver: CoreDataContextObserver!
+    private var updateCellQueue: OperationQueue = {
+        let queue = OperationQueue()
+        queue.maxConcurrentOperationCount = 1
+        return queue
+    }()
+    
 	override func viewDidLoad() {
 		super.viewDidLoad()
 		
@@ -46,6 +53,8 @@ class DetailViewController: UITableViewController {
         buttons.append(shareButton)
         
         navigationItem.setRightBarButtonItems(buttons, animated: false)
+        
+        datafilesObserver = CoreDataContextObserver(context: context)
 	}
     
 	@objc private func add(_ sender: UIBarButtonItem) {
@@ -89,25 +98,6 @@ class DetailViewController: UITableViewController {
     }
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        let employee = tableDataSource.object(at: indexPath)
-        let employeeID = employee.objectID
-        
-        persistentContainer.performBackgroundTask { moc in
-            if let employee = try? moc.existingObject(with: employeeID) as? Employee,
-               let datafile = employee.datafiles?.allObjects.first as? Datafile
-            {
-                if datafile.remoteStatus == .available && datafile.cacheState != .cached {
-                    datafile.cacheState = .download
-                } else if datafile.cacheState == .local && datafile.remoteStatus == .pending {
-                    datafile.cacheState = .upload
-                }
-                
-                if moc.hasChanges {
-                    try? moc.save()
-                }
-            }
-        }
-        
         tableView.deselectRow(at: indexPath, animated: true)
     }
     
@@ -120,15 +110,41 @@ extension DetailViewController: FRCTableViewDelegate {
 		let employee = tableDataSource.object(at: indexPath)
 		
 		cell.nameLabel.text = employee.name
-		
-        if let datafile = employee.datafiles?.allObjects.first as? Datafile,
-           datafile.localAvailable,
-           let image = UIImage(contentsOfFile: datafile.urlPath)
-        {
-            cell.photoImageView.image = image
-		} else {
-			cell.photoImageView.image = nil
-		}
+        
+        cell.progressView.isHidden = true
+        cell.progressView.progress = 0
+        
+        if let datafile = employee.datafiles?.allObjects.first as? Datafile {
+            if datafile.localAvailable {
+                cell.photoImageView.image = UIImage(contentsOfFile: datafile.urlPath)                
+            } else if datafile.readyToDownload {
+                datafilesObserver.observeObject(object: datafile) { datafile, state in
+                    guard let cacheable = datafile as? CloudCoreCacheable else { return }
+                    
+                    cell.progressView.isHidden = cacheable.progress == 0
+                    cell.progressView.progress = Float(cacheable.progress)
+                    
+                    if cacheable.localAvailable {
+                        cell.photoImageView.image = UIImage(contentsOfFile: cacheable.urlPath)
+                        cell.progressView.isHidden = true
+                        cell.progressView.progress = 0
+
+                        self.datafilesObserver.unobserveObject(object: datafile)
+                    }
+                }
+                
+                persistentContainer.performBackgroundTask { moc in
+                    guard let cacheable = try? moc.existingObject(with: datafile.objectID) as? CloudCoreCacheable else { return }
+                    
+                    cacheable.cacheState = .download
+                    
+                    try? moc.save()
+                }
+            } else {
+                cell.progressView.isHidden = datafile.progress == 0
+                cell.progressView.progress = Float(datafile.progress)
+            }
+        }
 		
 		var departmentText = employee.department ?? "No"
 		departmentText += " department"

@@ -14,5 +14,14 @@ class EmployeeTableViewCell: UITableViewCell {
 	@IBOutlet weak var nameLabel: UILabel!
 	@IBOutlet weak var departmentLabel: UILabel!
 	@IBOutlet weak var sinceLabel: UILabel!
+    @IBOutlet weak var progressView: UIProgressView!
 	
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        
+        photoImageView.image = nil
+        progressView.progress = 0
+        progressView.isHidden = true
+    }
+    
 }
