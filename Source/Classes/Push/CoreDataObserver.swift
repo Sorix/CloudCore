@@ -121,7 +121,7 @@ class CoreDataObserver {
         
         return success
     }
-        
+    
 	@objc private func willSave(notification: Notification) {
 		guard let context = notification.object as? NSManagedObjectContext else { return }
         guard shouldProcess(context) else { return }
@@ -218,11 +218,26 @@ class CoreDataObserver {
                     self.converter.prepareOperationsFor(inserted: insertedObjects,
                                                         updated: updatedObject,
                                                         deleted: deletedRecordIDs)
-                    
+                                        
                     try? moc.save()
                     
                     if self.converter.hasPendingOperations {
                         success = self.processChanges()
+                    }
+                                        
+                    // check for cached assets
+                    if success == true {
+                        for insertedObject in insertedObjects {
+                            moc.refresh(insertedObject, mergeChanges: true)
+                            
+                            guard let cacheable = insertedObject as? CloudCoreCacheable,
+                                  cacheable.cacheState == .local
+                            else { continue }
+                            
+                            cacheable.cacheState = .upload
+                        }
+                        
+                        try? moc.save()
                     }
                 }
                 

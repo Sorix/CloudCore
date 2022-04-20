@@ -240,7 +240,7 @@ class CloudCoreCacheManager: NSObject {
             fetchOp.longLivedOperationWasPersistedBlock = { }
             container.privateCloudDatabase.add(fetchOp)
             
-            cacheable.cacheState = .uploading
+            cacheable.cacheState = .downloading
             try? context.save()
         }
     }
