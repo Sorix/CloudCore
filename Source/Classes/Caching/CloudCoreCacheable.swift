@@ -35,6 +35,7 @@ public protocol CloudCoreCacheable: CloudCoreType {
     var operationID: String? { get set }
     var uploadProgress: Double { get set }
     var downloadProgress: Double { get set }
+    var lastErrorMessage: String? { get set }
     
         // sync'ed
     var remoteStatusRaw: String? { get set }

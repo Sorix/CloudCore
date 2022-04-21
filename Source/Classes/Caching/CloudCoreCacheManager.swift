@@ -41,7 +41,7 @@ class CloudCoreCacheManager: NSObject {
 
         super.init()
         
-        restoreLongLivedOperations()
+        restoreDanglingOperations()
         configureObservers()
     }
     
@@ -58,16 +58,25 @@ class CloudCoreCacheManager: NSObject {
         }
     }
     
-    func update(_ cacheableID: NSManagedObjectID, in context: NSManagedObjectContext, change: @escaping (CloudCoreCacheable) -> Void) {
-        context.perform {
-            guard let cacheable = try? context.existingObject(with: cacheableID) as? CloudCoreCacheable else { return }
-            
-            change(cacheable)
-            
-            try? context.save()
+    func update(_ cacheableIDs: [NSManagedObjectID], change: @escaping (CloudCoreCacheable) -> Void) {
+        persistentContainer.performBackgroundTask { context in
+            context.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
+            do {
+                for cacheableID in cacheableIDs {
+                    if let cacheable = try context.existingObject(with: cacheableID) as? CloudCoreCacheable {
+                        change(cacheable)
+                    }
+                }
+                
+                if context.hasChanges {
+                    try context.save()
+                }
+            } catch {
+                CloudCore.delegate?.error(error: error, module: nil)
+            }
         }
     }
-        
+    
     private func configureObservers() {
         let context = backgroundContext
         
@@ -97,7 +106,7 @@ class CloudCoreCacheManager: NSObject {
         }
     }
     
-    func restoreLongLivedOperations() {
+    func restoreDanglingOperations() {
         let context = backgroundContext
         
         context.perform {
@@ -105,12 +114,23 @@ class CloudCoreCacheManager: NSObject {
                 let uploading = NSPredicate(format: "%K == %@", "cacheStateRaw", CacheState.uploading.rawValue)
                 let downloading = NSPredicate(format: "%K == %@", "cacheStateRaw", CacheState.downloading.rawValue)
                 let existing = NSCompoundPredicate(orPredicateWithSubpredicates: [uploading, downloading])
-                
                 let restoreRequest = NSFetchRequest<NSManagedObject>(entityName: name)
                 restoreRequest.predicate = existing
-                
                 if let cacheables = try? context.fetch(restoreRequest) as? [CloudCoreCacheable] {
                     self.process(cacheables: cacheables)
+                }
+                
+                let hasError = NSPredicate(format: "%K != nil", "lastErrorMessage")
+                let isLocal = NSPredicate(format: "%K == %@", "cacheStateRaw", CacheState.local.rawValue)
+                let failedToUpload = NSCompoundPredicate(orPredicateWithSubpredicates: [hasError, isLocal])
+                let restartRequest = NSFetchRequest<NSManagedObject>(entityName: name)
+                restartRequest.predicate = failedToUpload
+                if let cacheables = try? context.fetch(restartRequest) as? [CloudCoreCacheable] {
+                    let cacheableIDs = cacheables.map { $0.objectID }
+                    self.update(cacheableIDs) { cacheable in
+                        cacheable.lastErrorMessage = nil
+                        cacheable.cacheState = .upload
+                    }
                 }
             }
         }
@@ -172,16 +192,19 @@ class CloudCoreCacheManager: NSObject {
             }
             
             modifyOp.perRecordProgressBlock = { record, progress in
-                self.update(cacheableID, in: context) { cacheable in
+                self.update([cacheableID]) { cacheable in
                     cacheable.uploadProgress = progress
                 }
             }
             modifyOp.perRecordCompletionBlock = { record, error in
-                if error != nil { return }
-                                    
-                self.update(cacheableID, in: context) { cacheable in
+                self.update([cacheableID]) { cacheable in
                     cacheable.uploadProgress = 0
-                    cacheable.cacheState = .cached
+                    cacheable.cacheState = (error == nil) ? .cached : .local
+                    cacheable.lastErrorMessage = error?.localizedDescription
+                }
+                
+                if let error = error {
+                    CloudCore.delegate?.error(error: error, module: .cacheToCloud)
                 }
             }
             modifyOp.modifyRecordsCompletionBlock = { records, recordIDs, error in }
@@ -217,14 +240,12 @@ class CloudCoreCacheManager: NSObject {
             }
             
             fetchOp.perRecordProgressBlock = { record, progress in
-                self.update(cacheableID, in: context) { cacheable in
+                self.update([cacheableID]) { cacheable in
                     cacheable.downloadProgress = progress
                 }
             }
             fetchOp.perRecordCompletionBlock = { record, recordID, error in
-                if error != nil { return }
-                                    
-                self.update(cacheableID, in: context) { cacheable in
+                self.update([cacheableID]) { cacheable in
                     if let asset = record?[cacheable.assetFieldName] as? CKAsset,
                        let downloadURL = asset.fileURL
                     {
@@ -234,7 +255,12 @@ class CloudCoreCacheManager: NSObject {
                     }
                     
                     cacheable.downloadProgress = 0
-                    cacheable.cacheState = .cached
+                    cacheable.cacheState = (error == nil) ? .cached : .remote
+                    cacheable.lastErrorMessage = error?.localizedDescription
+                }
+                
+                if let error = error {
+                    CloudCore.delegate?.error(error: error, module: .cacheFromCloud)
                 }
             }
             fetchOp.longLivedOperationWasPersistedBlock = { }

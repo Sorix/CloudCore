@@ -224,18 +224,25 @@ class CoreDataObserver {
                     if self.converter.hasPendingOperations {
                         success = self.processChanges()
                     }
-                                        
+                    
                     // check for cached assets
                     if success == true {
-                        for insertedObject in insertedObjects {                            
-                            guard let cacheable = insertedObject as? CloudCoreCacheable,
-                                  cacheable.cacheState == .local
-                            else { continue }
-                            
-                            cacheable.cacheState = .upload
+                        let insertedIDs = insertedObjects.map { $0.objectID }
+                        container.performBackgroundTask { moc in
+                            do {
+                                for insertedID in insertedIDs {
+                                    guard let cacheable = try moc.existingObject(with: insertedID) as? CloudCoreCacheable,
+                                          cacheable.cacheState == .local
+                                    else { continue }
+                                    
+                                    cacheable.cacheState = .upload
+                                }
+                                
+                                try moc.save()
+                            } catch {
+                                self.delegate?.error(error: error, module: .some(.pushToCloud))
+                            }
                         }
-                        
-                        try? moc.save()
                     }
                 }
                 

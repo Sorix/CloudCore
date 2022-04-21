@@ -16,6 +16,11 @@
                 <entry key="CloudCoreMasks" value="upload,download"/>
             </userInfo>
         </attribute>
+        <attribute name="lastErrorMessage" optional="YES" attributeType="String">
+            <userInfo>
+                <entry key="CloudCoreMasks" value="upload,download"/>
+            </userInfo>
+        </attribute>
         <attribute name="operationID" optional="YES" attributeType="String">
             <userInfo>
                 <entry key="CloudCoreMasks" value="upload,download"/>
@@ -84,7 +89,7 @@
         </userInfo>
     </entity>
     <elements>
-        <element name="Datafile" positionX="270" positionY="306" width="128" height="224"/>
+        <element name="Datafile" positionX="270" positionY="306" width="128" height="239"/>
         <element name="Employee" positionX="261" positionY="216" width="128" height="164"/>
         <element name="Organization" positionX="261" positionY="189" width="128" height="239"/>
     </elements>
