@@ -57,6 +57,7 @@ public class PullChangesOperation: PullOperation {
 		
 		let backgroundContext = persistentContainer.newBackgroundContext()
 		backgroundContext.name = CloudCore.config.pullContextName
+        backgroundContext.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
         
         for database in databases {
             let databaseChangeToken = tokens.token(for: database.databaseScope)
