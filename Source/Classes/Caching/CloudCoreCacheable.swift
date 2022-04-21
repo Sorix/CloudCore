@@ -27,9 +27,6 @@ public enum RemoteStatus: String {
 
 public protocol CloudCoreCacheable: CloudCoreType {
     
-        // usually hardcoded in the class
-    var assetFieldName: String { get }
-    
         // fully masked
     var cacheStateRaw: String? { get set }
     var operationID: String? { get set }
@@ -89,7 +86,7 @@ public extension CloudCoreCacheable {
     }
     
     var urlPath: String {
-        let cacheDirectory = NSSearchPathForDirectoriesInDomains(.cachesDirectory, .userDomainMask, true).first
+        let cacheDirectory = NSSearchPathForDirectoriesInDomains(.applicationSupportDirectory, .userDomainMask, true).first
         
         return cacheDirectory! + "/" + recordName! + "." + (suffix ?? "")
     }
