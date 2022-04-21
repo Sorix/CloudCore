@@ -20,6 +20,7 @@
 * Available on iOS and iPadOS (watchOS and tvOS haven't been tested)
 * Sharing can be extended to your NSManagedObject classes, and native SharingUI is implemented
 * Maskable Attributes allows you to control which attributes are ignored during upload and/or download.
+* Cacheable Assets are uploaded automatically and downloaded on-demand, using long-lived operations separate from sync operations.
 
 #### CloudCore vs NSPersistentCloudKitContainer?
 
@@ -190,6 +191,56 @@ You can designate attributes in your managed objects to be masked during upload 
 * `download` = ignored during fetch operations
 * `upload,download` = both
 
+##Cacheable Assets
+By default, CloudCore will transform assets in your CloudKit records into binary data attributes in your Core Data objects.
+
+But when you're working with very large files, such as photos, audio, or video, this default mode isn't optimal.
+
+* Uploading large files can take a long time, and sync will fail if not completed timely.
+* To optimize a user's device storage, you may want to downloading large files on-demand.
+
+Cacheable Assets addresses these requirements by leveraging Maskable Attributes to ignore asset fields during sync, and then enabling push and pull of asset fields using long-lived operations.
+
+In order to manage cache state, assets must be stored in their own special entity type in your existing schema, which comform to the CloudCoreCacheable protocol.  This protocol defines a number of attributes required to manage cache state:
+
+```swift
+public protocol CloudCoreCacheable: CloudCoreType {        
+        // fully masked
+    var cacheStateRaw: String? { get set }
+    var operationID: String? { get set }
+    var uploadProgress: Double { get set }
+    var downloadProgress: Double { get set }
+    var lastErrorMessage: String? { get set }
+        // sync'ed
+    var remoteStatusRaw: String? { get set }
+    var suffix: String? { get set }
+}
+```
+
+The heart of CloudCoreCacheable is implemented using the following properties:
+
+```swift
+public extension CloudCoreCacheable {
+    
+    var cacheState: CacheState    
+    var remoteStatus: RemoteStatus
+    var url: URL
+    
+}
+```
+
+Once you've configured your Core Data schema to support cacheable assets, you can create and download them as needed.
+
+When you create a new cacheable managed object, you must store its data at the file URL before saving it.  The default value of cacheState is "local" and the default value of remoteStatus is "pending". Once CloudCore pushes the new cacheable record, it sets the cacheState to "upload", which triggers a long-lived upload operation.  On completion, the cacheable managed object will have its cacheState set to "cached" and its remoteStatus set to "available".
+
+When cacheable records are pulled from CloudKit, the asset field is ignored (because it is masked), and the cacheState will be "remote".  When the remoteStatus is "available", you can trigger a download by setting the cacheState to "download" and saving the object.  Once completed, the cacheable object will have its cacheState set to "cached", and the data will be locally available at the file URL.
+
+Note that cacheState represents a state machine. 
+(**new**) => local -> (push) -> upload -> uploading -> cached
+(pull) => remote -> **download** -> downloading -> cached
+
+See the Example app for specific details.
+
 ## CloudKit Sharing
 CloudCore has built-in support for CloudKit Sharing.  There are several additional steps you must take to enable it in your application.
 
@@ -236,7 +287,7 @@ Note that when a user accepts a share, the app does not receive a remote notific
 4. When a user wants to delete an object, your app must distinguish between the owner and a sharer, and either delete the object or the share.
 
 ## Example application
-You can find example application at [Example](/Example/) directory, which has been updated to demonstrate sharing.
+You can find example application at [Example](/Example/) directory, which has been updated to demonstrate sharing, maskable attributes, and cacheable assets.
 
 **How to run it:**
 1. Set Bundle Identifier.
