@@ -18,4 +18,10 @@ extension Datafile: CloudCoreCacheable {
         recordName = UUID().uuidString      // want this precomputed so that url is functional        
     }
     
+    override public func prepareForDeletion() {
+        if localAvailable {
+            try? FileManager.default.removeItem(at: url)
+        }
+    }
+    
 }
