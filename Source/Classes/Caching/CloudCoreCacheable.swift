@@ -17,8 +17,6 @@ public enum CacheState: String {
     case download       // -> downloading -> cached
     case downloading
     
-    case unload         // -> remote
-    
     case cached
 }
 
