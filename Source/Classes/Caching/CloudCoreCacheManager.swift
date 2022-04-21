@@ -205,6 +205,15 @@ class CloudCoreCacheManager: NSObject {
                 
                 if let error = error {
                     CloudCore.delegate?.error(error: error, module: .cacheToCloud)
+                    
+                    if let cloudError = error as? CKError,
+                       cloudError.code == .requestRateLimited || cloudError.code == .zoneBusy,
+                       let number = cloudError.userInfo[CKErrorRetryAfterKey] as? NSNumber
+                    {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + .seconds(number.intValue)) {
+                            self.upload(cacheableID: cacheableID)
+                        }
+                    }
                 }
             }
             modifyOp.modifyRecordsCompletionBlock = { records, recordIDs, error in }
@@ -261,6 +270,15 @@ class CloudCoreCacheManager: NSObject {
                 
                 if let error = error {
                     CloudCore.delegate?.error(error: error, module: .cacheFromCloud)
+                    
+                    if let cloudError = error as? CKError,
+                       cloudError.code == .requestRateLimited || cloudError.code == .zoneBusy,
+                       let number = cloudError.userInfo[CKErrorRetryAfterKey] as? NSNumber
+                    {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + .seconds(number.intValue)) {
+                            self.download(cacheableID: cacheableID)
+                        }
+                    }
                 }
             }
             fetchOp.longLivedOperationWasPersistedBlock = { }

@@ -229,6 +229,7 @@ class CoreDataObserver {
                     if success == true {
                         let insertedIDs = insertedObjects.map { $0.objectID }
                         container.performBackgroundTask { moc in
+                            moc.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
                             do {
                                 for insertedID in insertedIDs {
                                     guard let cacheable = try moc.existingObject(with: insertedID) as? CloudCoreCacheable,
@@ -292,6 +293,16 @@ class CoreDataObserver {
 		}
 
 		switch cloudError.code {
+        case .requestRateLimited, .zoneBusy:
+            pushOperationQueue.cancelAllOperations()
+            
+            if let number = cloudError.userInfo[CKErrorRetryAfterKey] as? NSNumber {
+                DispatchQueue.main.asyncAfter(deadline: .now() + .seconds(number.intValue)) { [weak self] in
+                    guard let observer = self else { return }
+                    observer.processPersistentHistory()
+                }
+            }
+            
 		// Zone was accidentally deleted (NOT PURGED), we need to reupload all data accroding Apple Guidelines
 		case .zoneNotFound:
 			pushOperationQueue.cancelAllOperations()
