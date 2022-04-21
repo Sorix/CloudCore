@@ -239,7 +239,8 @@ Note that cacheState represents a state machine.
 (**new**) => local -> (push) -> upload -> uploading -> cached
 (pull) => remote -> **download** -> downloading -> cached
 
-See the Example app for specific details.
+### Important
+See the Example app for specific details.  Note, specifically, that I **need to override awakeFromInsert and prepareForDeletion** for my cacheable managed object type Datafile.  If anyone has ideas on how to push this critical implementation detail into CloudCore itself, let me know! 
 
 ## CloudKit Sharing
 CloudCore has built-in support for CloudKit Sharing.  There are several additional steps you must take to enable it in your application.
