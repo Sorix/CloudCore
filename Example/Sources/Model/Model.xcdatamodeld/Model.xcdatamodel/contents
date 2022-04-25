@@ -27,9 +27,9 @@
             </userInfo>
         </attribute>
         <attribute name="ownerName" optional="YES" attributeType="String"/>
-        <attribute name="privateRecordData" optional="YES" attributeType="Binary"/>
-        <attribute name="publicRecordData" optional="YES" attributeType="Binary"/>
-        <attribute name="recordName" optional="YES" attributeType="String"/>
+        <attribute name="privateRecordData" optional="YES" attributeType="Binary" preserveAfterDeletion="YES"/>
+        <attribute name="publicRecordData" optional="YES" attributeType="Binary" preserveAfterDeletion="YES"/>
+        <attribute name="recordName" optional="YES" attributeType="String" preserveAfterDeletion="YES"/>
         <attribute name="remoteStatusRaw" optional="YES" attributeType="String"/>
         <attribute name="suffix" optional="YES" attributeType="String"/>
         <attribute name="type" optional="YES" attributeType="String"/>
@@ -54,7 +54,7 @@
         <attribute name="ownerName" optional="YES" attributeType="String"/>
         <attribute name="privateRecordData" optional="YES" attributeType="Binary" preserveAfterDeletion="YES"/>
         <attribute name="publicRecordData" optional="YES" attributeType="Binary" preserveAfterDeletion="YES"/>
-        <attribute name="recordName" optional="YES" attributeType="String"/>
+        <attribute name="recordName" optional="YES" attributeType="String" preserveAfterDeletion="YES"/>
         <attribute name="workingSince" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
         <relationship name="datafiles" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="Datafile" inverseName="employee" inverseEntity="Datafile"/>
         <relationship name="organization" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Organization" inverseName="employees" inverseEntity="Organization"/>
@@ -73,7 +73,7 @@
         <attribute name="ownerName" optional="YES" attributeType="String"/>
         <attribute name="privateRecordData" optional="YES" attributeType="Binary" preserveAfterDeletion="YES"/>
         <attribute name="publicRecordData" optional="YES" attributeType="Binary" preserveAfterDeletion="YES"/>
-        <attribute name="recordName" optional="YES" attributeType="String"/>
+        <attribute name="recordName" optional="YES" attributeType="String" preserveAfterDeletion="YES"/>
         <attribute name="secretBoolean" optional="YES" attributeType="Boolean" allowsCloudEncryption="YES" usesScalarValueType="YES"/>
         <attribute name="secretDouble" optional="YES" attributeType="Double" defaultValueString="0.0" allowsCloudEncryption="YES" usesScalarValueType="YES"/>
         <attribute name="secretInteger" optional="YES" attributeType="Integer 32" defaultValueString="0" allowsCloudEncryption="YES" usesScalarValueType="YES"/>
