@@ -54,6 +54,8 @@ class ModelFactory {
         
         let datafile = Datafile(context: context)
         datafile.suffix = ".png"
+        datafile.cacheState = .local
+        datafile.remoteStatus = .pending
         datafile.employee = employee
         
         let photoData = randomAvatar()
