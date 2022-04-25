@@ -85,14 +85,13 @@ public extension CloudCoreCacheable {
         }
     }
     
-    var urlPath: String {
-        let cacheDirectory = NSSearchPathForDirectoriesInDomains(.applicationSupportDirectory, .userDomainMask, true).first
-        
-        return cacheDirectory! + "/" + recordName! + "." + (suffix ?? "")
-    }
-    
     var url: URL {
-        return URL(fileURLWithPath: urlPath)
+        let fileName = recordName! + (suffix ?? "")
+        
+        var cacheDirectory = try! FileManager.default.url(for: .applicationSupportDirectory, in: .userDomainMask, appropriateFor: nil, create: true)
+        cacheDirectory.appendPathComponent(fileName)
+        
+        return cacheDirectory
     }
     
 }
