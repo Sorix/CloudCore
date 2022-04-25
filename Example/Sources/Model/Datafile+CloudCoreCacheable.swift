@@ -15,7 +15,9 @@ extension Datafile: CloudCoreCacheable {
     override public func awakeFromInsert() {
         super.awakeFromInsert()
         
-        recordName = UUID().uuidString      // want this precomputed so that url is functional        
+        recordName = UUID().uuidString      // want this precomputed so that url is functional
+        cacheState = .local
+        remoteStatus = .pending
     }
     
     override public func prepareForDeletion() {
