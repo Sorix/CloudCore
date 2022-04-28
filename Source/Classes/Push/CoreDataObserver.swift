@@ -176,6 +176,7 @@ class CoreDataObserver {
                     var insertedObjects = Set<NSManagedObject>()
                     var updatedObject = Set<NSManagedObject>()
                     var deletedRecordIDs: [RecordIDWithDatabase] = []
+                    var operationIDs: [String] = []
                     
                     for change in changes {
                         switch change.changeType {
@@ -207,6 +208,9 @@ class CoreDataObserver {
                                     let ckRecord = CKRecord(archivedData: publicRecordData)
                                     let recordIDWithDatabase = RecordIDWithDatabase((ckRecord?.recordID)!, CloudCore.config.container.publicCloudDatabase)
                                     deletedRecordIDs.append(recordIDWithDatabase)
+                                }
+                                if let operationID = change.tombstone!["operationID"] as? String {
+                                    operationIDs.append(operationID)
                                 }
                             }
                             
@@ -244,6 +248,10 @@ class CoreDataObserver {
                                 self.delegate?.error(error: error, module: .some(.pushToCloud))
                             }
                         }
+                    }
+                    
+                    if !operationIDs.isEmpty {
+                        CloudCore.cacheManager?.cancelOperations(with: operationIDs)
                     }
                 }
                 

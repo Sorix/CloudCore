@@ -18,7 +18,7 @@ class CloudCoreCacheManager: NSObject {
     private let container: CKContainer
     private let cacheableClassNames: [String]
     
-    private var frcs: [AnyObject] = []
+    private var frcs: [NSFetchedResultsController<NSManagedObject>] = []
     
     public init(persistentContainer: NSPersistentContainer) {
         self.persistentContainer = persistentContainer
@@ -111,6 +111,7 @@ class CloudCoreCacheManager: NSObject {
         
         context.perform {
             for name in self.cacheableClassNames {
+                    // restore existing ops
                 let uploading = NSPredicate(format: "%K == %@", "cacheStateRaw", CacheState.uploading.rawValue)
                 let downloading = NSPredicate(format: "%K == %@", "cacheStateRaw", CacheState.downloading.rawValue)
                 let existing = NSCompoundPredicate(orPredicateWithSubpredicates: [uploading, downloading])
@@ -120,6 +121,7 @@ class CloudCoreCacheManager: NSObject {
                     self.process(cacheables: cacheables)
                 }
                 
+                    // restart failed uploads
                 let hasError = NSPredicate(format: "%K != nil", "lastErrorMessage")
                 let isLocal = NSPredicate(format: "%K == %@", "cacheStateRaw", CacheState.local.rawValue)
                 let failedToUpload = NSCompoundPredicate(orPredicateWithSubpredicates: [hasError, isLocal])
@@ -147,7 +149,7 @@ class CloudCoreCacheManager: NSObject {
                 // return
             }
             
-            foundOperation = operation as? CKModifyRecordsOperation
+            foundOperation = operation
             
             semaphore.signal()
         }
@@ -286,6 +288,14 @@ class CloudCoreCacheManager: NSObject {
             
             cacheable.cacheState = .downloading
             try? context.save()
+        }
+    }
+    
+    public func cancelOperations(with operationIDs: [String]) {
+        for operationID in operationIDs {
+            if let op = findLongLivedOperation(with: operationID) {
+                op.cancel()
+            }
         }
     }
     
