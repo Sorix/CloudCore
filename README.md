@@ -328,7 +328,11 @@ To run them you need to:
 ## Authors
 
 deeje cooley, [deeje.com](http://www.deeje.com/)
-- added NSPersistentHistory and CloudKit Sharing Support
+- refactored into Pull/Push termonology
+- added offline sync via NSPersistentHistory
+- added CloudKit Sharing support
+- added Maskable Attributes
+- added Cacheable Assets
 
 Vasily Ulianov, [va...@me.com](http://www.google.com/recaptcha/mailhide/d?k=01eFEpy-HM-qd0Vf6QGABTjw==&c=JrKKY2bjm0Bp58w7zTvPiQ==)
 Open for hire / relocation.
