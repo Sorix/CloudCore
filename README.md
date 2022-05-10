@@ -24,7 +24,7 @@
 
 #### CloudCore vs NSPersistentCloudKitContainer?
 
-NSPersistentCloudKitContainer provides native support for Core Data <-> CloudKit synchronization.  Here are some thoughts on the differences between these two approaches.
+NSPersistentCloudKitContainer provides native support for Core Data <-> CloudKit synchronization.  Here are some thoughts on the differences between these two approaches, as of May 2022.
 
 ###### NSPersistentCloudKitContainer
 * Simple to enable
@@ -36,6 +36,7 @@ NSPersistentCloudKitContainer provides native support for Core Data <-> CloudKit
 * All Core Data names are preceeded with "CD_" in CloudKit
 * Core Data Relationships are mapped thru CDMR records in CloudKit
 * Sharing is supported via zones
+* No(?) long-lived operations support for large file upload/download
 
 ###### CloudCore
 * Support requires specific configuration in the Core Data Model
@@ -46,13 +47,14 @@ NSPersistentCloudKitContainer provides native support for Core Data <-> CloudKit
 * Offline Synchronziation via NSPersistentHistoryTracking
 * Core Data names are mapped exactly in CloudKit
 * Core Data Relationships are mapped to CloudKit CKReferences
-* Maskable Attributes provides fine-grain control over local-only data and manually managed remote data.
+* Maskable Attributes provides fine-grain control over local-only data and manually managed remote data
 * Sharing is supported via root records
+* Supports upload/download of large data files via long-lived operations, with proper schema configuration
 
-During their WWDC presentation, Apple very clearly stated that NSPersistentCloudKitContainer is a foundation for future support of more advanced features #YMMV
+Apple very clearly states that NSPersistentCloudKitContainer is a foundation for future support of more advanced features. I'm still waiting to learn which first-party apps use it. #YMMV
 
 ## How it works?
-CloudCore is built using a "black box" architecture, so it works invisibly for your application.  You just need to add several lines to your `AppDelegate` to enable it, as well as identify various aspects of your Core Data Model schema. Synchronization and error resolving is managed automatically.
+CloudCore is built using a "black box" architecture, so it works fairly invisibly for your application.  You just need to add several lines to your `AppDelegate` to enable it, as well as identify various aspects of your Core Data Model schema. Synchronization and error resolving is managed automatically.
 
 1. CloudCore stores *change tokens* from CloudKit, so only changed data is downloaded.
 2. When CloudCore is enabled (`CloudCore.enable`) it pulls changed data from CloudKit and subscribes to CloudKit push notifications about new changes.
@@ -161,8 +163,6 @@ The most simple way is to name attributes with default names because you don't n
 
 ### Mapping via UserInfo
 You can map your own attributes to the required service attributes.  For each attribute you want to map, add an item to the attribute's UserInfo, using the key `CloudCoreType` and following values:
-* *Private Record Data* value is `privateRecordData`.
-* *Public Record Data* value is `publicRecordData`.
 * *Record Name* value is `recordName`.
 * *Owner Name* value is `ownerName`.
 
