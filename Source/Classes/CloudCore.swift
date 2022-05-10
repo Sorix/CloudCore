@@ -175,10 +175,16 @@ open class CloudCore {
 		- error: block will be called every time when error occurs during process
 		- completion: `PullResult` enumeration with results of operation
 	*/
-	public static func pull(to container: NSPersistentContainer, error: ErrorBlock?, completion: (() -> Void)?) {
+	public static func pull(to container: NSPersistentContainer, error: ErrorBlock?, completion: ((_ fetchResult: PullResult) -> Void)?) {
+        var hadError = false
         let operation = PullChangesOperation(persistentContainer: container)
-		operation.errorBlock = error
-		operation.completionBlock = completion
+		operation.errorBlock = {
+            hadError = true
+            error?($0)
+        }
+		operation.completionBlock = {
+            completion?(hadError ? PullResult.failed : PullResult.newData)
+        }
         
 		queue.addOperation(operation)
 	}
