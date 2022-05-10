@@ -191,7 +191,7 @@ You can designate attributes in your managed objects to be masked during upload 
 * `download` = ignored during fetch operations
 * `upload,download` = both
 
-##Cacheable Assets
+## Cacheable Assets
 By default, CloudCore will transform assets in your CloudKit records into binary data attributes in your Core Data objects.
 
 But when you're working with very large files, such as photos, audio, or video, this default mode isn't optimal.
