@@ -231,13 +231,15 @@ public extension CloudCoreCacheable {
 
 Once you've configured your Core Data schema to support cacheable assets, you can create and download them as needed.
 
-When you create a new cacheable managed object, you must store its data at the file URL before saving it.  The default value of cacheState is "local" and the default value of remoteStatus is "pending". Once CloudCore pushes the new cacheable record, it sets the cacheState to "upload", which triggers a long-lived upload operation.  On completion, the cacheable managed object will have its cacheState set to "cached" and its remoteStatus set to "available".
+When you create a new cacheable managed object, you must store its data at the file URL before saving it.  The default value of cacheState is "local" and the default value of remoteStatus is "pending". Once CloudCore pushes the new cacheable record, it sets the cacheState to "upload", which triggers a long-lived modify operation.  On completion, the cacheable managed object will have its cacheState set to "cached" and its remoteStatus set to "available".
 
-When cacheable records are pulled from CloudKit, the asset field is ignored (because it is masked), and the cacheState will be "remote".  When the remoteStatus is "available", you can trigger a download by setting the cacheState to "download" and saving the object.  Once completed, the cacheable object will have its cacheState set to "cached", and the data will be locally available at the file URL.
+When cacheable records are pulled from CloudKit, the asset field is ignored (because it is masked), and the cacheState will be "remote".  When the remoteStatus is "available", you can trigger a long-lived fetch operation by setting the cacheState to "download" and saving the object.  Once completed, the cacheable object will have its cacheState set to "cached", and the data will be locally available at the file URL.
 
-Note that cacheState represents a state machine. 
+Note that cacheState represents a state machine.
+```
 (**new**) => local -> (push) -> upload -> uploading -> cached
 (pull) => remote -> **download** -> downloading -> cached
+```
 
 ### Important
 See the Example app for specific details.  Note, specifically, that I **need to override awakeFromInsert and prepareForDeletion** for my cacheable managed object type Datafile.  If anyone has ideas on how to push this critical implementation detail into CloudCore itself, let me know! 
