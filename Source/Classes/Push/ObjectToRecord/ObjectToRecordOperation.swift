@@ -75,7 +75,7 @@ class ObjectToRecordOperation: Operation {
 		let changedValues = managedObject.committedValues(forKeys: changedAttributes)
 		
 		for (attributeName, value) in changedValues {
-			if serviceAttributeNames.contains(attributeName) { continue }
+			if serviceAttributeNames.isMaskedUpload(attributeName) { continue }
 			
 			if let attribute = CoreDataAttribute(value: value, attributeName: attributeName, entity: managedObject.entity) {
 				let recordValue = try attribute.makeRecordValue()

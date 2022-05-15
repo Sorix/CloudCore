@@ -8,7 +8,6 @@
 
 import CoreData
 import CloudKit
-import UIKit
 import CloudCore
 
 extension Organization: CloudCoreSharing {

@@ -11,6 +11,16 @@
 		57505AB021A7591500D9CF8F /* PullResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57505AAF21A7591500D9CF8F /* PullResult.swift */; };
 		575ADF462655AB7C0050D693 /* PullRecordOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 575ADF442655AB7C0050D693 /* PullRecordOperation.swift */; };
 		575ADF472655AB7C0050D693 /* PullChangesOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 575ADF452655AB7C0050D693 /* PullChangesOperation.swift */; };
+		5763BF7E280B427900B2CCCD /* CloudCoreSharingController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5763BF7C280B427900B2CCCD /* CloudCoreSharingController.swift */; };
+		5763BF7F280B427900B2CCCD /* CloudCoreSharing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5763BF7D280B427900B2CCCD /* CloudCoreSharing.swift */; };
+		5763BF8B280B42F400B2CCCD /* CloudKitSharing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5763BF89280B42F400B2CCCD /* CloudKitSharing.swift */; };
+		5763BF8C280B42F400B2CCCD /* CloudCoreType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5763BF8A280B42F400B2CCCD /* CloudCoreType.swift */; };
+		5763BF8F280B430C00B2CCCD /* NSManagedContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5763BF8D280B430C00B2CCCD /* NSManagedContainer.swift */; };
+		5763BF90280B430C00B2CCCD /* UIViewController+CloudKit.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5763BF8E280B430C00B2CCCD /* UIViewController+CloudKit.swift */; };
+		5763BF9F280B490200B2CCCD /* DownloadOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5763BF9B280B490200B2CCCD /* DownloadOperation.swift */; };
+		5763BFA0280B490200B2CCCD /* CloudCoreCacheManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5763BF9C280B490200B2CCCD /* CloudCoreCacheManager.swift */; };
+		5763BFA1280B490200B2CCCD /* CloudCoreCacheable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5763BF9D280B490200B2CCCD /* CloudCoreCacheable.swift */; };
+		5763BFA2280B490200B2CCCD /* UploadOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5763BF9E280B490200B2CCCD /* UploadOperation.swift */; };
 		D9089D4A1FE14E57000FC60C /* SetupOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9089D491FE14E57000FC60C /* SetupOperation.swift */; };
 		D97465F81FE319930060EA66 /* CloudCoreDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = D97465F71FE319930060EA66 /* CloudCoreDelegate.swift */; };
 		D97465FA1FE31A650060EA66 /* Module.swift in Sources */ = {isa = PBXBuildFile; fileRef = D97465F91FE31A650060EA66 /* Module.swift */; };
@@ -93,6 +103,16 @@
 		57505AAF21A7591500D9CF8F /* PullResult.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PullResult.swift; sourceTree = "<group>"; };
 		575ADF442655AB7C0050D693 /* PullRecordOperation.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PullRecordOperation.swift; sourceTree = "<group>"; };
 		575ADF452655AB7C0050D693 /* PullChangesOperation.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PullChangesOperation.swift; sourceTree = "<group>"; };
+		5763BF7C280B427900B2CCCD /* CloudCoreSharingController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CloudCoreSharingController.swift; sourceTree = "<group>"; };
+		5763BF7D280B427900B2CCCD /* CloudCoreSharing.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CloudCoreSharing.swift; sourceTree = "<group>"; };
+		5763BF89280B42F400B2CCCD /* CloudKitSharing.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CloudKitSharing.swift; sourceTree = "<group>"; };
+		5763BF8A280B42F400B2CCCD /* CloudCoreType.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CloudCoreType.swift; sourceTree = "<group>"; };
+		5763BF8D280B430C00B2CCCD /* NSManagedContainer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NSManagedContainer.swift; sourceTree = "<group>"; };
+		5763BF8E280B430C00B2CCCD /* UIViewController+CloudKit.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UIViewController+CloudKit.swift"; sourceTree = "<group>"; };
+		5763BF9B280B490200B2CCCD /* DownloadOperation.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DownloadOperation.swift; sourceTree = "<group>"; };
+		5763BF9C280B490200B2CCCD /* CloudCoreCacheManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CloudCoreCacheManager.swift; sourceTree = "<group>"; };
+		5763BF9D280B490200B2CCCD /* CloudCoreCacheable.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CloudCoreCacheable.swift; sourceTree = "<group>"; };
+		5763BF9E280B490200B2CCCD /* UploadOperation.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UploadOperation.swift; sourceTree = "<group>"; };
 		8EAC4D8B1B0EF4ECE4BDA160 /* Pods_CloudCore.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_CloudCore.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		D5B2E89F1C3A780C00C0327D /* CloudCore.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = CloudCore.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		D5C6298B1C3A8BBD007F7B7C /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -196,6 +216,26 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		5763BF7B280B427900B2CCCD /* Sharing */ = {
+			isa = PBXGroup;
+			children = (
+				5763BF7D280B427900B2CCCD /* CloudCoreSharing.swift */,
+				5763BF7C280B427900B2CCCD /* CloudCoreSharingController.swift */,
+			);
+			path = Sharing;
+			sourceTree = "<group>";
+		};
+		5763BF9A280B490200B2CCCD /* Caching */ = {
+			isa = PBXGroup;
+			children = (
+				5763BF9D280B490200B2CCCD /* CloudCoreCacheable.swift */,
+				5763BF9C280B490200B2CCCD /* CloudCoreCacheManager.swift */,
+				5763BF9E280B490200B2CCCD /* UploadOperation.swift */,
+				5763BF9B280B490200B2CCCD /* DownloadOperation.swift */,
+			);
+			path = Caching;
+			sourceTree = "<group>";
+		};
 		D5B2E8951C3A780C00C0327D = {
 			isa = PBXGroup;
 			children = (
@@ -249,9 +289,9 @@
 			children = (
 				D9089D491FE14E57000FC60C /* SetupOperation.swift */,
 				D985DEA31FE026D400236870 /* CreateCloudCoreZoneOperation.swift */,
-				D985DEAA1FE0335800236870 /* PushAllLocalDataOperation.swift */,
 				D985DEA71FE0292000236870 /* SubscribeOperation.swift */,
 				570D8D22280631F900E6836A /* DeleteCloudCoreZoneOperation.swift */,
+				D985DEAA1FE0335800236870 /* PushAllLocalDataOperation.swift */,
 			);
 			path = Setup;
 			sourceTree = "<group>";
@@ -315,10 +355,12 @@
 			isa = PBXGroup;
 			children = (
 				E2075FF81E4BBEAC00E31F1F /* AsynchronousOperation.swift */,
-				D9089D481FE14E4A000FC60C /* Setup */,
-				E2075FF31E4BB70D00E31F1F /* Pull */,
-				E2075FF21E4BB6F700E31F1F /* Push */,
 				E200D44C1E48E13200B707D4 /* CloudCore.swift */,
+				D9089D481FE14E4A000FC60C /* Setup */,
+				E2075FF21E4BB6F700E31F1F /* Push */,
+				E2075FF31E4BB70D00E31F1F /* Pull */,
+				5763BF7B280B427900B2CCCD /* Sharing */,
+				5763BF9A280B490200B2CCCD /* Caching */,
 			);
 			path = Classes;
 			sourceTree = "<group>";
@@ -326,10 +368,10 @@
 		E2075FF21E4BB6F700E31F1F /* Push */ = {
 			isa = PBXGroup;
 			children = (
+				E22C40451E42956C009469A1 /* CoreDataObserver.swift */,
+				E23C478B1E48A404004310F9 /* PushOperationQueue.swift */,
 				E2FA74461E769D8700C3489D /* Model */,
 				E288C5751E4C9519002360A1 /* ObjectToRecord */,
-				E23C478B1E48A404004310F9 /* PushOperationQueue.swift */,
-				E22C40451E42956C009469A1 /* CoreDataObserver.swift */,
 			);
 			path = Push;
 			sourceTree = "<group>";
@@ -337,11 +379,11 @@
 		E2075FF31E4BB70D00E31F1F /* Pull */ = {
 			isa = PBXGroup;
 			children = (
-				E277DB0F1E77FC9F00DC334A /* PublicSubscriptions */,
-				E2C02A171E4CDEDA001B2871 /* SubOperations */,
 				E2E4D83D1E76D4EF00550CBE /* PullOperation.swift */,
 				575ADF452655AB7C0050D693 /* PullChangesOperation.swift */,
 				575ADF442655AB7C0050D693 /* PullRecordOperation.swift */,
+				E2C02A171E4CDEDA001B2871 /* SubOperations */,
+				E277DB0F1E77FC9F00DC334A /* PublicSubscriptions */,
 			);
 			path = Pull;
 			sourceTree = "<group>";
@@ -358,6 +400,8 @@
 			isa = PBXGroup;
 			children = (
 				D97465F71FE319930060EA66 /* CloudCoreDelegate.swift */,
+				5763BF8A280B42F400B2CCCD /* CloudCoreType.swift */,
+				5763BF89280B42F400B2CCCD /* CloudKitSharing.swift */,
 			);
 			path = Protocols;
 			sourceTree = "<group>";
@@ -365,18 +409,18 @@
 		E247EF8A1E67771C00EBD75E /* Classes */ = {
 			isa = PBXGroup;
 			children = (
-				E247EF8E1E677D1400EBD75E /* Fetch */,
-				E29D11771E69808800E3DCBF /* Upload */,
+				E247EF8E1E677D1400EBD75E /* Pull */,
+				E29D11771E69808800E3DCBF /* Push */,
 			);
 			path = Classes;
 			sourceTree = "<group>";
 		};
-		E247EF8E1E677D1400EBD75E /* Fetch */ = {
+		E247EF8E1E677D1400EBD75E /* Pull */ = {
 			isa = PBXGroup;
 			children = (
 				E247EF8F1E677D1B00EBD75E /* Operations */,
 			);
-			path = Fetch;
+			path = Pull;
 			sourceTree = "<group>";
 		};
 		E247EF8F1E677D1B00EBD75E /* Operations */ = {
@@ -420,6 +464,8 @@
 		E29BB21F1E433FDA0020F5B6 /* Extensions */ = {
 			isa = PBXGroup;
 			children = (
+				5763BF8D280B430C00B2CCCD /* NSManagedContainer.swift */,
+				5763BF8E280B430C00B2CCCD /* UIViewController+CloudKit.swift */,
 				D985DEAD1FE034A900236870 /* NSManagedObjectModel.swift */,
 				E2D390071E4A49350019BBCD /* NSEntityDescription.swift */,
 				E29BB2221E4346FF0020F5B6 /* NSManagedObject.swift */,
@@ -437,12 +483,12 @@
 			path = Tests;
 			sourceTree = "<group>";
 		};
-		E29D11771E69808800E3DCBF /* Upload */ = {
+		E29D11771E69808800E3DCBF /* Push */ = {
 			isa = PBXGroup;
 			children = (
 				E29D11781E69810F00E3DCBF /* ObjectToRecord */,
 			);
-			path = Upload;
+			path = Push;
 			sourceTree = "<group>";
 		};
 		E29D11781E69810F00E3DCBF /* ObjectToRecord */ = {
@@ -596,7 +642,7 @@
 			isa = PBXProject;
 			attributes = {
 				LastSwiftUpdateCheck = 0910;
-				LastUpgradeCheck = 1010;
+				LastUpgradeCheck = 1330;
 				ORGANIZATIONNAME = "Vasily Ulianov";
 				TargetAttributes = {
 					D5B2E89E1C3A780C00C0327D = {
@@ -691,16 +737,20 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5763BF8F280B430C00B2CCCD /* NSManagedContainer.swift in Sources */,
 				E21FA03E1E4A7E7200B1DAA2 /* RecordToCoreDataOperation.swift in Sources */,
 				D97465F81FE319930060EA66 /* CloudCoreDelegate.swift in Sources */,
 				E2E4D8411E76D5A600550CBE /* PullOperation.swift in Sources */,
 				E2C02A141E4CC2A5001B2871 /* FetchRecordZoneChangesOperation.swift in Sources */,
+				5763BF7E280B427900B2CCCD /* CloudCoreSharingController.swift in Sources */,
 				E2C02A191E4CDEF1001B2871 /* DeleteFromCoreDataOperation.swift in Sources */,
 				570D8D23280631F900E6836A /* DeleteCloudCoreZoneOperation.swift in Sources */,
 				E29BB21A1E4334590020F5B6 /* CloudCoreConfig.swift in Sources */,
 				E2EE20071E4E6DCE0060F769 /* ServiceAttributeName.swift in Sources */,
+				5763BF7F280B427900B2CCCD /* CloudCoreSharing.swift in Sources */,
 				D985DEAE1FE034A900236870 /* NSManagedObjectModel.swift in Sources */,
 				E23C478C1E48A404004310F9 /* PushOperationQueue.swift in Sources */,
+				5763BF90280B430C00B2CCCD /* UIViewController+CloudKit.swift in Sources */,
 				E2FA74441E769BF900C3489D /* RecordWithDatabase.swift in Sources */,
 				E22C40461E42956C009469A1 /* CoreDataObserver.swift in Sources */,
 				E2075FF91E4BBEAC00E31F1F /* AsynchronousOperation.swift in Sources */,
@@ -708,18 +758,24 @@
 				D9089D4A1FE14E57000FC60C /* SetupOperation.swift in Sources */,
 				D97465FA1FE31A650060EA66 /* Module.swift in Sources */,
 				57505AB021A7591500D9CF8F /* PullResult.swift in Sources */,
+				5763BFA1280B490200B2CCCD /* CloudCoreCacheable.swift in Sources */,
 				575ADF472655AB7C0050D693 /* PullChangesOperation.swift in Sources */,
 				E29BB2371E4377F80020F5B6 /* CoreDataAttribute.swift in Sources */,
 				E2E296CA1E49DA0800E7D6ED /* Tokens.swift in Sources */,
 				575ADF462655AB7C0050D693 /* PullRecordOperation.swift in Sources */,
 				E2075FFF1E4BCD7E00E31F1F /* ObjectToRecordOperation.swift in Sources */,
 				D985DEA41FE026D400236870 /* CreateCloudCoreZoneOperation.swift in Sources */,
+				5763BFA0280B490200B2CCCD /* CloudCoreCacheManager.swift in Sources */,
 				D985DEAB1FE0335800236870 /* PushAllLocalDataOperation.swift in Sources */,
+				5763BFA2280B490200B2CCCD /* UploadOperation.swift in Sources */,
+				5763BF8C280B42F400B2CCCD /* CloudCoreType.swift in Sources */,
 				E2C02A0E1E4C99AD001B2871 /* ObjectToRecordConverter.swift in Sources */,
 				D985DE9D1FDFF9D400236870 /* PurgeLocalDatabaseOperation.swift in Sources */,
 				E2FA74481E769D9400C3489D /* RecordIDWithDatabase.swift in Sources */,
+				5763BF9F280B490200B2CCCD /* DownloadOperation.swift in Sources */,
 				E29BB2211E4344E80020F5B6 /* CKRecord.swift in Sources */,
 				E2D390081E4A49350019BBCD /* NSEntityDescription.swift in Sources */,
+				5763BF8B280B42F400B2CCCD /* CloudKitSharing.swift in Sources */,
 				E29BB2231E4346FF0020F5B6 /* NSManagedObject.swift in Sources */,
 				E200D44D1E48E13200B707D4 /* CloudCore.swift in Sources */,
 				D985DEA81FE0292000236870 /* SubscribeOperation.swift in Sources */,
@@ -827,6 +883,7 @@
 				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
 				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
@@ -889,6 +946,7 @@
 				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
 				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;

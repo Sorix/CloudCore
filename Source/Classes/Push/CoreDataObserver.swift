@@ -121,7 +121,7 @@ class CoreDataObserver {
         
         return success
     }
-        
+    
 	@objc private func willSave(notification: Notification) {
 		guard let context = notification.object as? NSManagedObjectContext else { return }
         guard shouldProcess(context) else { return }
@@ -176,6 +176,7 @@ class CoreDataObserver {
                     var insertedObjects = Set<NSManagedObject>()
                     var updatedObject = Set<NSManagedObject>()
                     var deletedRecordIDs: [RecordIDWithDatabase] = []
+                    var operationIDs: [String] = []
                     
                     for change in changes {
                         switch change.changeType {
@@ -208,6 +209,9 @@ class CoreDataObserver {
                                     let recordIDWithDatabase = RecordIDWithDatabase((ckRecord?.recordID)!, CloudCore.config.container.publicCloudDatabase)
                                     deletedRecordIDs.append(recordIDWithDatabase)
                                 }
+                                if let operationID = change.tombstone!["operationID"] as? String {
+                                    operationIDs.append(operationID)
+                                }
                             }
                             
                         default:
@@ -218,11 +222,36 @@ class CoreDataObserver {
                     self.converter.prepareOperationsFor(inserted: insertedObjects,
                                                         updated: updatedObject,
                                                         deleted: deletedRecordIDs)
-                    
+                                        
                     try? moc.save()
                     
                     if self.converter.hasPendingOperations {
                         success = self.processChanges()
+                    }
+                    
+                    // check for cached assets
+                    if success == true {
+                        let insertedIDs = insertedObjects.map { $0.objectID }
+                        container.performBackgroundTask { moc in
+                            moc.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
+                            do {
+                                for insertedID in insertedIDs {
+                                    guard let cacheable = try moc.existingObject(with: insertedID) as? CloudCoreCacheable,
+                                          cacheable.cacheState == .local
+                                    else { continue }
+                                    
+                                    cacheable.cacheState = .upload
+                                }
+                                
+                                try moc.save()
+                            } catch {
+                                self.delegate?.error(error: error, module: .some(.pushToCloud))
+                            }
+                        }
+                    }
+                    
+                    if !operationIDs.isEmpty {
+                        CloudCore.cacheManager?.cancelOperations(with: operationIDs)
                     }
                 }
                 
@@ -272,6 +301,16 @@ class CoreDataObserver {
 		}
 
 		switch cloudError.code {
+        case .requestRateLimited, .zoneBusy:
+            pushOperationQueue.cancelAllOperations()
+            
+            if let number = cloudError.userInfo[CKErrorRetryAfterKey] as? NSNumber {
+                DispatchQueue.main.asyncAfter(deadline: .now() + .seconds(number.intValue)) { [weak self] in
+                    guard let observer = self else { return }
+                    observer.processPersistentHistory()
+                }
+            }
+            
 		// Zone was accidentally deleted (NOT PURGED), we need to reupload all data accroding Apple Guidelines
 		case .zoneNotFound:
 			pushOperationQueue.cancelAllOperations()

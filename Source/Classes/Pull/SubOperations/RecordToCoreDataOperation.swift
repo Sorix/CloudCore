@@ -91,6 +91,8 @@ public class RecordToCoreDataOperation: AsynchronousOperation {
 	private func fill(object: NSManagedObject, entityName: String, serviceAttributeNames: ServiceAttributeNames, context: NSManagedObjectContext) throws {
         
         func storeValue(_ recordValue: Any?, for key: String) {
+            if serviceAttributeNames.maskedDownload.contains(key) { return }
+            
             let ckAttribute = CloudKitAttribute(value: recordValue, fieldName: key, entityName: entityName, serviceAttributes: serviceAttributeNames, context: context)
             if let coreDataValue = try? ckAttribute.makeCoreDataValue() {
                 if let cdAttribute = object.entity.attributesByName[key], cdAttribute.attributeType == .transformableAttributeType,

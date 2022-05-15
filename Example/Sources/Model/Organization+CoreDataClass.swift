@@ -7,7 +7,6 @@
 //  This file was automatically generated and then moved into the project.
 //
 
-import UIKit
 import CoreData
 
 @objc(Organization)

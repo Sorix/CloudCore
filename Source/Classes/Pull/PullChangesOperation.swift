@@ -57,6 +57,7 @@ public class PullChangesOperation: PullOperation {
 		
 		let backgroundContext = persistentContainer.newBackgroundContext()
 		backgroundContext.name = CloudCore.config.pullContextName
+        backgroundContext.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
         
         for database in databases {
             let databaseChangeToken = tokens.token(for: database.databaseScope)
@@ -172,7 +173,12 @@ public class PullChangesOperation: PullOperation {
     private func addRecordZoneChangesOperation(recordZoneIDs: [CKRecordZone.ID], database: CKDatabase, context: NSManagedObjectContext) {
 		if recordZoneIDs.isEmpty { return }
 		
-		let recordZoneChangesOperation = FetchRecordZoneChangesOperation(from: database, recordZoneIDs: recordZoneIDs, tokens: tokens)
+        let desiredKeys = context.persistentStoreCoordinator?.managedObjectModel.desiredKeys
+        
+        let recordZoneChangesOperation = FetchRecordZoneChangesOperation(from: database,
+                                                                         recordZoneIDs: recordZoneIDs,
+                                                                         tokens: tokens,
+                                                                         desiredKeys: desiredKeys)
         recordZoneChangesOperation.qualityOfService = .userInitiated
 		recordZoneChangesOperation.recordChangedBlock = {
             self.addConvertRecordOperation(record: $0, context: context)

@@ -21,5 +21,17 @@ extension NSManagedObjectModel {
 		
 		return cloudCoreEntities
 	}
+    
+    var desiredKeys: [String] {
+        var keys: Set<String> = []
+        
+        for entity in self.entities {
+            if let desired = entity.serviceAttributeNames?.desiredKeys() {
+                desired.forEach { keys.insert($0) }
+            }
+        }
+        
+        return keys.map { $0 }
+    }
 	
 }

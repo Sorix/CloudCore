@@ -64,6 +64,7 @@ public class PullRecordOperation: PullOperation {
         let fetchRecords = CKFetchRecordsOperation(recordIDs: recordIDs)
         fetchRecords.database = database
         fetchRecords.qualityOfService = .userInitiated
+        fetchRecords.desiredKeys = persistentContainer.managedObjectModel.desiredKeys
         fetchRecords.perRecordCompletionBlock = { record, recordID, error in
             if let record = record {
                 self.fetchedRecordIDs.append(recordID!)

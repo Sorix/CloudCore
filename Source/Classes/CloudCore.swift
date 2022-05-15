@@ -52,6 +52,7 @@ open class CloudCore {
 	// MARK: - Properties
 	
 	private(set) static var coreDataObserver: CoreDataObserver?
+    private(set) static var cacheManager: CloudCoreCacheManager?
     public static var isOnline: Bool {
         get {
             return coreDataObserver?.isOnline ?? false
@@ -97,6 +98,8 @@ open class CloudCore {
 		observer.start()
 		self.coreDataObserver = observer
 		
+        self.cacheManager = CloudCoreCacheManager(persistentContainer: container)
+        
 		// Subscribe (subscription may be outdated/removed)
 		let subscribeOperation = SubscribeOperation()
 		subscribeOperation.errorBlock = {
@@ -172,10 +175,16 @@ open class CloudCore {
 		- error: block will be called every time when error occurs during process
 		- completion: `PullResult` enumeration with results of operation
 	*/
-	public static func pull(to container: NSPersistentContainer, error: ErrorBlock?, completion: (() -> Void)?) {
+	public static func pull(to container: NSPersistentContainer, error: ErrorBlock?, completion: ((_ fetchResult: PullResult) -> Void)?) {
+        var hadError = false
         let operation = PullChangesOperation(persistentContainer: container)
-		operation.errorBlock = error
-		operation.completionBlock = completion
+		operation.errorBlock = {
+            hadError = true
+            error?($0)
+        }
+		operation.completionBlock = {
+            completion?(hadError ? PullResult.failed : PullResult.newData)
+        }
         
 		queue.addOperation(operation)
 	}

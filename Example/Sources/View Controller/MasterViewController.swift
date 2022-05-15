@@ -116,7 +116,9 @@ extension MasterViewController {
                     moc.delete(personEntity)
                     try? moc.save()
                 }
-                completion(true)
+                DispatchQueue.main.async {
+                    completion(true)
+                }
             }
         }
         alert.addAction(confirm)
@@ -139,7 +141,9 @@ extension MasterViewController {
                             moc.delete(deleteObject)
                             try? moc.save()
                         }
-                        completion(true)
+                        DispatchQueue.main.async {
+                            completion(true)
+                        }
                     }
                 } else {
                     completion(false)
