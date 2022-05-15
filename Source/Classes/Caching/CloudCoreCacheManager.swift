@@ -52,6 +52,8 @@ class CloudCoreCacheManager: NSObject {
                 upload(cacheableID: cacheable.objectID)
             case .download, .downloading:
                 download(cacheableID: cacheable.objectID)
+            case .unload:
+                unload(cacheableID: cacheable.objectID)
             default:
                 break
             }
@@ -84,7 +86,8 @@ class CloudCoreCacheManager: NSObject {
             for name in self.cacheableClassNames {
                 let triggerUpload = NSPredicate(format: "%K == %@", "cacheStateRaw", CacheState.upload.rawValue)
                 let triggerDownload = NSPredicate(format: "%K == %@", "cacheStateRaw", CacheState.download.rawValue)
-                let triggers = NSCompoundPredicate(orPredicateWithSubpredicates: [triggerUpload, triggerDownload])
+                let triggerUnload = NSPredicate(format: "%K == %@", "cacheStateRaw", CacheState.unload.rawValue)
+                let triggers = NSCompoundPredicate(orPredicateWithSubpredicates: [triggerUpload, triggerDownload, triggerUnload])
                 
                 let triggerRequest = NSFetchRequest<NSManagedObject>(entityName: name)
                 triggerRequest.predicate = triggers
@@ -291,6 +294,18 @@ class CloudCoreCacheManager: NSObject {
         }
     }
     
+    func unload(cacheableID: NSManagedObjectID) {
+        let context = backgroundContext
+        
+        context.perform {
+            guard let cacheable = try? context.existingObject(with: cacheableID) as? CloudCoreCacheable else { return }
+            
+            cacheable.removeLocal()
+            cacheable.cacheState = .remote
+            try? context.save()
+        }
+    }
+    
     public func cancelOperations(with operationIDs: [String]) {
         for operationID in operationIDs {
             if let op = findLongLivedOperation(with: operationID) {
@@ -310,7 +325,10 @@ extension CloudCoreCacheManager: NSFetchedResultsControllerDelegate {
                     newIndexPath: IndexPath?) {
         guard let cacheable = anObject as? CloudCoreCacheable else { return }
         
-        if cacheable.cacheState == .upload || cacheable.cacheState == .download {
+        if cacheable.cacheState == .upload
+            || cacheable.cacheState == .download
+            || cacheable.cacheState == .unload
+        {
             process(cacheables: [cacheable])
         }
     }

@@ -18,6 +18,8 @@ public enum CacheState: String {
     case downloading
     
     case cached
+    
+    case unload         // -> remote
 }
 
 public enum RemoteStatus: String {
@@ -65,7 +67,7 @@ public extension CloudCoreCacheable {
     }
     
     var localAvailable: Bool {
-        let availableStates: [CacheState] = [.local, .upload, .uploading, .cached]
+        let availableStates: [CacheState] = [.local, .upload, .uploading, .cached, .unload]
         
         return availableStates.contains(cacheState)
     }
@@ -92,6 +94,12 @@ public extension CloudCoreCacheable {
         cacheDirectory.appendPathComponent(fileName)
         
         return cacheDirectory
+    }
+    
+    func removeLocal() {
+        if localAvailable {
+            try? FileManager.default.removeItem(at: url)
+        }
     }
     
 }
