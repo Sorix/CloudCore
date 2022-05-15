@@ -19,9 +19,7 @@ extension Datafile: CloudCoreCacheable {
     }
     
     override public func prepareForDeletion() {
-        if localAvailable {
-            try? FileManager.default.removeItem(at: url)
-        }
+        removeLocal()
     }
     
 }
