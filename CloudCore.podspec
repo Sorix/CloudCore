@@ -1,7 +1,7 @@
 Pod::Spec.new do |s|
   s.name             = "CloudCore"
   s.summary          = "Framework that enables synchronization between CloudKit and Core Data."
-  s.version          = "5.0.0"
+  s.version          = "5.0.2"
   s.homepage         = "https://github.com/deeje/CloudCore"
   s.license          = 'MIT'
   s.author           = { "deeje" => "deeje@mac.com", "Vasily Ulianov" => "vasily@me.com" }
