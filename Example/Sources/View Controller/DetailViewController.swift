@@ -116,7 +116,10 @@ extension DetailViewController: FRCTableViewDelegate {
         
         if let datafile = employee.datafiles?.allObjects.first as? Datafile {
             if datafile.localAvailable {
-                cell.photoImageView.image = UIImage(contentsOfFile: datafile.urlPath)                
+                if let data = try? Data(contentsOf: datafile.url)
+                {
+                    cell.photoImageView.image = UIImage(data: data)
+                }
             } else if datafile.readyToDownload {
                 datafilesObserver.observeObject(object: datafile) { datafile, state in
                     guard let cacheable = datafile as? CloudCoreCacheable else { return }
@@ -125,7 +128,10 @@ extension DetailViewController: FRCTableViewDelegate {
                     cell.progressView.progress = Float(cacheable.progress)
                     
                     if cacheable.localAvailable {
-                        cell.photoImageView.image = UIImage(contentsOfFile: cacheable.urlPath)
+                        if let data = try? Data(contentsOf: cacheable.url)
+                        {
+                            cell.photoImageView.image = UIImage(data: data)
+                        }
                         cell.progressView.isHidden = true
                         cell.progressView.progress = 0
 
