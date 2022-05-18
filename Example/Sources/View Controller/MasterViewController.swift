@@ -44,7 +44,7 @@ class MasterViewController: UITableViewController {
 			DispatchQueue.main.async {
 				sender.endRefreshing()
 			}
-		}) {
+		}) { _ in
 			DispatchQueue.main.async {
 				sender.endRefreshing()
 			}
