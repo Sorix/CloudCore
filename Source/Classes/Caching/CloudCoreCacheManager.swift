@@ -161,11 +161,11 @@ class CloudCoreCacheManager: NSObject {
         return foundOperation
     }
     
-    func longLivedConfiguration() -> CKOperation.Configuration {
+    func longLivedConfiguration(qos: QualityOfService) -> CKOperation.Configuration {
         let configuration = CKOperation.Configuration()
         configuration.container = container
         configuration.isLongLived = true
-        configuration.qualityOfService = .utility
+        configuration.qualityOfService = qos
         
         return configuration
     }
@@ -190,7 +190,7 @@ class CloudCoreCacheManager: NSObject {
                 record["remoteStatusRaw"] = RemoteStatus.available.rawValue
                 
                 modifyOp = CKModifyRecordsOperation(recordsToSave: [record], recordIDsToDelete: nil)
-                modifyOp.configuration = self.longLivedConfiguration()
+                modifyOp.configuration = self.longLivedConfiguration(qos: .utility)
                 modifyOp.savePolicy = .changedKeys
                 
                 cacheable.operationID = modifyOp.operationID
@@ -198,7 +198,9 @@ class CloudCoreCacheManager: NSObject {
             
             modifyOp.perRecordProgressBlock = { record, progress in
                 self.update([cacheableID]) { cacheable in
-                    cacheable.uploadProgress = progress
+                    if progress > cacheable.uploadProgress {
+                        cacheable.uploadProgress = progress
+                    }
                 }
             }
             modifyOp.perRecordCompletionBlock = { record, error in
@@ -247,7 +249,7 @@ class CloudCoreCacheManager: NSObject {
                 guard let record = try? cacheable.restoreRecordWithSystemFields(for: .private) else { return }
                                 
                 fetchOp = CKFetchRecordsOperation(recordIDs: [record.recordID])
-                fetchOp.configuration = self.longLivedConfiguration()
+                fetchOp.configuration = self.longLivedConfiguration(qos: .userInitiated)
                 fetchOp.desiredKeys = [cacheable.assetFieldName]
                 
                 cacheable.operationID = fetchOp.operationID
@@ -255,7 +257,9 @@ class CloudCoreCacheManager: NSObject {
             
             fetchOp.perRecordProgressBlock = { record, progress in
                 self.update([cacheableID]) { cacheable in
-                    cacheable.downloadProgress = progress
+                    if progress > cacheable.downloadProgress {
+                        cacheable.downloadProgress = progress
+                    }
                 }
             }
             fetchOp.perRecordCompletionBlock = { record, recordID, error in
