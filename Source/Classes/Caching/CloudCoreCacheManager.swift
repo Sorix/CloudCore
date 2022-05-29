@@ -207,6 +207,7 @@ class CloudCoreCacheManager: NSObject {
                 self.update([cacheableID]) { cacheable in
                     cacheable.uploadProgress = 0
                     cacheable.cacheState = (error == nil) ? .cached : .local
+                    cacheable.remoteStatus = (error == nil) ? .available : .pending
                     cacheable.lastErrorMessage = error?.localizedDescription
                 }
                 
