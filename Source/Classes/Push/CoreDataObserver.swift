@@ -185,17 +185,17 @@ class CoreDataObserver {
             
             // check for cached assets
             if success == true {
-                let insertedIDs = insertedObjects.map { $0.objectID }
-                
-                for insertedID in insertedIDs {
-                    guard let cacheable = try? moc.existingObject(with: insertedID) as? CloudCoreCacheable,
-                          cacheable.cacheState == .local
-                    else { continue }
+                moc.perform {
+                    for insertedObject in insertedObjects {
+                        guard let cacheable = insertedObject as? CloudCoreCacheable,
+                              cacheable.cacheState == .local
+                        else { continue }
+                        
+                        cacheable.cacheState = .upload
+                    }
                     
-                    cacheable.cacheState = .upload
+                    try? moc.save()
                 }
-                
-                try? moc.save()
             }
             
             if !operationIDs.isEmpty {
