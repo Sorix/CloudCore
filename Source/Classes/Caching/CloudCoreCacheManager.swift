@@ -215,7 +215,7 @@ class CloudCoreCacheManager: NSObject {
                     CloudCore.delegate?.error(error: error, module: .cacheToCloud)
                     
                     if let cloudError = error as? CKError,
-                       cloudError.code == .requestRateLimited || cloudError.code == .zoneBusy,
+//                       cloudError.code == .requestRateLimited || cloudError.code == .zoneBusy,
                        let number = cloudError.userInfo[CKErrorRetryAfterKey] as? NSNumber
                     {
                         DispatchQueue.main.asyncAfter(deadline: .now() + .seconds(number.intValue)) {
@@ -226,10 +226,16 @@ class CloudCoreCacheManager: NSObject {
             }
             modifyOp.modifyRecordsCompletionBlock = { records, recordIDs, error in }
             modifyOp.longLivedOperationWasPersistedBlock = { }
-            container.privateCloudDatabase.add(modifyOp)
+            if !modifyOp.isExecuting {
+                container.privateCloudDatabase.add(modifyOp)
+            }
             
-            cacheable.cacheState = .uploading
-            try? context.save()
+            if cacheable.cacheState != .uploading {
+                cacheable.cacheState = .uploading
+            }
+            if context.hasChanges {
+                try? context.save()
+            }
         }
     }
     
@@ -282,7 +288,7 @@ class CloudCoreCacheManager: NSObject {
                     CloudCore.delegate?.error(error: error, module: .cacheFromCloud)
                     
                     if let cloudError = error as? CKError,
-                       cloudError.code == .requestRateLimited || cloudError.code == .zoneBusy,
+//                       cloudError.code == .requestRateLimited || cloudError.code == .zoneBusy,
                        let number = cloudError.userInfo[CKErrorRetryAfterKey] as? NSNumber
                     {
                         DispatchQueue.main.asyncAfter(deadline: .now() + .seconds(number.intValue)) {
@@ -292,10 +298,16 @@ class CloudCoreCacheManager: NSObject {
                 }
             }
             fetchOp.longLivedOperationWasPersistedBlock = { }
-            container.privateCloudDatabase.add(fetchOp)
+            if !fetchOp.isExecuting {
+                container.privateCloudDatabase.add(fetchOp)
+            }
             
-            cacheable.cacheState = .downloading
-            try? context.save()
+            if cacheable.cacheState != .downloading {
+                cacheable.cacheState = .downloading
+            }
+            if context.hasChanges {
+                try? context.save()
+            }
         }
     }
     
