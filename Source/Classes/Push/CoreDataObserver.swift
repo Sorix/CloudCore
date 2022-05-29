@@ -267,7 +267,7 @@ class CoreDataObserver {
         
         DispatchQueue.main.async {
             self.processTimer?.invalidate()
-            self.processTimer = Timer.scheduledTimer(withTimeInterval: 2.0, repeats: false) { _ in
+            self.processTimer = Timer.scheduledTimer(withTimeInterval: 5.0, repeats: false) { _ in
                 self.processPersistentHistory()
             }
         }
