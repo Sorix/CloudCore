@@ -219,7 +219,7 @@ class CloudCoreCacheManager: NSObject {
                        let number = cloudError.userInfo[CKErrorRetryAfterKey] as? NSNumber
                     {
                         DispatchQueue.main.asyncAfter(deadline: .now() + .seconds(number.intValue)) {
-                            self.upload(cacheableID: cacheableID)
+                            self.restoreDanglingOperations()
                         }
                     }
                 }
