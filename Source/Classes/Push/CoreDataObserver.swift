@@ -19,7 +19,13 @@ class CoreDataObserver {
     
 	static let syncContextName = "CloudCoreSync"
 	
-    let processSemaphore = DispatchSemaphore(value: 1)
+    var processContext: NSManagedObjectContext!
+    static let processContextName = "CloudCoreHistory"
+    var processTimer: Timer?
+    var pauseUntil: Date?
+    
+    var isProcessing = false
+    var processAgain = true
     
 	// Used for errors delegation
 	weak var delegate: CloudCoreDelegate?
@@ -31,8 +37,6 @@ class CoreDataObserver {
             }
         }
     }
-    
-    var processTimer: Timer?
     
 	public init(container: NSPersistentContainer) {
 		self.container = container
@@ -47,6 +51,11 @@ class CoreDataObserver {
             usePersistentHistoryForPush = persistentHistoryNumber.boolValue
         }
         assert(usePersistentHistoryForPush)
+        
+        processContext = container.newBackgroundContext()
+        processContext.name = CoreDataObserver.processContextName
+        processContext.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
+        processContext.automaticallyMergesChangesFromParent = true
         
         processPersistentHistory()
 	}
@@ -83,11 +92,6 @@ class CoreDataObserver {
     }
     
     func processChanges() -> Bool {
-        processSemaphore.wait()
-        defer {
-            processSemaphore.signal()
-        }
-        
         var success = true
         
         CloudCore.delegate?.willSyncToCloud()
@@ -211,9 +215,17 @@ class CoreDataObserver {
         guard isOnline else { return }
         #endif
         
-        container.performBackgroundTask { moc in
-            moc.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
+        if isProcessing {
+            processAgain = true
             
+            return
+        }
+        
+        let backgroundTask = UIApplication.shared.beginBackgroundTask(withName: "CloudCore.processPersistentHistory")
+        
+        isProcessing = true
+
+        processContext.perform {
             let settings = UserDefaults.standard
             do {
                 var token: NSPersistentHistoryToken? = nil
@@ -221,13 +233,13 @@ class CoreDataObserver {
                     token = try NSKeyedUnarchiver.unarchivedObject(ofClasses: [NSPersistentHistoryToken.classForKeyedUnarchiver()], from: data) as? NSPersistentHistoryToken
                 }
                 let historyRequest = NSPersistentHistoryChangeRequest.fetchHistory(after: token)
-                let historyResult = try moc.execute(historyRequest) as! NSPersistentHistoryResult
+                let historyResult = try self.processContext.execute(historyRequest) as! NSPersistentHistoryResult
                 
                 if let history = historyResult.result as? [NSPersistentHistoryTransaction] {
                     for transaction in history {
-                        if self.process(transaction, in: moc) {
+                        if self.process(transaction, in: self.processContext) {
                             let deleteRequest = NSPersistentHistoryChangeRequest.deleteHistory(before: transaction)
-                            try moc.execute(deleteRequest)
+                            try self.processContext.execute(deleteRequest)
                             
                             let data = try NSKeyedArchiver.archivedData(withRootObject: transaction.token, requiringSecureCoding: false)
                             settings.set(data, forKey: CloudCore.config.persistentHistoryTokenKey)
@@ -243,6 +255,18 @@ class CoreDataObserver {
                     settings.set(nil, forKey: CloudCore.config.persistentHistoryTokenKey)
                 default:
                     fatalError("Unresolved error \(nserror), \(nserror.userInfo)")
+                }
+            }
+            
+            UIApplication.shared.endBackgroundTask(backgroundTask)
+            
+            DispatchQueue.main.async {
+                self.isProcessing = false
+                
+                if self.processAgain {
+                    self.processAgain = false
+                    
+                    self.processPersistentHistory()
                 }
             }
         }
@@ -265,9 +289,12 @@ class CoreDataObserver {
 		guard let context = notification.object as? NSManagedObjectContext else { return }
         guard shouldProcess(context) else { return }
         
+            // we've been asked to retry later
+        if let date = pauseUntil, date.timeIntervalSinceNow > 0 { return }
+        
         DispatchQueue.main.async {
             self.processTimer?.invalidate()
-            self.processTimer = Timer.scheduledTimer(withTimeInterval: 5.0, repeats: false) { _ in
+            self.processTimer = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: false) { _ in
                 self.processPersistentHistory()
             }
         }
@@ -280,13 +307,15 @@ class CoreDataObserver {
 		}
 
 		switch cloudError.code {
-        case .requestRateLimited, .zoneBusy:
+        case .requestRateLimited, .zoneBusy, .serviceUnavailable:
             pushOperationQueue.cancelAllOperations()
             
             if let number = cloudError.userInfo[CKErrorRetryAfterKey] as? NSNumber {
+                pauseUntil = Date(timeIntervalSinceNow: number.doubleValue)
                 DispatchQueue.main.asyncAfter(deadline: .now() + .seconds(number.intValue)) { [weak self] in
-                    guard let observer = self else { return }
-                    observer.processPersistentHistory()
+                    guard let self = self else { return }
+                    
+                    self.processPersistentHistory()
                 }
             }
             
