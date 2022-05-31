@@ -93,6 +93,7 @@ class CoreDataObserver {
         
         let backgroundContext = persistentContainer.newBackgroundContext()
         backgroundContext.name = CoreDataObserver.pushContextName
+        backgroundContext.automaticallyMergesChangesFromParent = true
         
         let records = converter.processPendingOperations(in: backgroundContext)
         pushOperationQueue.errorBlock = {
