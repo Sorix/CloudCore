@@ -22,7 +22,6 @@ class CoreDataObserver {
     var processContext: NSManagedObjectContext!
     static let processContextName = "CloudCoreHistory"
     var processTimer: Timer?
-    var pauseUntil: Date?
     
     var isProcessing = false
     var processAgain = true
@@ -290,11 +289,13 @@ class CoreDataObserver {
         guard shouldProcess(context) else { return }
         
             // we've been asked to retry later
-        if let date = pauseUntil, date.timeIntervalSinceNow > 0 { return }
+        if let date = CloudCore.pauseUntil,
+            date.timeIntervalSinceNow > 0
+        { return }
         
         DispatchQueue.main.async {
             self.processTimer?.invalidate()
-            self.processTimer = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: false) { _ in
+            self.processTimer = Timer.scheduledTimer(withTimeInterval: 2.0, repeats: false) { _ in
                 self.processPersistentHistory()
             }
         }
@@ -311,12 +312,7 @@ class CoreDataObserver {
             pushOperationQueue.cancelAllOperations()
             
             if let number = cloudError.userInfo[CKErrorRetryAfterKey] as? NSNumber {
-                pauseUntil = Date(timeIntervalSinceNow: number.doubleValue)
-                DispatchQueue.main.asyncAfter(deadline: .now() + .seconds(number.intValue)) { [weak self] in
-                    guard let self = self else { return }
-                    
-                    self.processPersistentHistory()
-                }
+                CloudCore.pauseUntil = Date(timeIntervalSinceNow: number.doubleValue)
             }
             
 		// Zone was accidentally deleted (NOT PURGED), we need to reupload all data accroding Apple Guidelines

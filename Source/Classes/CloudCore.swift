@@ -85,6 +85,26 @@ open class CloudCore {
         return q
     }()
 	
+        // if CloudKit says to retry later…
+    private static var pauseTimer: Timer?
+    static var pauseUntil: Date? {
+        didSet {
+            DispatchQueue.main.async {
+                CloudCore.pauseTimer?.invalidate()
+                if let fireDate = CloudCore.pauseUntil {
+                    let interval = fireDate.timeIntervalSinceNow
+                    print("pausing for \(interval) seconds")
+                    CloudCore.pauseTimer = Timer.scheduledTimer(withTimeInterval: interval, repeats: false) { timer in
+                        CloudCore.pauseUntil = nil
+                        
+                        CloudCore.coreDataObserver?.processPersistentHistory()
+                        CloudCore.cacheManager?.restartOperations()
+                    }
+                }
+            }
+        }
+    }
+    
 	// MARK: - Methods
 	
 	/// Enable CloudKit and Core Data synchronization

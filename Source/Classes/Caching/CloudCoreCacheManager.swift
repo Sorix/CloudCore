@@ -41,7 +41,7 @@ class CloudCoreCacheManager: NSObject {
 
         super.init()
         
-        restoreDanglingOperations()
+        restartOperations()
         configureObservers()
     }
     
@@ -109,18 +109,20 @@ class CloudCoreCacheManager: NSObject {
         }
     }
     
-    func restoreDanglingOperations() {
+    func restartOperations() {
         let context = backgroundContext
         
         context.perform {
             for name in self.cacheableClassNames {
-                    // restore existing ops
+                    // retart new & existing ops
+                let upload = NSPredicate(format: "%K == %@", "cacheStateRaw", CacheState.upload.rawValue)
                 let uploading = NSPredicate(format: "%K == %@", "cacheStateRaw", CacheState.uploading.rawValue)
+                let download = NSPredicate(format: "%K == %@", "cacheStateRaw", CacheState.download.rawValue)
                 let downloading = NSPredicate(format: "%K == %@", "cacheStateRaw", CacheState.downloading.rawValue)
-                let existing = NSCompoundPredicate(orPredicateWithSubpredicates: [uploading, downloading])
+                let newOrExisting = NSCompoundPredicate(orPredicateWithSubpredicates: [upload, uploading, download, downloading])
                 let restoreRequest = NSFetchRequest<NSManagedObject>(entityName: name)
-                restoreRequest.predicate = existing
-                if let cacheables = try? context.fetch(restoreRequest) as? [CloudCoreCacheable] {
+                restoreRequest.predicate = newOrExisting
+                if let cacheables = try? context.fetch(restoreRequest) as? [CloudCoreCacheable], !cacheables.isEmpty {
                     self.process(cacheables: cacheables)
                 }
                 
@@ -130,7 +132,7 @@ class CloudCoreCacheManager: NSObject {
                 let failedToUpload = NSCompoundPredicate(orPredicateWithSubpredicates: [hasError, isLocal])
                 let restartRequest = NSFetchRequest<NSManagedObject>(entityName: name)
                 restartRequest.predicate = failedToUpload
-                if let cacheables = try? context.fetch(restartRequest) as? [CloudCoreCacheable] {
+                if let cacheables = try? context.fetch(restartRequest) as? [CloudCoreCacheable], !cacheables.isEmpty {
                     let cacheableIDs = cacheables.map { $0.objectID }
                     self.update(cacheableIDs) { cacheable in
                         cacheable.lastErrorMessage = nil
@@ -171,6 +173,11 @@ class CloudCoreCacheManager: NSObject {
     }
     
     func upload(cacheableID: NSManagedObjectID) {
+            // we've been asked to retry later
+        if let date = CloudCore.pauseUntil,
+            date.timeIntervalSinceNow > 0
+        { return }
+        
         let container = container
         let context = backgroundContext
         
@@ -185,6 +192,19 @@ class CloudCoreCacheManager: NSObject {
             if modifyOp == nil
             {
                 guard let record = try? cacheable.restoreRecordWithSystemFields(for: .private) else { return }
+                
+                /*
+                var newRecord: CKRecord?
+                let semaphore = DispatchSemaphore(value: 0)
+                container.privateCloudDatabase.fetch(withRecordID: record.recordID) { record, error in
+                    newRecord = record
+                    
+                    semaphore.signal()
+                }
+                semaphore.wait()
+                
+                guard let record = newRecord else { return }
+                */
                 
                 record[cacheable.assetFieldName] = CKAsset(fileURL: cacheable.url)
                 record["remoteStatusRaw"] = RemoteStatus.available.rawValue
@@ -215,12 +235,9 @@ class CloudCoreCacheManager: NSObject {
                     CloudCore.delegate?.error(error: error, module: .cacheToCloud)
                     
                     if let cloudError = error as? CKError,
-//                       cloudError.code == .requestRateLimited || cloudError.code == .zoneBusy,
                        let number = cloudError.userInfo[CKErrorRetryAfterKey] as? NSNumber
                     {
-                        DispatchQueue.main.asyncAfter(deadline: .now() + .seconds(number.intValue)) {
-                            self.restoreDanglingOperations()
-                        }
+                        CloudCore.pauseUntil = Date(timeIntervalSinceNow: number.doubleValue)
                     }
                 }
             }
@@ -240,6 +257,11 @@ class CloudCoreCacheManager: NSObject {
     }
     
     func download(cacheableID: NSManagedObjectID) {
+            // we've been asked to retry later
+        if let date = CloudCore.pauseUntil,
+            date.timeIntervalSinceNow > 0
+        { return }
+        
         let container = container
         let context = backgroundContext
         
@@ -288,12 +310,9 @@ class CloudCoreCacheManager: NSObject {
                     CloudCore.delegate?.error(error: error, module: .cacheFromCloud)
                     
                     if let cloudError = error as? CKError,
-//                       cloudError.code == .requestRateLimited || cloudError.code == .zoneBusy,
                        let number = cloudError.userInfo[CKErrorRetryAfterKey] as? NSNumber
                     {
-                        DispatchQueue.main.asyncAfter(deadline: .now() + .seconds(number.intValue)) {
-                            self.download(cacheableID: cacheableID)
-                        }
+                        CloudCore.pauseUntil = Date(timeIntervalSinceNow: number.doubleValue)
                     }
                 }
             }
@@ -312,14 +331,9 @@ class CloudCoreCacheManager: NSObject {
     }
     
     func unload(cacheableID: NSManagedObjectID) {
-        let context = backgroundContext
-        
-        context.perform {
-            guard let cacheable = try? context.existingObject(with: cacheableID) as? CloudCoreCacheable else { return }
-            
+        update([cacheableID]) { cacheable in
             cacheable.removeLocal()
             cacheable.cacheState = .remote
-            try? context.save()
         }
     }
     
