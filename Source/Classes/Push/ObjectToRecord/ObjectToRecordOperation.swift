@@ -54,7 +54,7 @@ class ObjectToRecordOperation: Operation {
         
         context.performAndWait {
             do {
-                try self.fillRecordWithData(using: context)
+                try self.fillRecordWithData()
                 try context.save()
                 self.conversionCompletionBlock?(self.record)
             } catch {
@@ -63,8 +63,8 @@ class ObjectToRecordOperation: Operation {
         }
 	}
 	
-	private func fillRecordWithData(using context: NSManagedObjectContext) throws {
-		guard let managedObject = try fetchObject(for: record, using: context) else {
+	private func fillRecordWithData() throws {
+		guard let managedObject = try fetchObject(for: record) else {
 			throw CloudCoreError.coreData("Unable to find managed object for record: \(record)")
 		}
 		
@@ -99,12 +99,12 @@ class ObjectToRecordOperation: Operation {
 		}
 	}
 	
-	private func fetchObject(for record: CKRecord, using context: NSManagedObjectContext) throws -> NSManagedObject? {
+	private func fetchObject(for record: CKRecord) throws -> NSManagedObject? {
 		let entityName = record.recordType
 		
 		let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: entityName)
 		fetchRequest.predicate = NSPredicate(format: serviceAttributeNames.recordName + " == %@", record.recordID.recordName)
 		
-		return try context.fetch(fetchRequest).first as? NSManagedObject
+		return try managedObjectContext?.fetch(fetchRequest).first as? NSManagedObject
 	}
 }
