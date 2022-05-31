@@ -50,6 +50,7 @@ class PushOperationQueue: OperationQueue {
         modifyRecords.database = database
 		modifyRecords.savePolicy = .changedKeys
         modifyRecords.qualityOfService = .userInitiated
+        modifyRecords.isAtomic = true
         
 		modifyRecords.perRecordCompletionBlock = { record, error in
 			if let error = error {
