@@ -217,7 +217,9 @@ class CoreDataObserver {
             return
         }
         
+        #if TARGET_OS_IOS
         let backgroundTask = UIApplication.shared.beginBackgroundTask(withName: "CloudCore.processPersistentHistory")
+        #endif
         
         isProcessing = true
 
@@ -254,7 +256,9 @@ class CoreDataObserver {
                 }
             }
             
+            #if TARGET_OS_IOS
             UIApplication.shared.endBackgroundTask(backgroundTask)
+            #endif
             
             DispatchQueue.main.async {
                 self.isProcessing = false
