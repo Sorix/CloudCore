@@ -189,19 +189,6 @@ class CloudCoreCacheManager: NSObject {
             {
                 guard let record = try? cacheable.restoreRecordWithSystemFields(for: .private) else { return }
                 
-                /*
-                var newRecord: CKRecord?
-                let semaphore = DispatchSemaphore(value: 0)
-                container.privateCloudDatabase.fetch(withRecordID: record.recordID) { record, error in
-                    newRecord = record
-                    
-                    semaphore.signal()
-                }
-                semaphore.wait()
-                
-                guard let record = newRecord else { return }
-                */
-                
                 record[cacheable.assetFieldName] = CKAsset(fileURL: cacheable.url)
                 record["remoteStatusRaw"] = RemoteStatus.available.rawValue
                 
