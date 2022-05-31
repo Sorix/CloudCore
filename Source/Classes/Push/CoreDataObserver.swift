@@ -12,15 +12,14 @@ import CloudKit
 
 /// Class responsible for taking action on Core Data changes
 class CoreDataObserver {
-	var container: NSPersistentContainer
-	
+	var persistentContainer: NSPersistentContainer
+    var processContext: NSManagedObjectContext
+
 	let converter = ObjectToRecordConverter()
 	let pushOperationQueue = PushOperationQueue()
     
-	static let syncContextName = "CloudCoreSync"
+	static let pushContextName = "CloudCorePush"
 	
-    var processContext: NSManagedObjectContext!
-    static let processContextName = "CloudCoreHistory"
     var processTimer: Timer?
     
     var isProcessing = false
@@ -37,24 +36,21 @@ class CoreDataObserver {
         }
     }
     
-	public init(container: NSPersistentContainer) {
-		self.container = container
+    public init(persistentContainer: NSPersistentContainer, processContext: NSManagedObjectContext) {
+		self.persistentContainer = persistentContainer
+        self.processContext = processContext
+        
 		converter.errorBlock = { [weak self] in
 			self?.delegate?.error(error: $0, module: .some(.pushToCloud))
 		}
         
         var usePersistentHistoryForPush = false
-        if let storeDescription = container.persistentStoreDescriptions.first,
+        if let storeDescription = persistentContainer.persistentStoreDescriptions.first,
            let persistentHistoryNumber = storeDescription.options[NSPersistentHistoryTrackingKey] as? NSNumber
         {
             usePersistentHistoryForPush = persistentHistoryNumber.boolValue
         }
         assert(usePersistentHistoryForPush)
-        
-        processContext = container.newBackgroundContext()
-        processContext.name = CoreDataObserver.processContextName
-        processContext.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
-        processContext.automaticallyMergesChangesFromParent = true
         
         processPersistentHistory()
 	}
@@ -95,8 +91,8 @@ class CoreDataObserver {
         
         CloudCore.delegate?.willSyncToCloud()
         
-        let backgroundContext = container.newBackgroundContext()
-        backgroundContext.name = CoreDataObserver.syncContextName
+        let backgroundContext = persistentContainer.newBackgroundContext()
+        backgroundContext.name = CoreDataObserver.pushContextName
         
         let records = converter.processPendingOperations(in: backgroundContext)
         pushOperationQueue.errorBlock = {
@@ -350,7 +346,7 @@ class CoreDataObserver {
             resetZoneOperations.append(subscribeOperation)
             
 			// Upload all local data
-			let uploadOperation = PushAllLocalDataOperation(parentContext: parentContext, managedObjectModel: container.managedObjectModel)
+			let uploadOperation = PushAllLocalDataOperation(parentContext: parentContext, managedObjectModel: persistentContainer.managedObjectModel)
 			uploadOperation.errorBlock = { self.delegate?.error(error: $0, module: .some(.pushToCloud)) }
             uploadOperation.addDependency(createZoneOperation)
             resetZoneOperations.append(uploadOperation)

@@ -14,19 +14,15 @@ import Network
 class CloudCoreCacheManager: NSObject {
     
     private let persistentContainer: NSPersistentContainer
-    private let backgroundContext: NSManagedObjectContext
+    private let processContext: NSManagedObjectContext
     private let container: CKContainer
     private let cacheableClassNames: [String]
     
     private var frcs: [NSFetchedResultsController<NSManagedObject>] = []
     
-    public init(persistentContainer: NSPersistentContainer) {
+    public init(persistentContainer: NSPersistentContainer, processContext: NSManagedObjectContext) {
         self.persistentContainer = persistentContainer
-        
-        let backgroundContext = persistentContainer.newBackgroundContext()
-        backgroundContext.automaticallyMergesChangesFromParent = true
-        backgroundContext.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
-        self.backgroundContext = backgroundContext
+        self.processContext = processContext
         
         self.container = CloudCore.config.container
         
@@ -80,7 +76,7 @@ class CloudCoreCacheManager: NSObject {
     }
     
     private func configureObservers() {
-        let context = backgroundContext
+        let context = processContext
         
         context.perform {
             for name in self.cacheableClassNames {
@@ -110,7 +106,7 @@ class CloudCoreCacheManager: NSObject {
     }
     
     func restartOperations() {
-        let context = backgroundContext
+        let context = processContext
         
         context.perform {
             for name in self.cacheableClassNames {
@@ -179,7 +175,7 @@ class CloudCoreCacheManager: NSObject {
         { return }
         
         let container = container
-        let context = backgroundContext
+        let context = processContext
         
         context.perform {
             guard let cacheable = try? context.existingObject(with: cacheableID) as? CloudCoreCacheable else { return }
@@ -263,7 +259,7 @@ class CloudCoreCacheManager: NSObject {
         { return }
         
         let container = container
-        let context = backgroundContext
+        let context = processContext
         
         context.perform {
             guard let cacheable = try? context.existingObject(with: cacheableID) as? CloudCoreCacheable else { return }
