@@ -51,6 +51,8 @@ open class CloudCore {
 	
 	// MARK: - Properties
 	
+    private(set) static var processContext: NSManagedObjectContext!
+    
 	private(set) static var coreDataObserver: CoreDataObserver?
     private(set) static var cacheManager: CloudCoreCacheManager?
     public static var isOnline: Bool {
@@ -85,29 +87,56 @@ open class CloudCore {
         return q
     }()
 	
+        // if CloudKit says to retry later…
+    private static var pauseTimer: Timer?
+    static var pauseUntil: Date? {
+        didSet {
+            DispatchQueue.main.async {
+                CloudCore.pauseTimer?.invalidate()
+                if let fireDate = CloudCore.pauseUntil {
+                    let interval = fireDate.timeIntervalSinceNow
+                    print("pausing for \(interval) seconds")
+                    CloudCore.pauseTimer = Timer.scheduledTimer(withTimeInterval: interval, repeats: false) { timer in
+                        CloudCore.pauseUntil = nil
+                        
+                        CloudCore.coreDataObserver?.processPersistentHistory()
+                        CloudCore.cacheManager?.restartOperations()
+                    }
+                }
+            }
+        }
+    }
+    
 	// MARK: - Methods
 	
 	/// Enable CloudKit and Core Data synchronization
 	///
 	/// - Parameters:
 	///   - container: `NSPersistentContainer` that will be used to save data
-	public static func enable(persistentContainer container: NSPersistentContainer) {
+	public static func enable(persistentContainer: NSPersistentContainer) {
+            // share a MOC between CoreDataObserver and CacheManager
+        let processContext = persistentContainer.newBackgroundContext()
+        processContext.name = "CloudCoreProcess"
+        processContext.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
+        processContext.automaticallyMergesChangesFromParent = true
+        self.processContext = processContext
+        
 		// Listen for local changes
-		let observer = CoreDataObserver(container: container)
+		let observer = CoreDataObserver(persistentContainer: persistentContainer, processContext: processContext)
 		observer.delegate = self.delegate
 		observer.start()
 		self.coreDataObserver = observer
 		
-        self.cacheManager = CloudCoreCacheManager(persistentContainer: container)
+        self.cacheManager = CloudCoreCacheManager(persistentContainer: persistentContainer, processContext: processContext)
         
 		// Subscribe (subscription may be outdated/removed)
 		let subscribeOperation = SubscribeOperation()
 		subscribeOperation.errorBlock = {
-            handle(subscriptionError: $0, container: container)
+            handle(subscriptionError: $0, container: persistentContainer)
         }
 		
 		// Fetch updated data (e.g. push notifications weren't received)
-        let pullOperation = PullChangesOperation(persistentContainer: container)
+        let pullOperation = PullChangesOperation(persistentContainer: persistentContainer)
 		pullOperation.errorBlock = {
 			self.delegate?.error(error: $0, module: .some(.pullFromCloud))
 		}
@@ -248,7 +277,7 @@ open class CloudCore {
 				// Zone wasn't found, we need to create it
 				self.queue.cancelAllOperations()
                 
-                let setupOperation = SetupOperation(container: container, uploadAllData: !(coreDataObserver?.usePersistentHistoryForPush)!)
+                let setupOperation = SetupOperation(container: container, uploadAllData: true)  // arg, why is this a question?!
 				
                 // for completeness, pull again
                 let pullOperation = PullChangesOperation(persistentContainer: container)

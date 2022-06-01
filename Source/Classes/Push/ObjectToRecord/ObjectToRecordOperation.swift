@@ -10,8 +10,7 @@ import CloudKit
 import CoreData
 
 class ObjectToRecordOperation: Operation {
-	/// Need to set before starting operation, child context from it will be created
-	var parentContext: NSManagedObjectContext?
+	var managedObjectContext: NSManagedObjectContext?
 	
 	// Set on init
     let scope: CKDatabase.Scope
@@ -37,7 +36,7 @@ class ObjectToRecordOperation: Operation {
 	
 	override func main() {
 		if self.isCancelled { return }
-		guard let parentContext = parentContext else {
+		guard let context = managedObjectContext else {
 			let error = CloudCoreError.coreData("CloudCore framework error")
 			errorCompletionBlock?(error)
 			return
@@ -53,13 +52,10 @@ class ObjectToRecordOperation: Operation {
         }
         #endif
         
-		let childContext = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
-        childContext.performAndWait {
-            childContext.parent = parentContext
-            
+        context.performAndWait {
             do {
-                try self.fillRecordWithData(using: childContext)
-                try childContext.save()
+                try self.fillRecordWithData()
+                try context.save()
                 self.conversionCompletionBlock?(self.record)
             } catch {
                 self.errorCompletionBlock?(error)
@@ -67,8 +63,8 @@ class ObjectToRecordOperation: Operation {
         }
 	}
 	
-	private func fillRecordWithData(using context: NSManagedObjectContext) throws {
-		guard let managedObject = try fetchObject(for: record, using: context) else {
+	private func fillRecordWithData() throws {
+		guard let managedObject = try fetchObject(for: record) else {
 			throw CloudCoreError.coreData("Unable to find managed object for record: \(record)")
 		}
 		
@@ -103,12 +99,12 @@ class ObjectToRecordOperation: Operation {
 		}
 	}
 	
-	private func fetchObject(for record: CKRecord, using context: NSManagedObjectContext) throws -> NSManagedObject? {
+	private func fetchObject(for record: CKRecord) throws -> NSManagedObject? {
 		let entityName = record.recordType
 		
 		let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: entityName)
 		fetchRequest.predicate = NSPredicate(format: serviceAttributeNames.recordName + " == %@", record.recordID.recordName)
 		
-		return try context.fetch(fetchRequest).first as? NSManagedObject
+		return try managedObjectContext?.fetch(fetchRequest).first as? NSManagedObject
 	}
 }

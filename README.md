@@ -1,7 +1,7 @@
 # CloudCore
 
 ![Platform](https://img.shields.io/cocoapods/p/CloudCore.svg?style=flat)
-![Status](https://img.shields.io/badge/status-beta-orange.svg)
+![Status](https://img.shields.io/badge/status-production-green.svg)
 ![Swift](https://img.shields.io/badge/swift-5.0-orange.svg)
 
 **CloudCore** is an advanced sync engine for CloudKit and Core Data.
@@ -118,7 +118,7 @@ func application(_ application: UIApplication, didReceiveRemoteNotification user
 }
 ```
 
-6. If you want to enable offline support, **enable NSPersistentHistoryTracking** when you initialize your Core Data stack
+6. **Enable NSPersistentHistoryTracking** when you initialize your Core Data stack
 
 ```swift
 lazy var persistentContainer: NSPersistentContainer = {
@@ -136,7 +136,7 @@ lazy var persistentContainer: NSPersistentContainer = {
 }()
 ```
 
-7. To identify changes from your app that should be pushed, **save** from a background ManagedObjectContext named `CloudCorePushContext`, or use the convenience function performBackgroundPushTask
+7. To identify changes from your app that should be pushed, **save** from the convenience function performBackgroundPushTask
 
 ```swift
 persistentContainer.performBackgroundPushTask { moc in
@@ -302,6 +302,9 @@ You can find example application at [Example](/Example/) directory, which has be
 * **Share* button presents the CloudKit Sharing UI
 * **refresh** button calls `pull` to fetch data from Cloud. That is only useful for simulators because Simulator unable to receive push notifications
 * Use [CloudKit dashboard](https://icloud.developer.apple.com/dashboard/) to make changes and see it at application, and make change in application and see ones in dashboard. Don't forget to refresh dashboard's page because it doesn't update data on-the-fly.
+
+## Example app using Cacheable Assets
+[MediaBook](https://github.com/deeje/MediaBook) is a production-level iOS app being developed, which demonstrates how to handle cacheable assets in collection views.
 
 ## Tests
 CloudKit objects can't be mocked up, that's why there are 2 different types of tests:

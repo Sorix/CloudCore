@@ -123,7 +123,7 @@ class ObjectToRecordConverter {
 	/// - attention: Don't call this method from same context's `perfom`, that will cause deadlock
 	func processPendingOperations(in context: NSManagedObjectContext) -> (recordsToSave: [RecordWithDatabase], recordIDsToDelete: [RecordIDWithDatabase]) {
 		for operation in pendingConvertOperations {
-			operation.parentContext = context
+			operation.managedObjectContext = context
 			operationQueue.addOperation(operation)
 		}
         

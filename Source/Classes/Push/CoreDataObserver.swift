@@ -12,44 +12,47 @@ import CloudKit
 
 /// Class responsible for taking action on Core Data changes
 class CoreDataObserver {
-	var container: NSPersistentContainer
-	
+	var persistentContainer: NSPersistentContainer
+    var processContext: NSManagedObjectContext
+
 	let converter = ObjectToRecordConverter()
 	let pushOperationQueue = PushOperationQueue()
     
-	static let syncContextName = "CloudCoreSync"
+	static let pushContextName = "CloudCorePush"
 	
-    let processSemaphore = DispatchSemaphore(value: 1)
+    var processTimer: Timer?
+    
+    var isProcessing = false
+    var processAgain = true
     
 	// Used for errors delegation
 	weak var delegate: CloudCoreDelegate?
 	
-    var usePersistentHistoryForPush = false
     var isOnline = true {
         didSet {
-            if isOnline != oldValue && isOnline == true && usePersistentHistoryForPush == true {
+            if isOnline != oldValue && isOnline == true {
                 processPersistentHistory()
             }
         }
     }
     
-	public init(container: NSPersistentContainer) {
-		self.container = container
+    public init(persistentContainer: NSPersistentContainer, processContext: NSManagedObjectContext) {
+		self.persistentContainer = persistentContainer
+        self.processContext = processContext
+        
 		converter.errorBlock = { [weak self] in
 			self?.delegate?.error(error: $0, module: .some(.pushToCloud))
 		}
         
-        if #available(iOS 11.0, watchOS 4.0, tvOS 11.0, OSX 10.13, *) {
-            let storeDescription = container.persistentStoreDescriptions.first
-            if let persistentHistoryNumber = storeDescription?.options[NSPersistentHistoryTrackingKey] as? NSNumber
-            {
-                usePersistentHistoryForPush = persistentHistoryNumber.boolValue
-            }
-            
-            if usePersistentHistoryForPush {
-                processPersistentHistory()
-            }
+        var usePersistentHistoryForPush = false
+        if let storeDescription = persistentContainer.persistentStoreDescriptions.first,
+           let persistentHistoryNumber = storeDescription.options[NSPersistentHistoryTrackingKey] as? NSNumber
+        {
+            usePersistentHistoryForPush = persistentHistoryNumber.boolValue
         }
+        assert(usePersistentHistoryForPush)
+        
+        processPersistentHistory()
 	}
 	
 	/// Observe Core Data willSave and didSave notifications
@@ -84,17 +87,13 @@ class CoreDataObserver {
     }
     
     func processChanges() -> Bool {
-        processSemaphore.wait()
-        defer {
-            processSemaphore.signal()
-        }
-        
         var success = true
         
         CloudCore.delegate?.willSyncToCloud()
         
-        let backgroundContext = container.newBackgroundContext()
-        backgroundContext.name = CoreDataObserver.syncContextName
+        let backgroundContext = persistentContainer.newBackgroundContext()
+        backgroundContext.name = CoreDataObserver.pushContextName
+        backgroundContext.automaticallyMergesChangesFromParent = true
         
         let records = converter.processPendingOperations(in: backgroundContext)
         pushOperationQueue.errorBlock = {
@@ -122,22 +121,167 @@ class CoreDataObserver {
         return success
     }
     
+    func process(_ transaction: NSPersistentHistoryTransaction, in moc: NSManagedObjectContext) -> Bool {
+        var success = true
+
+        if transaction.contextName != CloudCore.config.pushContextName { return success }
+        
+        if let changes = transaction.changes {
+            var insertedObjects = Set<NSManagedObject>()
+            var updatedObject = Set<NSManagedObject>()
+            var deletedRecordIDs: [RecordIDWithDatabase] = []
+            var operationIDs: [String] = []
+            
+            for change in changes {
+                switch change.changeType {
+                case .insert:
+                    if let inserted = try? moc.existingObject(with: change.changedObjectID) {
+                        insertedObjects.insert(inserted)
+                    }
+                    
+                case .update:
+                    if let inserted = try? moc.existingObject(with: change.changedObjectID) {
+                        if let updatedProperties = change.updatedProperties {
+                            let updatedPropertyNames: [String] = updatedProperties.map { (propertyDescription) in
+                                return propertyDescription.name
+                            }
+                            inserted.updatedPropertyNames = updatedPropertyNames
+                        }
+                        updatedObject.insert(inserted)
+                    }
+                    
+                case .delete:
+                    if change.tombstone != nil {
+                        if let privateRecordData = change.tombstone!["privateRecordData"] as? Data {
+                            let ckRecord = CKRecord(archivedData: privateRecordData)
+                            let database = ckRecord?.recordID.zoneID.ownerName == CKCurrentUserDefaultName ? CloudCore.config.container.privateCloudDatabase : CloudCore.config.container.sharedCloudDatabase
+                            let recordIDWithDatabase = RecordIDWithDatabase((ckRecord?.recordID)!, database)
+                            deletedRecordIDs.append(recordIDWithDatabase)
+                        }
+                        if let publicRecordData = change.tombstone!["publicRecordData"] as? Data {
+                            let ckRecord = CKRecord(archivedData: publicRecordData)
+                            let recordIDWithDatabase = RecordIDWithDatabase((ckRecord?.recordID)!, CloudCore.config.container.publicCloudDatabase)
+                            deletedRecordIDs.append(recordIDWithDatabase)
+                        }
+                        if let operationID = change.tombstone!["operationID"] as? String {
+                            operationIDs.append(operationID)
+                        }
+                    }
+                    
+                default:
+                    break
+                }
+            }
+            
+            self.converter.prepareOperationsFor(inserted: insertedObjects,
+                                                updated: updatedObject,
+                                                deleted: deletedRecordIDs)
+                                
+            try? moc.save()
+            
+            if self.converter.hasPendingOperations {
+                success = self.processChanges()
+            }
+            
+            // check for cached assets
+            if success == true {
+                moc.perform {
+                    for insertedObject in insertedObjects {
+                        guard let cacheable = insertedObject as? CloudCoreCacheable,
+                              cacheable.cacheState == .local
+                        else { continue }
+                        
+                        cacheable.cacheState = .upload
+                    }
+                    
+                    try? moc.save()
+                }
+            }
+            
+            if !operationIDs.isEmpty {
+                CloudCore.cacheManager?.cancelOperations(with: operationIDs)
+            }
+        }
+        
+        return success
+    }
+    
+    @objc func processPersistentHistory() {
+        #if os(iOS)
+        guard isOnline else { return }
+        #endif
+        
+        if isProcessing {
+            processAgain = true
+            
+            return
+        }
+        
+        #if TARGET_OS_IOS
+        let backgroundTask = UIApplication.shared.beginBackgroundTask(withName: "CloudCore.processPersistentHistory")
+        #endif
+        
+        isProcessing = true
+
+        processContext.perform {
+            let settings = UserDefaults.standard
+            do {
+                var token: NSPersistentHistoryToken? = nil
+                if let data = settings.object(forKey: CloudCore.config.persistentHistoryTokenKey) as? Data {
+                    token = try NSKeyedUnarchiver.unarchivedObject(ofClasses: [NSPersistentHistoryToken.classForKeyedUnarchiver()], from: data) as? NSPersistentHistoryToken
+                }
+                let historyRequest = NSPersistentHistoryChangeRequest.fetchHistory(after: token)
+                let historyResult = try self.processContext.execute(historyRequest) as! NSPersistentHistoryResult
+                
+                if let history = historyResult.result as? [NSPersistentHistoryTransaction] {
+                    for transaction in history {
+                        if self.process(transaction, in: self.processContext) {
+                            let deleteRequest = NSPersistentHistoryChangeRequest.deleteHistory(before: transaction)
+                            try self.processContext.execute(deleteRequest)
+                            
+                            let data = try NSKeyedArchiver.archivedData(withRootObject: transaction.token, requiringSecureCoding: false)
+                            settings.set(data, forKey: CloudCore.config.persistentHistoryTokenKey)
+                        } else {
+                            break
+                        }
+                    }
+                }
+            } catch {
+                let nserror = error as NSError
+                switch nserror.code {
+                case NSPersistentHistoryTokenExpiredError:
+                    settings.set(nil, forKey: CloudCore.config.persistentHistoryTokenKey)
+                default:
+                    fatalError("Unresolved error \(nserror), \(nserror.userInfo)")
+                }
+            }
+            
+            #if TARGET_OS_IOS
+            UIApplication.shared.endBackgroundTask(backgroundTask)
+            #endif
+            
+            DispatchQueue.main.async {
+                self.isProcessing = false
+                
+                if self.processAgain {
+                    self.processAgain = false
+                    
+                    self.processPersistentHistory()
+                }
+            }
+        }
+    }
+    
 	@objc private func willSave(notification: Notification) {
 		guard let context = notification.object as? NSManagedObjectContext else { return }
         guard shouldProcess(context) else { return }
         
-        if usePersistentHistoryForPush {
-            context.insertedObjects.forEach { (inserted) in
-                if let serviceAttributeNames = inserted.entity.serviceAttributeNames {
-                    for scope in serviceAttributeNames.scopes {
-                        let _ = try? inserted.setRecordInformation(for: scope)
-                    }
+        context.insertedObjects.forEach { (inserted) in
+            if let serviceAttributeNames = inserted.entity.serviceAttributeNames {
+                for scope in serviceAttributeNames.scopes {
+                    let _ = try? inserted.setRecordInformation(for: scope)
                 }
             }
-        } else {
-            converter.prepareOperationsFor(inserted: context.insertedObjects,
-                                           updated: context.updatedObjects,
-                                           deleted: context.deletedObjects)
         }
 	}
 	
@@ -145,151 +289,15 @@ class CoreDataObserver {
 		guard let context = notification.object as? NSManagedObjectContext else { return }
         guard shouldProcess(context) else { return }
         
-        if usePersistentHistoryForPush == true {
-            DispatchQueue.main.async { [weak self] in
-                guard let observer = self else { return }
-                observer.processPersistentHistory()
-            }
-        } else {
-            guard converter.hasPendingOperations else { return }
-            
-            DispatchQueue.global(qos: .utility).async { [weak self] in
-                guard let observer = self else { return }
-                _ = observer.processChanges()
-            }
-        }
-	}
+            // we've been asked to retry later
+        if let date = CloudCore.pauseUntil,
+            date.timeIntervalSinceNow > 0
+        { return }
         
-    func processPersistentHistory() {
-        #if os(iOS)
-        guard isOnline else { return }
-        #endif
-        
-        if #available(iOS 11.0, watchOSApplicationExtension 4.0, tvOS 11.0, OSX 10.13, *) {
-            
-            func process(_ transaction: NSPersistentHistoryTransaction, in moc: NSManagedObjectContext) -> Bool {
-                var success = true
-
-                if transaction.contextName != CloudCore.config.pushContextName { return success }
-                
-                if let changes = transaction.changes {
-                    var insertedObjects = Set<NSManagedObject>()
-                    var updatedObject = Set<NSManagedObject>()
-                    var deletedRecordIDs: [RecordIDWithDatabase] = []
-                    var operationIDs: [String] = []
-                    
-                    for change in changes {
-                        switch change.changeType {
-                        case .insert:
-                            if let inserted = try? moc.existingObject(with: change.changedObjectID) {
-                                insertedObjects.insert(inserted)
-                            }
-                            
-                        case .update:
-                            if let inserted = try? moc.existingObject(with: change.changedObjectID) {
-                                if let updatedProperties = change.updatedProperties {
-                                    let updatedPropertyNames: [String] = updatedProperties.map { (propertyDescription) in
-                                        return propertyDescription.name
-                                    }
-                                    inserted.updatedPropertyNames = updatedPropertyNames
-                                }
-                                updatedObject.insert(inserted)
-                            }
-                            
-                        case .delete:
-                            if change.tombstone != nil {
-                                if let privateRecordData = change.tombstone!["privateRecordData"] as? Data {
-                                    let ckRecord = CKRecord(archivedData: privateRecordData)
-                                    let database = ckRecord?.recordID.zoneID.ownerName == CKCurrentUserDefaultName ? CloudCore.config.container.privateCloudDatabase : CloudCore.config.container.sharedCloudDatabase
-                                    let recordIDWithDatabase = RecordIDWithDatabase((ckRecord?.recordID)!, database)
-                                    deletedRecordIDs.append(recordIDWithDatabase)
-                                }
-                                if let publicRecordData = change.tombstone!["publicRecordData"] as? Data {
-                                    let ckRecord = CKRecord(archivedData: publicRecordData)
-                                    let recordIDWithDatabase = RecordIDWithDatabase((ckRecord?.recordID)!, CloudCore.config.container.publicCloudDatabase)
-                                    deletedRecordIDs.append(recordIDWithDatabase)
-                                }
-                                if let operationID = change.tombstone!["operationID"] as? String {
-                                    operationIDs.append(operationID)
-                                }
-                            }
-                            
-                        default:
-                            break
-                        }
-                    }
-                    
-                    self.converter.prepareOperationsFor(inserted: insertedObjects,
-                                                        updated: updatedObject,
-                                                        deleted: deletedRecordIDs)
-                                        
-                    try? moc.save()
-                    
-                    if self.converter.hasPendingOperations {
-                        success = self.processChanges()
-                    }
-                    
-                    // check for cached assets
-                    if success == true {
-                        let insertedIDs = insertedObjects.map { $0.objectID }
-                        container.performBackgroundTask { moc in
-                            moc.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
-                            do {
-                                for insertedID in insertedIDs {
-                                    guard let cacheable = try moc.existingObject(with: insertedID) as? CloudCoreCacheable,
-                                          cacheable.cacheState == .local
-                                    else { continue }
-                                    
-                                    cacheable.cacheState = .upload
-                                }
-                                
-                                try moc.save()
-                            } catch {
-                                self.delegate?.error(error: error, module: .some(.pushToCloud))
-                            }
-                        }
-                    }
-                    
-                    if !operationIDs.isEmpty {
-                        CloudCore.cacheManager?.cancelOperations(with: operationIDs)
-                    }
-                }
-                
-                return success
-            }
-            
-            container.performBackgroundTask { (moc) in
-                let settings = UserDefaults.standard
-                do {
-                    var token: NSPersistentHistoryToken? = nil
-                    if let data = settings.object(forKey: CloudCore.config.persistentHistoryTokenKey) as? Data {
-                        token = try NSKeyedUnarchiver.unarchivedObject(ofClasses: [NSPersistentHistoryToken.classForKeyedUnarchiver()], from: data) as? NSPersistentHistoryToken
-                    }
-                    let historyRequest = NSPersistentHistoryChangeRequest.fetchHistory(after: token)
-                    let historyResult = try moc.execute(historyRequest) as! NSPersistentHistoryResult
-                    
-                    if let history = historyResult.result as? [NSPersistentHistoryTransaction] {
-                        for transaction in history {
-                            if process(transaction, in: moc) {
-                                let deleteRequest = NSPersistentHistoryChangeRequest.deleteHistory(before: transaction)
-                                try moc.execute(deleteRequest)
-                                
-                                let data = try NSKeyedArchiver.archivedData(withRootObject: transaction.token, requiringSecureCoding: false)
-                                settings.set(data, forKey: CloudCore.config.persistentHistoryTokenKey)
-                            } else {
-                                break
-                            }
-                        }
-                    }
-                } catch {
-                    let nserror = error as NSError
-                    switch nserror.code {
-                    case NSPersistentHistoryTokenExpiredError:
-                        settings.set(nil, forKey: CloudCore.config.persistentHistoryTokenKey)
-                    default:
-                        fatalError("Unresolved error \(nserror), \(nserror.userInfo)")
-                    }
-                }
+        DispatchQueue.main.async {
+            self.processTimer?.invalidate()
+            self.processTimer = Timer.scheduledTimer(withTimeInterval: 2.0, repeats: false) { _ in
+                self.processPersistentHistory()
             }
         }
     }
@@ -301,14 +309,11 @@ class CoreDataObserver {
 		}
 
 		switch cloudError.code {
-        case .requestRateLimited, .zoneBusy:
+        case .requestRateLimited, .zoneBusy, .serviceUnavailable:
             pushOperationQueue.cancelAllOperations()
             
             if let number = cloudError.userInfo[CKErrorRetryAfterKey] as? NSNumber {
-                DispatchQueue.main.asyncAfter(deadline: .now() + .seconds(number.intValue)) { [weak self] in
-                    guard let observer = self else { return }
-                    observer.processPersistentHistory()
-                }
+                CloudCore.pauseUntil = Date(timeIntervalSinceNow: number.doubleValue)
             }
             
 		// Zone was accidentally deleted (NOT PURGED), we need to reupload all data accroding Apple Guidelines
@@ -346,7 +351,7 @@ class CoreDataObserver {
             resetZoneOperations.append(subscribeOperation)
             
 			// Upload all local data
-			let uploadOperation = PushAllLocalDataOperation(parentContext: parentContext, managedObjectModel: container.managedObjectModel)
+			let uploadOperation = PushAllLocalDataOperation(parentContext: parentContext, managedObjectModel: persistentContainer.managedObjectModel)
 			uploadOperation.errorBlock = { self.delegate?.error(error: $0, module: .some(.pushToCloud)) }
             uploadOperation.addDependency(createZoneOperation)
             resetZoneOperations.append(uploadOperation)

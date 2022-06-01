@@ -14,19 +14,15 @@ import Network
 class CloudCoreCacheManager: NSObject {
     
     private let persistentContainer: NSPersistentContainer
-    private let backgroundContext: NSManagedObjectContext
+    private let processContext: NSManagedObjectContext
     private let container: CKContainer
     private let cacheableClassNames: [String]
     
     private var frcs: [NSFetchedResultsController<NSManagedObject>] = []
     
-    public init(persistentContainer: NSPersistentContainer) {
+    public init(persistentContainer: NSPersistentContainer, processContext: NSManagedObjectContext) {
         self.persistentContainer = persistentContainer
-        
-        let backgroundContext = persistentContainer.newBackgroundContext()
-        backgroundContext.automaticallyMergesChangesFromParent = true
-        backgroundContext.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
-        self.backgroundContext = backgroundContext
+        self.processContext = processContext
         
         self.container = CloudCore.config.container
         
@@ -41,7 +37,7 @@ class CloudCoreCacheManager: NSObject {
 
         super.init()
         
-        restoreDanglingOperations()
+        restartOperations()
         configureObservers()
     }
     
@@ -80,7 +76,7 @@ class CloudCoreCacheManager: NSObject {
     }
     
     private func configureObservers() {
-        let context = backgroundContext
+        let context = processContext
         
         context.perform {
             for name in self.cacheableClassNames {
@@ -109,18 +105,20 @@ class CloudCoreCacheManager: NSObject {
         }
     }
     
-    func restoreDanglingOperations() {
-        let context = backgroundContext
+    func restartOperations() {
+        let context = processContext
         
         context.perform {
             for name in self.cacheableClassNames {
-                    // restore existing ops
+                    // retart new & existing ops
+                let upload = NSPredicate(format: "%K == %@", "cacheStateRaw", CacheState.upload.rawValue)
                 let uploading = NSPredicate(format: "%K == %@", "cacheStateRaw", CacheState.uploading.rawValue)
+                let download = NSPredicate(format: "%K == %@", "cacheStateRaw", CacheState.download.rawValue)
                 let downloading = NSPredicate(format: "%K == %@", "cacheStateRaw", CacheState.downloading.rawValue)
-                let existing = NSCompoundPredicate(orPredicateWithSubpredicates: [uploading, downloading])
+                let newOrExisting = NSCompoundPredicate(orPredicateWithSubpredicates: [upload, uploading, download, downloading])
                 let restoreRequest = NSFetchRequest<NSManagedObject>(entityName: name)
-                restoreRequest.predicate = existing
-                if let cacheables = try? context.fetch(restoreRequest) as? [CloudCoreCacheable] {
+                restoreRequest.predicate = newOrExisting
+                if let cacheables = try? context.fetch(restoreRequest) as? [CloudCoreCacheable], !cacheables.isEmpty {
                     self.process(cacheables: cacheables)
                 }
                 
@@ -130,7 +128,7 @@ class CloudCoreCacheManager: NSObject {
                 let failedToUpload = NSCompoundPredicate(orPredicateWithSubpredicates: [hasError, isLocal])
                 let restartRequest = NSFetchRequest<NSManagedObject>(entityName: name)
                 restartRequest.predicate = failedToUpload
-                if let cacheables = try? context.fetch(restartRequest) as? [CloudCoreCacheable] {
+                if let cacheables = try? context.fetch(restartRequest) as? [CloudCoreCacheable], !cacheables.isEmpty {
                     let cacheableIDs = cacheables.map { $0.objectID }
                     self.update(cacheableIDs) { cacheable in
                         cacheable.lastErrorMessage = nil
@@ -161,18 +159,23 @@ class CloudCoreCacheManager: NSObject {
         return foundOperation
     }
     
-    func longLivedConfiguration() -> CKOperation.Configuration {
+    func longLivedConfiguration(qos: QualityOfService) -> CKOperation.Configuration {
         let configuration = CKOperation.Configuration()
         configuration.container = container
         configuration.isLongLived = true
-        configuration.qualityOfService = .utility
+        configuration.qualityOfService = qos
         
         return configuration
     }
     
     func upload(cacheableID: NSManagedObjectID) {
+            // we've been asked to retry later
+        if let date = CloudCore.pauseUntil,
+            date.timeIntervalSinceNow > 0
+        { return }
+        
         let container = container
-        let context = backgroundContext
+        let context = processContext
         
         context.perform {
             guard let cacheable = try? context.existingObject(with: cacheableID) as? CloudCoreCacheable else { return }
@@ -190,7 +193,7 @@ class CloudCoreCacheManager: NSObject {
                 record["remoteStatusRaw"] = RemoteStatus.available.rawValue
                 
                 modifyOp = CKModifyRecordsOperation(recordsToSave: [record], recordIDsToDelete: nil)
-                modifyOp.configuration = self.longLivedConfiguration()
+                modifyOp.configuration = self.longLivedConfiguration(qos: .utility)
                 modifyOp.savePolicy = .changedKeys
                 
                 cacheable.operationID = modifyOp.operationID
@@ -198,13 +201,16 @@ class CloudCoreCacheManager: NSObject {
             
             modifyOp.perRecordProgressBlock = { record, progress in
                 self.update([cacheableID]) { cacheable in
-                    cacheable.uploadProgress = progress
+                    if progress > cacheable.uploadProgress {
+                        cacheable.uploadProgress = progress
+                    }
                 }
             }
             modifyOp.perRecordCompletionBlock = { record, error in
                 self.update([cacheableID]) { cacheable in
                     cacheable.uploadProgress = 0
                     cacheable.cacheState = (error == nil) ? .cached : .local
+                    cacheable.remoteStatus = (error == nil) ? .available : .pending
                     cacheable.lastErrorMessage = error?.localizedDescription
                 }
                 
@@ -212,27 +218,35 @@ class CloudCoreCacheManager: NSObject {
                     CloudCore.delegate?.error(error: error, module: .cacheToCloud)
                     
                     if let cloudError = error as? CKError,
-                       cloudError.code == .requestRateLimited || cloudError.code == .zoneBusy,
                        let number = cloudError.userInfo[CKErrorRetryAfterKey] as? NSNumber
                     {
-                        DispatchQueue.main.asyncAfter(deadline: .now() + .seconds(number.intValue)) {
-                            self.upload(cacheableID: cacheableID)
-                        }
+                        CloudCore.pauseUntil = Date(timeIntervalSinceNow: number.doubleValue)
                     }
                 }
             }
             modifyOp.modifyRecordsCompletionBlock = { records, recordIDs, error in }
             modifyOp.longLivedOperationWasPersistedBlock = { }
-            container.privateCloudDatabase.add(modifyOp)
+            if !modifyOp.isExecuting {
+                container.privateCloudDatabase.add(modifyOp)
+            }
             
-            cacheable.cacheState = .uploading
-            try? context.save()
+            if cacheable.cacheState != .uploading {
+                cacheable.cacheState = .uploading
+            }
+            if context.hasChanges {
+                try? context.save()
+            }
         }
     }
     
     func download(cacheableID: NSManagedObjectID) {
+            // we've been asked to retry later
+        if let date = CloudCore.pauseUntil,
+            date.timeIntervalSinceNow > 0
+        { return }
+        
         let container = container
-        let context = backgroundContext
+        let context = processContext
         
         context.perform {
             guard let cacheable = try? context.existingObject(with: cacheableID) as? CloudCoreCacheable else { return }
@@ -247,7 +261,7 @@ class CloudCoreCacheManager: NSObject {
                 guard let record = try? cacheable.restoreRecordWithSystemFields(for: .private) else { return }
                                 
                 fetchOp = CKFetchRecordsOperation(recordIDs: [record.recordID])
-                fetchOp.configuration = self.longLivedConfiguration()
+                fetchOp.configuration = self.longLivedConfiguration(qos: .userInitiated)
                 fetchOp.desiredKeys = [cacheable.assetFieldName]
                 
                 cacheable.operationID = fetchOp.operationID
@@ -255,7 +269,9 @@ class CloudCoreCacheManager: NSObject {
             
             fetchOp.perRecordProgressBlock = { record, progress in
                 self.update([cacheableID]) { cacheable in
-                    cacheable.downloadProgress = progress
+                    if progress > cacheable.downloadProgress {
+                        cacheable.downloadProgress = progress
+                    }
                 }
             }
             fetchOp.perRecordCompletionBlock = { record, recordID, error in
@@ -277,32 +293,30 @@ class CloudCoreCacheManager: NSObject {
                     CloudCore.delegate?.error(error: error, module: .cacheFromCloud)
                     
                     if let cloudError = error as? CKError,
-                       cloudError.code == .requestRateLimited || cloudError.code == .zoneBusy,
                        let number = cloudError.userInfo[CKErrorRetryAfterKey] as? NSNumber
                     {
-                        DispatchQueue.main.asyncAfter(deadline: .now() + .seconds(number.intValue)) {
-                            self.download(cacheableID: cacheableID)
-                        }
+                        CloudCore.pauseUntil = Date(timeIntervalSinceNow: number.doubleValue)
                     }
                 }
             }
             fetchOp.longLivedOperationWasPersistedBlock = { }
-            container.privateCloudDatabase.add(fetchOp)
+            if !fetchOp.isExecuting {
+                container.privateCloudDatabase.add(fetchOp)
+            }
             
-            cacheable.cacheState = .downloading
-            try? context.save()
+            if cacheable.cacheState != .downloading {
+                cacheable.cacheState = .downloading
+            }
+            if context.hasChanges {
+                try? context.save()
+            }
         }
     }
     
     func unload(cacheableID: NSManagedObjectID) {
-        let context = backgroundContext
-        
-        context.perform {
-            guard let cacheable = try? context.existingObject(with: cacheableID) as? CloudCoreCacheable else { return }
-            
+        update([cacheableID]) { cacheable in
             cacheable.removeLocal()
             cacheable.cacheState = .remote
-            try? context.save()
         }
     }
     
