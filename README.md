@@ -118,7 +118,7 @@ func application(_ application: UIApplication, didReceiveRemoteNotification user
 }
 ```
 
-6. If you want to enable offline support, **enable NSPersistentHistoryTracking** when you initialize your Core Data stack
+6. **Enable NSPersistentHistoryTracking** when you initialize your Core Data stack
 
 ```swift
 lazy var persistentContainer: NSPersistentContainer = {
@@ -136,7 +136,7 @@ lazy var persistentContainer: NSPersistentContainer = {
 }()
 ```
 
-7. To identify changes from your app that should be pushed, **save** from a background ManagedObjectContext named `CloudCorePushContext`, or use the convenience function performBackgroundPushTask
+7. To identify changes from your app that should be pushed, **save** from the convenience function performBackgroundPushTask
 
 ```swift
 persistentContainer.performBackgroundPushTask { moc in
