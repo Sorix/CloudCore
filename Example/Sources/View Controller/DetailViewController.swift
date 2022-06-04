@@ -8,6 +8,7 @@
 
 import UIKit
 import CoreData
+import CloudCore
 
 class DetailViewController: UITableViewController {
 
@@ -16,6 +17,15 @@ class DetailViewController: UITableViewController {
 	
 	private var tableDataSource: DetailTableDataSource!
 	
+    private var sharingController: CloudCoreSharingController!
+    
+    private var datafilesObserver: CoreDataContextObserver!
+    private var updateCellQueue: OperationQueue = {
+        let queue = OperationQueue()
+        queue.maxConcurrentOperationCount = 1
+        return queue
+    }()
+    
 	override func viewDidLoad() {
 		super.viewDidLoad()
 		
@@ -26,39 +36,71 @@ class DetailViewController: UITableViewController {
 		
 		tableDataSource = DetailTableDataSource(fetchRequest: fetchRequest, context: context, sectionNameKeyPath: nil, delegate: self, tableView: tableView)
 		tableView.dataSource = tableDataSource
+        tableView.delegate = self
 		try! tableDataSource.performFetch()
-		
-		navigationItem.rightBarButtonItem = editButtonItem
+        
+        guard let organization = try? self.context.existingObject(with: self.organizationID) as? CloudCoreSharing else { return }
+        
+        var buttons: [UIBarButtonItem] = []
+        if organization.isOwnedByCurrentUser {
+            let addButton = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(add(_:)))
+            buttons.append(addButton)
+            
+            let renameButton = UIBarButtonItem(title: "Rename", style: .plain, target: self, action: #selector(rename(_:)))
+            buttons.append(renameButton)
+        }
+        let shareButton = UIBarButtonItem(title: "Share", style: .plain, target: self, action: #selector((share(_:))))
+        buttons.append(shareButton)
+        
+        navigationItem.setRightBarButtonItems(buttons, animated: false)
+        
+        datafilesObserver = CoreDataContextObserver(context: context)
+	}
+    
+	@objc private func add(_ sender: UIBarButtonItem) {
+        persistentContainer.performBackgroundPushTask { (moc) in
+            let employee = ModelFactory.insertEmployee(context: moc)
+            let organization = try? moc.existingObject(with: self.organizationID) as? Organization
+            employee.organization = organization
+            
+            try? moc.save()
+        }
 	}
 	
-	override func setEditing(_ editing: Bool, animated: Bool) {
-		super.setEditing(editing, animated: animated)
-		
-		if editing {
-			let addButton = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(navAddButtonDidTap(_:)))
-			navigationItem.setLeftBarButton(addButton, animated: animated)
-			
-			let renameButton = UIBarButtonItem(title: "Rename", style: .plain, target: self, action: #selector(navRenameButtonDidTap(_:)))
-			navigationItem.setRightBarButtonItems([editButtonItem, renameButton], animated: animated)
-		} else {
-			navigationItem.setLeftBarButton(nil, animated: animated)
-			navigationItem.setRightBarButtonItems([editButtonItem], animated: animated)
-			try! context.save()
-		}
+	@objc private func rename(_ sender: UIBarButtonItem) {
+        let newTitle = ModelFactory.newCompanyName()
+        persistentContainer.performBackgroundPushTask { (moc) in
+            let organization = try? moc.existingObject(with: self.organizationID) as? Organization
+            organization?.name = newTitle
+            
+            try? moc.save()
+        }
+        self.title = newTitle
 	}
-	
-	@objc private func navAddButtonDidTap(_ sender: UIBarButtonItem) {
-		let employee = ModelFactory.insertEmployee(context: context)
-		let organization = context.object(with: organizationID) as! Organization
-		employee.organization = organization
-	}
-	
-	@objc private func navRenameButtonDidTap(_ sender: UIBarButtonItem) {
-		let organization = context.object(with: organizationID) as! Organization
-		organization.name = ModelFactory.newCompanyName()
-		self.title = organization.name
-	}
-
+    
+    @objc private func share(_ sender: UIBarButtonItem) {
+        iCloudAvailable { available in
+            guard available else { return }
+            
+            guard let organization = try? self.context.existingObject(with: self.organizationID) as? CloudCoreSharing else { return }
+            
+            if self.sharingController == nil {
+                self.sharingController = CloudCoreSharingController(persistentContainer: persistentContainer,
+                                                                object: organization)
+            }
+            self.sharingController.configureSharingController(permissions: [.allowReadOnly, .allowPrivate, .allowPublic]) { csc in
+                if let csc = csc {
+                    csc.popoverPresentationController?.barButtonItem = sender
+                    self.present(csc, animated:true, completion:nil)
+                }
+            }
+        }
+    }
+    
+    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        tableView.deselectRow(at: indexPath, animated: true)
+    }
+    
 }
 
 extension DetailViewController: FRCTableViewDelegate {
@@ -68,12 +110,47 @@ extension DetailViewController: FRCTableViewDelegate {
 		let employee = tableDataSource.object(at: indexPath)
 		
 		cell.nameLabel.text = employee.name
-		
-		if let imageData = employee.photoData, let image = UIImage(data: imageData) {
-			cell.photoImageView.image = image
-		} else {
-			cell.photoImageView.image = nil
-		}
+        
+        cell.progressView.isHidden = true
+        cell.progressView.progress = 0
+        
+        if let datafile = employee.datafiles?.allObjects.first as? Datafile {
+            if datafile.localAvailable {
+                if let data = try? Data(contentsOf: datafile.url)
+                {
+                    cell.photoImageView.image = UIImage(data: data)
+                }
+            } else if datafile.readyToDownload {
+                datafilesObserver.observeObject(object: datafile) { datafile, state in
+                    guard let cacheable = datafile as? CloudCoreCacheable else { return }
+                    
+                    cell.progressView.isHidden = cacheable.progress == 0
+                    cell.progressView.progress = Float(cacheable.progress)
+                    
+                    if cacheable.localAvailable {
+                        if let data = try? Data(contentsOf: cacheable.url)
+                        {
+                            cell.photoImageView.image = UIImage(data: data)
+                        }
+                        cell.progressView.isHidden = true
+                        cell.progressView.progress = 0
+
+                        self.datafilesObserver.unobserveObject(object: datafile)
+                    }
+                }
+                
+                persistentContainer.performBackgroundTask { moc in
+                    guard let cacheable = try? moc.existingObject(with: datafile.objectID) as? CloudCoreCacheable else { return }
+                    
+                    cacheable.cacheState = .download
+                    
+                    try? moc.save()
+                }
+            } else {
+                cell.progressView.isHidden = datafile.progress == 0
+                cell.progressView.progress = Float(datafile.progress)
+            }
+        }
 		
 		var departmentText = employee.department ?? "No"
 		departmentText += " department"
@@ -93,15 +170,33 @@ extension DetailViewController: FRCTableViewDelegate {
 	
 }
 
+extension DetailViewController {
+    
+    @available(iOS 11.0, *)
+    override func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
+        let deleteTitle = NSLocalizedString("Delete", comment: "Delete action")
+        let deleteAction = UIContextualAction(style: .destructive, title: deleteTitle,
+                                              handler: { [weak self] action, view, completionHandler in
+                                                
+                                                let anObject = self?.tableDataSource.object(at: indexPath)
+                                                let objectID = anObject?.objectID
+                                                
+                                                persistentContainer.performBackgroundPushTask { (moc) in
+                                                    if let objectToDelete = try? moc.existingObject(with: objectID!) {
+                                                        moc.delete(objectToDelete)
+                                                        try? moc.save()
+                                                    }
+                                                }
+                                                
+                                                completionHandler(true)
+        })
+        
+        let configuration = UISwipeActionsConfiguration(actions: [deleteAction])
+        return configuration
+    }
+    
+}
+
 fileprivate class DetailTableDataSource: FRCTableViewDataSource<Employee> {
-	
-	override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCellEditingStyle, forRowAt indexPath: IndexPath) {
-		let context = frc.managedObjectContext
-		
-		switch editingStyle {
-		case .delete: context.delete(object(at: indexPath))
-		default: return
-		}
-	}
-	
+    
 }

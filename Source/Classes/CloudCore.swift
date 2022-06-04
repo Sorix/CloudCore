@@ -30,7 +30,7 @@ import CloudKit
 	```
 
 	## Fetch from cloud
-	When CloudKit data is changed **push notification** is posted to an application. You need to handle it and fetch changed data from CloudKit with `CloudCore.fetchAndSave(using:to:error:completion:)` method.
+	When CloudKit data is changed **push notification** is posted to an application. You need to handle it and fetch changed data from CloudKit with `CloudCore.pull(using:to:error:completion:)` method.
 
 	### Example
 	```swift
@@ -38,21 +38,32 @@ import CloudKit
 		// Check if it CloudKit's and CloudCore notification
 		if CloudCore.isCloudCoreNotification(withUserInfo: userInfo) {
 			// Fetch changed data from iCloud
-			CloudCore.fetchAndSave(using: userInfo, to: persistentContainer, error: nil, completion: { (fetchResult) in
+			CloudCore.pull(using: userInfo, to: persistentContainer, error: nil, completion: { (fetchResult) in
 				completionHandler(fetchResult.uiBackgroundFetchResult)
 			})
 		}
 	}
 	```
 
-	You can also check for updated data at CloudKit **manually** (e.g. push notifications are not working). Use for that `CloudCore.fetchAndSave(to:error:completion:)`
+	You can also check for updated data at CloudKit **manually** (e.g. push notifications are not working). Use for that `CloudCore.pull(to:error:completion:)`
 */
 open class CloudCore {
 	
 	// MARK: - Properties
 	
-	private(set) static var coreDataListener: CoreDataListener?
-	
+    private(set) static var processContext: NSManagedObjectContext!
+    
+	private(set) static var coreDataObserver: CoreDataObserver?
+    private(set) static var cacheManager: CloudCoreCacheManager?
+    public static var isOnline: Bool {
+        get {
+            return coreDataObserver?.isOnline ?? false
+        }
+        set {
+            coreDataObserver?.isOnline = newValue
+        }
+    }
+    
 	/// CloudCore configuration, it's recommended to set up before calling any of CloudCore methods. You can read more at `CloudCoreConfig` struct description
 	public static var config = CloudCoreConfig()
 	
@@ -62,87 +73,128 @@ open class CloudCore {
 	/// Error and sync actions are reported to that delegate
 	public static weak var delegate: CloudCoreDelegate? {
 		didSet {
-			coreDataListener?.delegate = delegate
+			coreDataObserver?.delegate = delegate
 		}
 	}
 	
 	public typealias NotificationUserInfo = [AnyHashable : Any]
 	
-	static private let queue = OperationQueue()
+    public static var userRecordID: CKRecord.ID? = nil
+    
+    static private let queue: OperationQueue = {
+        let q = OperationQueue()
+        q.maxConcurrentOperationCount = 1
+        return q
+    }()
 	
+        // if CloudKit says to retry later…
+    private static var pauseTimer: Timer?
+    static var pauseUntil: Date? {
+        didSet {
+            DispatchQueue.main.async {
+                CloudCore.pauseTimer?.invalidate()
+                if let fireDate = CloudCore.pauseUntil {
+                    let interval = fireDate.timeIntervalSinceNow
+                    print("pausing for \(interval) seconds")
+                    CloudCore.pauseTimer = Timer.scheduledTimer(withTimeInterval: interval, repeats: false) { timer in
+                        CloudCore.pauseUntil = nil
+                        
+                        CloudCore.coreDataObserver?.processPersistentHistory()
+                        CloudCore.cacheManager?.restartOperations()
+                    }
+                }
+            }
+        }
+    }
+    
 	// MARK: - Methods
 	
 	/// Enable CloudKit and Core Data synchronization
 	///
 	/// - Parameters:
 	///   - container: `NSPersistentContainer` that will be used to save data
-	public static func enable(persistentContainer container: NSPersistentContainer) {
+	public static func enable(persistentContainer: NSPersistentContainer) {
+            // share a MOC between CoreDataObserver and CacheManager
+        let processContext = persistentContainer.newBackgroundContext()
+        processContext.name = "CloudCoreProcess"
+        processContext.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
+        processContext.automaticallyMergesChangesFromParent = true
+        self.processContext = processContext
+        
 		// Listen for local changes
-		let listener = CoreDataListener(container: container)
-		listener.delegate = self.delegate
-		listener.observe()
-		self.coreDataListener = listener
+		let observer = CoreDataObserver(persistentContainer: persistentContainer, processContext: processContext)
+		observer.delegate = self.delegate
+		observer.start()
+		self.coreDataObserver = observer
 		
+        self.cacheManager = CloudCoreCacheManager(persistentContainer: persistentContainer, processContext: processContext)
+        
 		// Subscribe (subscription may be outdated/removed)
-		#if !os(watchOS)
 		let subscribeOperation = SubscribeOperation()
-		subscribeOperation.errorBlock = { handle(subscriptionError: $0, container: container) }
-		queue.addOperation(subscribeOperation)
-		#endif
+		subscribeOperation.errorBlock = {
+            handle(subscriptionError: $0, container: persistentContainer)
+        }
 		
 		// Fetch updated data (e.g. push notifications weren't received)
-        let updateFromCloudOperation = FetchAndSaveOperation(persistentContainer: container)
-		updateFromCloudOperation.errorBlock = {
-			self.delegate?.error(error: $0, module: .some(.fetchFromCloud))
+        let pullOperation = PullChangesOperation(persistentContainer: persistentContainer)
+		pullOperation.errorBlock = {
+			self.delegate?.error(error: $0, module: .some(.pullFromCloud))
 		}
-		
-		#if !os(watchOS)
-		updateFromCloudOperation.addDependency(subscribeOperation)
-		#endif
-			
-		queue.addOperation(updateFromCloudOperation)
+        
+        queue.addOperation(subscribeOperation)
+        queue.addOperation(pullOperation)
+        
+        config.container.fetchUserRecordID { recordID, error in
+            if error == nil {
+                self.userRecordID = recordID
+            }
+        }
 	}
 	
 	/// Disables synchronization (push notifications won't be sent also)
 	public static func disable() {
 		queue.cancelAllOperations()
 
-		coreDataListener?.stopObserving()
-		coreDataListener = nil
+		coreDataObserver?.stop()
+		coreDataObserver = nil
 		
 		// FIXME: unsubscribe
 	}
 	
+    /// return the user's record name
+    public static func userRecordName() -> String? {
+        return userRecordID?.recordName
+    }
+    
 	// MARK: Fetchers
 	
 	/** Fetch changes from one CloudKit database and save it to CoreData from `didReceiveRemoteNotification` method.
 
-	Don't forget to check notification's UserInfo by calling `isCloudCoreNotification(withUserInfo:)`. If incorrect user info is provided `FetchResult.noData` will be returned at completion block.
+	Don't forget to check notification's UserInfo by calling `isCloudCoreNotification(withUserInfo:)`. If incorrect user info is provided `PullResult.noData` will be returned at completion block.
 
 	- Parameters:
 		- userInfo: notification's user info, CloudKit database will be extraced from that notification
 		- container: `NSPersistentContainer` that will be used to save fetched data
 		- error: block will be called every time when error occurs during process
-		- completion: `FetchResult` enumeration with results of operation
+		- completion: `PullResult` enumeration with results of operation
 	*/
-	public static func fetchAndSave(using userInfo: NotificationUserInfo, to container: NSPersistentContainer, error: ErrorBlock?, completion: @escaping (_ fetchResult: FetchResult) -> Void) {
-		guard let cloudDatabase = self.database(for: userInfo) else {
+	public static func pull(using userInfo: NotificationUserInfo, to container: NSPersistentContainer, error: ErrorBlock?, completion: @escaping (_ fetchResult: PullResult) -> Void) {
+		guard let notification = CKNotification(fromRemoteNotificationDictionary: userInfo), let cloudDatabase = self.database(for: notification) else {
 			completion(.noData)
 			return
 		}
-
-		DispatchQueue.global(qos: .utility).async {
-			let errorProxy = ErrorBlockProxy(destination: error)
-			let operation = FetchAndSaveOperation(from: [cloudDatabase], persistentContainer: container)
-			operation.errorBlock = { errorProxy.send(error: $0) }
-			operation.start()
-			
-			if errorProxy.wasError {
-				completion(FetchResult.failed)
-			} else {
-				completion(FetchResult.newData)
-			}
-		}
+        
+        var hadError = false
+        let pullChangesOp = PullChangesOperation(from: [cloudDatabase], persistentContainer: container)
+        pullChangesOp.errorBlock = {
+            hadError = true
+            error?($0)
+        }
+        pullChangesOp.completionBlock = {
+            completion(hadError ? PullResult.failed : PullResult.newData)
+        }
+        
+        queue.addOperation(pullChangesOp)
 	}
 
 	/** Fetch changes from all CloudKit databases and save it to Core Data
@@ -150,29 +202,57 @@ open class CloudCore {
 	- Parameters:
 		- container: `NSPersistentContainer` that will be used to save fetched data
 		- error: block will be called every time when error occurs during process
-		- completion: `FetchResult` enumeration with results of operation
+		- completion: `PullResult` enumeration with results of operation
 	*/
-	public static func fetchAndSave(to container: NSPersistentContainer, error: ErrorBlock?, completion: (() -> Void)?) {
-        let operation = FetchAndSaveOperation(persistentContainer: container)
-		operation.errorBlock = error
-		operation.completionBlock = completion
-
+	public static func pull(to container: NSPersistentContainer, error: ErrorBlock?, completion: ((_ fetchResult: PullResult) -> Void)?) {
+        var hadError = false
+        let operation = PullChangesOperation(persistentContainer: container)
+		operation.errorBlock = {
+            hadError = true
+            error?($0)
+        }
+		operation.completionBlock = {
+            completion?(hadError ? PullResult.failed : PullResult.newData)
+        }
+        
 		queue.addOperation(operation)
 	}
 	
+    /** Fetch one full record from all CloudKit databases and save it to Core Data
+
+    - Parameters:
+        - recordID: `CKRecord.ID` identifies the record to retrieve
+        - database: `CKDatabase` identifies which database from the container to use
+        - container: `NSPersistentContainer` that will be used to save fetched data
+        - error: block will be called every time when error occurs during process
+        - completion: `PullResult` enumeration with results of operation
+    */
+    public static func pull(rootRecordID: CKRecord.ID,
+                            database: CKDatabase = config.container.sharedCloudDatabase,
+                            container: NSPersistentContainer,
+                            error: ErrorBlock?,
+                            completion: (() -> Void)?) {
+        let operation = PullRecordOperation(rootRecordID: rootRecordID,
+                                            database: database,
+                                            persistentContainer: container)
+        operation.errorBlock = error
+        operation.completionBlock = completion
+        
+        queue.addOperation(operation)
+    }
+    
 	/** Check if notification is CloudKit notification containing CloudCore data
 
 	 - Parameter userInfo: userInfo of notification
 	 - Returns: `true` if notification contains CloudCore data
 	*/
 	public static func isCloudCoreNotification(withUserInfo userInfo: NotificationUserInfo) -> Bool {
-		return (database(for: userInfo) != nil)
+        guard let notification = CKNotification(fromRemoteNotificationDictionary: userInfo) else { return false }
+        
+		return (database(for: notification) != nil)
 	}
 	
-	static func database(for notificationUserInfo: NotificationUserInfo) -> CKDatabase? {
-		guard let notificationDictionary = notificationUserInfo as? [String: NSObject] else { return nil }
-		let notification = CKNotification(fromRemoteNotificationDictionary: notificationDictionary)
-		
+	static func database(for notification: CKNotification) -> CKDatabase? {
 		guard let id = notification.subscriptionID else { return nil }
 		
 		switch id {
@@ -196,14 +276,39 @@ open class CloudCore {
 			if case .zoneNotFound = subError.code {
 				// Zone wasn't found, we need to create it
 				self.queue.cancelAllOperations()
-				let setupOperation = SetupOperation(container: container, parentContext: nil)
-				self.queue.addOperation(setupOperation)
+                
+                let setupOperation = SetupOperation(container: container, uploadAllData: true)  // arg, why is this a question?!
 				
+                // for completeness, pull again
+                let pullOperation = PullChangesOperation(persistentContainer: container)
+                pullOperation.errorBlock = {
+                    self.delegate?.error(error: $0, module: .some(.pullFromCloud))
+                }
+                
+                self.queue.addOperation(setupOperation)
+                self.queue.addOperation(pullOperation)
+
 				return
 			}
 		}
 		
 		delegate?.error(error: subscriptionError, module: nil)
 	}
-
+    
+    static public func perform(completion: ((CKContainer) -> Void)) {
+        let container = config.container
+        
+        if #available(iOS 15.0, watchOS 8.0, tvOS 15.0, macOS 12.0, *) {
+            let ckConfig = CKOperation.Configuration()
+//            ckConfig.container = container
+            ckConfig.qualityOfService = .userInitiated
+            ckConfig.allowsCellularAccess = true
+            container.configuredWith(configuration: ckConfig, group: nil) { configuredContainer in
+                completion(configuredContainer)
+            }
+        } else {
+            completion(container)
+        }
+    }
+    
 }

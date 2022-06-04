@@ -7,6 +7,7 @@
 //
 
 import CoreData
+import CloudKit
 
 extension NSEntityDescription {
 	var serviceAttributeNames: ServiceAttributeNames? {
@@ -15,64 +16,136 @@ extension NSEntityDescription {
 		let attributeNamesFromUserInfo = self.parseAttributeNamesFromUserInfo()
 		
 		// Get required attributes
-		
-		// Record Data
-		let recordDataName: String
-		if let recordDataUserInfoName = attributeNamesFromUserInfo.recordData {
-			recordDataName = recordDataUserInfoName
-		} else {
-			// Last chance: try to find default attribute name in entity
-			if self.attributesByName.keys.contains(CloudCore.config.defaultAttributeNameRecordData) {
-				recordDataName = CloudCore.config.defaultAttributeNameRecordData
-			} else {
-				return nil
-			}
-		}
-		
-		// Record ID
-		let recordIDName: String
-		if let recordIDUserInfoName = attributeNamesFromUserInfo.recordID {
-			recordIDName = recordIDUserInfoName
-		} else {
-			// Last chance: try to find default attribute name in entity
-			if self.attributesByName.keys.contains(CloudCore.config.defaultAttributeNameRecordID) {
-				recordIDName = CloudCore.config.defaultAttributeNameRecordID
-			} else {
-				return nil
-			}
-		}
-		
-		return ServiceAttributeNames(entityName: entityName, recordData: recordDataName, recordID: recordIDName, isPublic: attributeNamesFromUserInfo.isPublic)
+        // Record Name
+        let recordNameAttribute: String
+        if let recordNameUserInfoName = attributeNamesFromUserInfo.recordName {
+            recordNameAttribute = recordNameUserInfoName
+        } else {
+            // Last chance: try to find default attribute name in entity
+            if self.attributesByName.keys.contains(CloudCore.config.defaultAttributeNameRecordName) {
+                recordNameAttribute = CloudCore.config.defaultAttributeNameRecordName
+            } else {
+                return nil
+            }
+        }
+        
+        // Owner Name
+        let ownerNameAttribute: String
+        if let ownerNameUserInfoName = attributeNamesFromUserInfo.ownerName {
+            ownerNameAttribute = ownerNameUserInfoName
+        } else {
+            // Last chance: try to find default attribute name in entity
+            if self.attributesByName.keys.contains(CloudCore.config.defaultAttributeNameOwnerName) {
+                ownerNameAttribute = CloudCore.config.defaultAttributeNameOwnerName
+            } else {
+                return nil
+            }
+        }
+        
+        // Private Record Data
+        let privateRecordDataAttribute: String
+        if let recordDataUserInfoName = attributeNamesFromUserInfo.privateRecordData {
+            privateRecordDataAttribute = recordDataUserInfoName
+        } else {
+            // Last chance: try to find default attribute name in entity
+            if self.attributesByName.keys.contains(CloudCore.config.defaultAttributeNamePrivateRecordData) {
+                privateRecordDataAttribute = CloudCore.config.defaultAttributeNamePrivateRecordData
+            } else {
+                return nil
+            }
+        }
+        
+        // Public Record Data
+        let publicRecordDataAttribute: String
+        if let recordDataUserInfoName = attributeNamesFromUserInfo.publicRecordData {
+            publicRecordDataAttribute = recordDataUserInfoName
+        } else {
+            // Last chance: try to find default attribute name in entity
+            if self.attributesByName.keys.contains(CloudCore.config.defaultAttributeNamePublicRecordData) {
+                publicRecordDataAttribute = CloudCore.config.defaultAttributeNamePublicRecordData
+            } else {
+                return nil
+            }
+        }
+        
+        let relationshipNames = relationshipsByName.map { $0.key }
+        
+        return ServiceAttributeNames(entityName: entityName,
+                                     scopes: attributeNamesFromUserInfo.scopes,
+                                     recordName: recordNameAttribute,
+                                     ownerName: ownerNameAttribute,
+                                     privateRecordData: privateRecordDataAttribute,
+                                     publicRecordData: publicRecordDataAttribute,
+                                     allAttributeNames: attributeNamesFromUserInfo.allAttributeNames,
+                                     allRelationshipNames: relationshipNames,
+                                     maskedUpload: attributeNamesFromUserInfo.maskedUpload,
+                                     maskedDownload: attributeNamesFromUserInfo.maskedDownload)
 	}
 	
 	/// Parse data from User Info dictionary
-	private func parseAttributeNamesFromUserInfo() -> (isPublic: Bool, recordData: String?, recordID: String?) {
-		var recordDataName: String?
-		var recordIDName: String?
-		var isPublic = false
-		
-		// In attribute
-		for (attributeName, attributeDescription) in self.attributesByName {
+    private func parseAttributeNamesFromUserInfo() -> (scopes: [CKDatabase.Scope],
+                                                       recordName: String?,
+                                                       ownerName: String?,
+                                                       privateRecordData: String?,
+                                                       publicRecordData: String?,
+                                                       allAttributeNames: [String],
+                                                       maskedUpload: [String],
+                                                       maskedDownload: [String]) {
+        var scopes: [CKDatabase.Scope] = []
+        var recordNameAttribute: String?
+        var ownerNameAttribute: String?
+        var privateRecordDataAttribute: String?
+        var publicRecordDataAttribute: String?
+        var allAttributeNames: [String] = []
+        var maskedUpload: [String] = []
+        var maskedDownload: [String] = []
+        
+        func parse(_ attributeName: String, _ userInfo: [AnyHashable: Any]) {
+            allAttributeNames.append(attributeName)
+            
+            for (key, value) in userInfo {
+                guard let key = key as? String, let value = value as? String else {
+                    continue
+                }
+                                
+                if key == ServiceAttributeNames.keyType {
+                    switch value {
+                    case ServiceAttributeNames.valueRecordName: recordNameAttribute = attributeName
+                    case ServiceAttributeNames.valueOwnerName: ownerNameAttribute = attributeName
+                    case ServiceAttributeNames.valuePrivateRecordData: privateRecordDataAttribute = attributeName
+                    case ServiceAttributeNames.valuePublicRecordData: publicRecordDataAttribute = attributeName
+                    default: continue
+                    }
+                    
+                    allAttributeNames.removeLast()
+                } else if key == ServiceAttributeNames.keyMasks {
+                    let maskStrings = value.components(separatedBy: ",")
+                    if maskStrings.contains("upload") {
+                        maskedUpload.append(attributeName)
+                    }
+                    if maskStrings.contains("download") {
+                        maskedDownload.append(attributeName)
+                    }
+                }
+            }
+        }
+        
+        if let userInfo = self.userInfo, let scopesString = userInfo[ServiceAttributeNames.keyScopes] as? String {
+            let scopeComponents = scopesString.components(separatedBy: ",")
+            if scopeComponents.contains("public") {
+                scopes.append(.public)
+            }
+            if scopeComponents.contains("private") {
+                scopes.append(.private)
+            }
+        }
+        
+		for (attributeName, attributeDescription) in attributesByName {
 			guard let userInfo = attributeDescription.userInfo else { continue }
-			
-			// In userInfo dictionary
-			for (key, value) in userInfo {
-				guard let key = key as? String,
-					let value = value as? String else { continue }
-				
-				if key == ServiceAttributeNames.keyType {
-					switch value {
-					case ServiceAttributeNames.valueRecordID: recordIDName = attributeName
-					case ServiceAttributeNames.valueRecordData: recordDataName = attributeName
-					default: continue
-					}
-				} else if key == ServiceAttributeNames.keyIsPublic {
-					if value == "true" { isPublic = true }
-				}
-			}
+			parse(attributeName, userInfo)
 		}
 		
-		return (isPublic, recordDataName, recordIDName)
+		return (scopes, recordNameAttribute, ownerNameAttribute, privateRecordDataAttribute, publicRecordDataAttribute, allAttributeNames, maskedUpload, maskedDownload)
 	}
 	
 }

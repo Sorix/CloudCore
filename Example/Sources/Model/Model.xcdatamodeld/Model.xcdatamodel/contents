@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="20086" systemVersion="21E258" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
+    <entity name="Datafile" representedClassName="Datafile" syncable="YES" codeGenerationType="category">
+        <attribute name="assetData" optional="YES" attributeType="Binary">
+            <userInfo>
+                <entry key="CloudCoreMasks" value="upload,download"/>
+            </userInfo>
+        </attribute>
+        <attribute name="cacheStateRaw" optional="YES" attributeType="String">
+            <userInfo>
+                <entry key="CloudCoreMasks" value="upload,download"/>
+            </userInfo>
+        </attribute>
+        <attribute name="downloadProgress" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES">
+            <userInfo>
+                <entry key="CloudCoreMasks" value="upload,download"/>
+            </userInfo>
+        </attribute>
+        <attribute name="lastErrorMessage" optional="YES" attributeType="String">
+            <userInfo>
+                <entry key="CloudCoreMasks" value="upload,download"/>
+            </userInfo>
+        </attribute>
+        <attribute name="operationID" optional="YES" attributeType="String">
+            <userInfo>
+                <entry key="CloudCoreMasks" value="upload,download"/>
+            </userInfo>
+        </attribute>
+        <attribute name="ownerName" optional="YES" attributeType="String"/>
+        <attribute name="privateRecordData" optional="YES" attributeType="Binary" preserveAfterDeletion="YES"/>
+        <attribute name="publicRecordData" optional="YES" attributeType="Binary" preserveAfterDeletion="YES"/>
+        <attribute name="recordName" optional="YES" attributeType="String" preserveAfterDeletion="YES"/>
+        <attribute name="remoteStatusRaw" optional="YES" attributeType="String"/>
+        <attribute name="suffix" optional="YES" attributeType="String"/>
+        <attribute name="type" optional="YES" attributeType="String"/>
+        <attribute name="uploadProgress" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES">
+            <userInfo>
+                <entry key="CloudCoreMasks" value="upload,download"/>
+            </userInfo>
+        </attribute>
+        <relationship name="employee" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Employee" inverseName="datafiles" inverseEntity="Employee"/>
+        <fetchIndex name="byRecordNameIndex">
+            <fetchIndexElement property="recordName" type="Binary" order="ascending"/>
+        </fetchIndex>
+        <userInfo>
+            <entry key="CloudCoreCacheable" value="true"/>
+            <entry key="CloudCoreParent" value="employee"/>
+            <entry key="CloudCoreScopes" value="private"/>
+        </userInfo>
+    </entity>
+    <entity name="Employee" representedClassName="Employee" syncable="YES" codeGenerationType="class">
+        <attribute name="department" attributeType="String"/>
+        <attribute name="name" attributeType="String"/>
+        <attribute name="ownerName" optional="YES" attributeType="String"/>
+        <attribute name="privateRecordData" optional="YES" attributeType="Binary" preserveAfterDeletion="YES"/>
+        <attribute name="publicRecordData" optional="YES" attributeType="Binary" preserveAfterDeletion="YES"/>
+        <attribute name="recordName" optional="YES" attributeType="String" preserveAfterDeletion="YES"/>
+        <attribute name="workingSince" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <relationship name="datafiles" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="Datafile" inverseName="employee" inverseEntity="Datafile"/>
+        <relationship name="organization" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Organization" inverseName="employees" inverseEntity="Organization"/>
+        <fetchIndex name="byRecordNameIndex">
+            <fetchIndexElement property="recordName" type="Binary" order="ascending"/>
+        </fetchIndex>
+        <userInfo>
+            <entry key="CloudCoreParent" value="organization"/>
+            <entry key="CloudCoreScopes" value="private"/>
+        </userInfo>
+    </entity>
+    <entity name="Organization" representedClassName="Organization" syncable="YES" codeGenerationType="category">
+        <attribute name="bs" optional="YES" attributeType="String"/>
+        <attribute name="founded" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="name" optional="YES" attributeType="String"/>
+        <attribute name="ownerName" optional="YES" attributeType="String"/>
+        <attribute name="privateRecordData" optional="YES" attributeType="Binary" preserveAfterDeletion="YES"/>
+        <attribute name="publicRecordData" optional="YES" attributeType="Binary" preserveAfterDeletion="YES"/>
+        <attribute name="recordName" optional="YES" attributeType="String" preserveAfterDeletion="YES"/>
+        <attribute name="secretBoolean" optional="YES" attributeType="Boolean" allowsCloudEncryption="YES" usesScalarValueType="YES"/>
+        <attribute name="secretDouble" optional="YES" attributeType="Double" defaultValueString="0.0" allowsCloudEncryption="YES" usesScalarValueType="YES"/>
+        <attribute name="secretInteger" optional="YES" attributeType="Integer 32" defaultValueString="0" allowsCloudEncryption="YES" usesScalarValueType="YES"/>
+        <attribute name="secretString" optional="YES" attributeType="String" allowsCloudEncryption="YES"/>
+        <attribute name="shareRecordData" optional="YES" attributeType="Binary"/>
+        <attribute name="sort" attributeType="Integer 32" defaultValueString="1" usesScalarValueType="YES"/>
+        <relationship name="employees" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="Employee" inverseName="organization" inverseEntity="Employee"/>
+        <fetchIndex name="byRecordNameIndex">
+            <fetchIndexElement property="recordName" type="Binary" order="ascending"/>
+        </fetchIndex>
+        <userInfo>
+            <entry key="CloudCoreScopes" value="private"/>
+        </userInfo>
+    </entity>
+    <elements>
+        <element name="Datafile" positionX="270" positionY="306" width="128" height="239"/>
+        <element name="Employee" positionX="261" positionY="216" width="128" height="164"/>
+        <element name="Organization" positionX="261" positionY="189" width="128" height="239"/>
+    </elements>
+</model>

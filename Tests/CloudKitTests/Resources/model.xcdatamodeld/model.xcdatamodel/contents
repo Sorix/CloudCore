@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="13533" systemVersion="17B48" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="14460.32" systemVersion="18B75" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
     <entity name="IncorrectEntity" representedClassName="IncorrectEntity" syncable="YES" codeGenerationType="class"/>
     <entity name="TestEntity" representedClassName="TestEntity" syncable="YES" codeGenerationType="class">
         <attribute name="binary" optional="YES" attributeType="Binary" syncable="YES"/>
@@ -13,12 +13,14 @@
         <attribute name="int16" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES" syncable="YES"/>
         <attribute name="int32" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES" syncable="YES"/>
         <attribute name="int64" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES" syncable="YES"/>
-        <attribute name="recordData" optional="YES" attributeType="Binary" syncable="YES">
+        <attribute name="ownerName" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="privateRecordData" optional="YES" attributeType="Binary" syncable="YES">
             <userInfo>
                 <entry key="CloudCoreType" value="recordData"/>
             </userInfo>
         </attribute>
-        <attribute name="recordID" optional="YES" attributeType="String" syncable="YES">
+        <attribute name="publicRecordData" optional="YES" attributeType="Binary" syncable="YES"/>
+        <attribute name="recordName" optional="YES" attributeType="String" syncable="YES">
             <userInfo>
                 <entry key="CloudCoreType" value="recordID"/>
             </userInfo>
@@ -27,25 +29,33 @@
         <attribute name="transformable" optional="YES" attributeType="Transformable" syncable="YES"/>
         <relationship name="manyRelationship" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="UserEntity" inverseName="tests" inverseEntity="UserEntity" syncable="YES"/>
         <relationship name="singleRelationship" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="UserEntity" inverseName="test" inverseEntity="UserEntity" syncable="YES"/>
+        <userInfo>
+            <entry key="CloudCoreScopes" value="private"/>
+        </userInfo>
     </entity>
     <entity name="UserEntity" representedClassName="UserEntity" syncable="YES" codeGenerationType="class">
         <attribute name="name" optional="YES" attributeType="String" syncable="YES"/>
-        <attribute name="recordData" optional="YES" attributeType="Binary" syncable="YES">
+        <attribute name="ownerName" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="privateRecordData" optional="YES" attributeType="Binary" syncable="YES">
             <userInfo>
                 <entry key="CloudCoreType" value="recordData"/>
             </userInfo>
         </attribute>
-        <attribute name="recordID" optional="YES" attributeType="String" syncable="YES">
+        <attribute name="publicRecordData" optional="YES" attributeType="Binary" syncable="YES"/>
+        <attribute name="recordName" optional="YES" attributeType="String" syncable="YES">
             <userInfo>
                 <entry key="CloudCoreType" value="recordID"/>
             </userInfo>
         </attribute>
         <relationship name="test" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="TestEntity" inverseName="singleRelationship" inverseEntity="TestEntity" syncable="YES"/>
         <relationship name="tests" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="TestEntity" inverseName="manyRelationship" inverseEntity="TestEntity" syncable="YES"/>
+        <userInfo>
+            <entry key="CloudCoreScopes" value="private"/>
+        </userInfo>
     </entity>
     <elements>
         <element name="IncorrectEntity" positionX="-36" positionY="36" width="128" height="45"/>
-        <element name="TestEntity" positionX="-63" positionY="-18" width="128" height="300"/>
-        <element name="UserEntity" positionX="-54" positionY="0" width="128" height="120"/>
+        <element name="TestEntity" positionX="-63" positionY="-18" width="128" height="330"/>
+        <element name="UserEntity" positionX="-54" positionY="0" width="128" height="150"/>
     </elements>
 </model>

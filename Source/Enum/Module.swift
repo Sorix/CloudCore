@@ -11,10 +11,12 @@ import Foundation
 /// Enumeration with module name that issued an error in `CloudCoreErrorDelegate`
 public enum Module {
 	
-	/// Save to CloudKit module
-	case saveToCloud
+	case pushToCloud
 	
-	/// Fetch from CloudKit module
-	case fetchFromCloud
+	case pullFromCloud
+    
+    case cacheToCloud
+    
+    case cacheFromCloud
 	
 }

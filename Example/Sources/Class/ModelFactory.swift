@@ -37,24 +37,37 @@ class ModelFactory {
 		org.name = faker.company.name()
 		org.bs = faker.company.bs()
 		org.founded = Date(timeIntervalSince1970: faker.number.randomDouble(min: 1292250324, max: 1513175137))
-
+        
+        org.secretString = "This is a secret"
+        org.secretInteger = 42
+        org.secretDouble = 3.14
+        org.secretBoolean = true
+        
 		return org
 	}
 	
 	static func insertEmployee(context: NSManagedObjectContext) -> Employee {
-		let user = Employee(context: context)
-		user.department = faker.commerce.department()
-		user.name = faker.name.name()
-		user.workingSince = Date(timeIntervalSince1970: faker.number.randomDouble(min: 661109847, max: 1513186653))
-		user.photoData = randomAvatar()
-		
-		return user
+		let employee = Employee(context: context)
+		employee.department = faker.commerce.department()
+		employee.name = faker.name.name()
+		employee.workingSince = Date(timeIntervalSince1970: faker.number.randomDouble(min: 661109847, max: 1513186653))
+        
+        let datafile = Datafile(context: context)
+        datafile.suffix = ".png"
+        datafile.cacheState = .local
+        datafile.remoteStatus = .pending
+        datafile.employee = employee
+        
+        let photoData = randomAvatar()
+        try? photoData?.write(to: datafile.url)
+        
+		return employee
 	}
 	
 	private static func randomAvatar() -> Data? {
 		let randomNumber = String(faker.number.randomInt(min: 1, max: 9))
 		let image = UIImage(named: "avatar_" + randomNumber)!
-		return UIImagePNGRepresentation(image)
+		return image.pngData()
 	}
 	
 	static func newCompanyName() -> String {

@@ -13,8 +13,9 @@ import CloudKit
 
 class CKRecordTests: XCTestCase {
 	func testEncodeAndInit() {
-		let zoneID = CKRecordZoneID(zoneName: "zone", ownerName: CKCurrentUserDefaultName)
-		let record = CKRecord(recordType: "type", zoneID: zoneID)
+		let zoneID = CKRecordZone.ID(zoneName: "zone", ownerName: CKCurrentUserDefaultName)
+        let recordID = CKRecord.ID(recordName: "name", zoneID: zoneID)
+        let record = CKRecord(recordType: "type", recordID: recordID)
 		record.setValue("testValue", forKey: "testKey")
 		
 		let encodedData = record.encdodedSystemFields

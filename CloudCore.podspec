@@ -1,25 +1,26 @@
 Pod::Spec.new do |s|
   s.name             = "CloudCore"
-  s.summary          = "Framework that enables synchronization between CloudKit (iCloud) and Core Data. Can be used as CloudKit caching mechanism."
-  s.version          = "2.0.1"
-  s.homepage         = "https://github.com/sorix/CloudCore"
+  s.summary          = "Framework that enables synchronization between CloudKit and Core Data."
+  s.version          = "5.1.0"
+  s.homepage         = "https://github.com/deeje/CloudCore"
   s.license          = 'MIT'
-  s.author           = { "Vasily Ulianov" => "vasily@me.com" }
+  s.author           = { "deeje" => "deeje@mac.com", "Vasily Ulianov" => "vasily@me.com" }
   s.source           = {
-    :git => "https://github.com/sorix/CloudCore.git",
+    :git => "https://github.com/deeje/CloudCore.git",
     :tag => s.version.to_s
   }
 
-  s.ios.deployment_target = '10.0'
-  s.osx.deployment_target = '10.12'
-  s.tvos.deployment_target = '10.0'
-  s.watchos.deployment_target = '3.0'
+  s.ios.deployment_target = '13.0'
+  s.osx.deployment_target = '11.0'
+  s.tvos.deployment_target = '12.0'
+  s.watchos.deployment_target = '6.0'
 
   s.source_files = 'Source/**/*.swift'
 
   s.ios.frameworks = 'Foundation', 'CloudKit', 'CoreData'
   s.osx.frameworks = 'Foundation', 'CloudKit', 'CoreData'
+  s.tvos.frameworks = 'Foundation', 'CloudKit', 'CoreData'
+  s.watchos.frameworks = 'Foundation', 'CloudKit', 'CoreData'
 
-  s.pod_target_xcconfig = { 'SWIFT_VERSION' => '4.0' }
-  s.documentation_url = 'http://cocoadocs.org/docsets/CloudCore/'
+  s.swift_versions = [5.1]
 end

@@ -37,31 +37,50 @@ public struct CloudCoreConfig {
 	/// RecordZone inside private database to store CoreData.
 	///
 	/// Default value is `CloudCore`
-	public var zoneID = CKRecordZoneID(zoneName: "CloudCore", ownerName: CKCurrentUserDefaultName)
-	let subscriptionIDForPrivateDB = "CloudCorePrivate"
-	let subscriptionIDForSharedDB = "CloudCoreShared"
+    public var zoneName = "CloudCore"
+    public func privateZoneID() -> CKRecordZone.ID {
+        return CKRecordZone.ID(zoneName: zoneName, ownerName: CKCurrentUserDefaultName)
+    }
+    public let subscriptionIDForPrivateDB = "CloudCorePrivate"
+    public let subscriptionIDForSharedDB = "CloudCoreShared"
 	
 	/// subscriptionID's prefix for custom CKSubscription in public databases
-	var publicSubscriptionIDPrefix = "CloudCore-"
+    public var publicSubscriptionIDPrefix = "CloudCore-"
 	
 	// MARK: Core Data
-	let contextName = "CloudCoreFetchAndSave"
-	
-	/// Default entity's attribute name for *Record ID* if User Info is not specified.
-	///
-	/// Default value is `recordID`
-	public var defaultAttributeNameRecordID = "recordID"
-	
-	/// Default entity's attribute name for *Record Data* if User Info is not specified
-	///
-	/// Default value is `recordData`
-	public var defaultAttributeNameRecordData = "recordData"
-	
+    public let pushContextName = "CloudCorePushContext"
+    public let pullContextName = "CloudCorePullContext"
+
+    /// Default entity's attribute name for *Record Name* if User Info is not specified
+    ///
+    /// Default value is `recordName`
+    public var defaultAttributeNameRecordName = "recordName"
+    
+    /// Default entity's attribute name for *Owner Name* if User Info is not specified
+    ///
+    /// Default value is `recordName`
+    public var defaultAttributeNameOwnerName = "ownerName"
+    
+    /// Default entity's attribute name for *Private Record Data* if User Info is not specified
+    ///
+    /// Default value is `privateRecordData`
+    public var defaultAttributeNamePrivateRecordData = "privateRecordData"
+        
+    /// Default entity's attribute name for *Public Record Data* if User Info is not specified
+    ///
+    /// Default value is `publicRecordData`
+    public var defaultAttributeNamePublicRecordData = "publicRecordData"
+    
 	// MARK: User Defaults
 	
 	/// UserDefault's key to store `Tokens` object
 	///
 	/// Default value is `CloudCoreTokens`
 	public var userDefaultsKeyTokens = "CloudCoreTokens"
+    public var persistentHistoryTokenKey = "lastPersistentHistoryTokenKey"
 	
+    public init() {
+        
+    }
+    
 }

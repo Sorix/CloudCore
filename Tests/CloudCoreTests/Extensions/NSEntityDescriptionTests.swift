@@ -17,8 +17,9 @@ class NSEntityDescriptionTests: CoreDataTestCase {
 		
 		let attributeNames = correctObject.entity.serviceAttributeNames
 		XCTAssertEqual(attributeNames?.entityName, "TestEntity")
-		XCTAssertEqual(attributeNames?.recordData, "recordData")
-		XCTAssertEqual(attributeNames?.recordID, "recordID")
+        XCTAssertEqual(attributeNames?.publicRecordData, "publicRecordData")
+        XCTAssertEqual(attributeNames?.privateRecordData, "privateRecordData")
+		XCTAssertEqual(attributeNames?.recordName, "recordName")
 		
 		let incorrectObject = IncorrectEntity(context: self.context)
 		XCTAssertNil(incorrectObject.entity.serviceAttributeNames)

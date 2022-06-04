@@ -9,32 +9,30 @@
 import CloudKit
 
 /**
-	CloudCore's class for storing global `CKToken` objects. Framework uses one to upload or download only changed data (smart-sync).
-
-	To detect what data is new and old, framework uses CloudKit's `CKToken` objects and it is needed to be loaded every time application launches and saved on exit.
+	CloudCore's class for storing global `CKToken` objects. Framework uses one to download only changed data (smart-sync).
 
 	Framework stores tokens in 2 places:
 
 	* singleton `Tokens` object in `CloudCore.tokens`
 	* tokens per record inside *Record Data* attribute, it is managed automatically you don't need to take any actions about that token
-
-	You need to save `Tokens` object before application terminates otherwise you will loose smart-sync ability.
-
-	### Example
-	```swift
-	func applicationWillTerminate(_ application: UIApplication) {
-		CloudCore.tokens.saveToUserDefaults()
-	}
-	```
 */
-open class Tokens: NSObject, NSCoding {
+
+open class Tokens: NSObject, NSSecureCoding {
 	
-	var tokensByRecordZoneID = [CKRecordZoneID: CKServerChangeToken]()
+    private var tokensByDatabaseScope = [Int: CKServerChangeToken]()
+    private var tokensByRecordZoneID = [CKRecordZone.ID: CKServerChangeToken]()
 	
 	private struct ArchiverKey {
-		static let tokensByRecordZoneID = "tokensByRecordZoneID"
+        static let tokensByDatabaseScope = "tokensByDatabaseScope"
+        static let tokensByRecordZoneID = "tokensByRecordZoneID"
 	}
 	
+    private let queue = DispatchQueue(label: "com.deeje.CloudCore.Tokens")
+    
+    public static var supportsSecureCoding: Bool {
+        return true
+    }
+    
 	/// Create fresh object without any Tokens inside. Can be used to fetch full data.
 	public override init() {
 		super.init()
@@ -45,36 +43,65 @@ open class Tokens: NSObject, NSCoding {
 	/// Load saved Tokens from UserDefaults. Key is used from `CloudCoreConfig.userDefaultsKeyTokens`
 	///
 	/// - Returns: previously saved `Token` object, if tokens weren't saved before newly initialized `Tokens` object will be returned
-	open static func loadFromUserDefaults() -> Tokens {
-		guard let tokensData = UserDefaults.standard.data(forKey: CloudCore.config.userDefaultsKeyTokens),
-			let tokens = NSKeyedUnarchiver.unarchiveObject(with: tokensData) as? Tokens else {
-				return Tokens()
+	public static func loadFromUserDefaults() -> Tokens {
+        if let tokensData = UserDefaults.standard.data(forKey: CloudCore.config.userDefaultsKeyTokens) {
+            do {
+                let allowableClasses = [Tokens.classForKeyedUnarchiver(),
+                                        NSNumber.classForKeyedUnarchiver(),
+                                        NSDictionary.classForKeyedUnarchiver(),
+                                        CKRecordZone.ID.classForKeyedUnarchiver(),
+                                        CKServerChangeToken.classForKeyedUnarchiver()]
+                let tokens = try NSKeyedUnarchiver.unarchivedObject(ofClasses: allowableClasses, from: tokensData) as! Tokens
+                
+                return tokens
+            } catch {
+//                print("\(error)")
+            }
 		}
 		
-		return tokens
+        return Tokens()
 	}
 	
 	/// Save tokens to UserDefaults and synchronize. Key is used from `CloudCoreConfig.userDefaultsKeyTokens`
 	open func saveToUserDefaults() {
-		let tokensData = NSKeyedArchiver.archivedData(withRootObject: self)
-		UserDefaults.standard.set(tokensData, forKey: CloudCore.config.userDefaultsKeyTokens)
-		UserDefaults.standard.synchronize()
+        if let tokensData = try? NSKeyedArchiver.archivedData(withRootObject: self, requiringSecureCoding: true) {
+            UserDefaults.standard.set(tokensData, forKey: CloudCore.config.userDefaultsKeyTokens)
+            UserDefaults.standard.synchronize()
+        }
 	}
 	
 	// MARK: NSCoding
 	
 	///	Returns an object initialized from data in a given unarchiver.
 	public required init?(coder aDecoder: NSCoder) {
-		if let decodedTokens = aDecoder.decodeObject(forKey: ArchiverKey.tokensByRecordZoneID) as? [CKRecordZoneID: CKServerChangeToken] {
-			self.tokensByRecordZoneID = decodedTokens
-		} else {
-			return nil
+        if let decodedTokensByScope = aDecoder.decodeObject(forKey: ArchiverKey.tokensByDatabaseScope) as? [Int: CKServerChangeToken] {
+            self.tokensByDatabaseScope = decodedTokensByScope
+        }
+        if let decodedTokensByZone = aDecoder.decodeObject(forKey: ArchiverKey.tokensByRecordZoneID) as? [CKRecordZone.ID: CKServerChangeToken] {
+			self.tokensByRecordZoneID = decodedTokensByZone
 		}
 	}
 	
 	/// Encodes the receiver using a given archiver.
 	open func encode(with aCoder: NSCoder) {
-		aCoder.encode(tokensByRecordZoneID, forKey: ArchiverKey.tokensByRecordZoneID)
+        aCoder.encode(tokensByDatabaseScope, forKey: ArchiverKey.tokensByDatabaseScope)
+        aCoder.encode(tokensByRecordZoneID, forKey: ArchiverKey.tokensByRecordZoneID)
 	}
 	
+    func token(for scope: CKDatabase.Scope) -> CKServerChangeToken? {
+        return queue.sync { tokensByDatabaseScope[scope.rawValue] }
+    }
+    
+    func setToken(_ newToken: CKServerChangeToken?, for scope: CKDatabase.Scope) {
+        queue.sync { tokensByDatabaseScope[scope.rawValue] = newToken }
+    }
+    
+    func token(for zone: CKRecordZone.ID) -> CKServerChangeToken? {
+        return queue.sync { tokensByRecordZoneID[zone] }
+    }
+    
+    func setToken(_ newToken: CKServerChangeToken?, for zone: CKRecordZone.ID) {
+        queue.sync { tokensByRecordZoneID[zone] = newToken }
+    }
+    
 }
